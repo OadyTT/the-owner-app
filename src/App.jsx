@@ -328,7 +328,7 @@ function LandingPage({ theme, onAdmin }) {
         <div style={{ position: "absolute", top: "10%", left: "50%", transform: "translateX(-50%)", width: 700, height: 700, background: `radial-gradient(circle, ${theme.primary}22 0%, transparent 65%)`, pointerEvents: "none" }} />
         <div style={{ position: "absolute", bottom: "5%", right: "10%", width: 300, height: 300, background: `radial-gradient(circle, ${theme.accent}18 0%, transparent 70%)`, pointerEvents: "none" }} />
 
-        <div style={{ textAlign: "center", maxWidth: 800, position: "relative" }}>
+        <div style={{ textAlign: "center", maxWidth: 800, position: "relative", margin: "0 auto", width: "100%" }}>
           <div className="fade-in" style={{ marginBottom: 32 }}>
             <div style={{ display: "inline-flex", alignItems: "center", gap: 8, background: theme.primary + "22", border: `1px solid ${theme.primary}44`, borderRadius: 30, padding: "8px 20px", fontSize: 14, color: theme.primary, fontWeight: 600, marginBottom: 32 }}>
               <span className="pulse" style={{ width: 8, height: 8, borderRadius: "50%", background: theme.primary, display: "inline-block" }} />
