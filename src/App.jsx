@@ -290,7 +290,7 @@ function LandingPage({ theme, onAdmin }) {
       <nav style={{ position: "fixed", top: 0, left: 0, right: 0, zIndex: 100, background: "rgba(7,9,26,0.92)", backdropFilter: "blur(16px)", borderBottom: `1px solid ${theme.border}` }}>
         <div style={{ maxWidth: 1280, margin: "0 auto", padding: "0 24px", height: 64, display: "flex", alignItems: "center", justifyContent: "space-between" }}>
           <button onClick={() => scrollTo("home")} style={{ background: "none", border: "none", cursor: "pointer", display: "flex", alignItems: "center", gap: 10 }}>
-            <div style={{ width: 38, height: 38, borderRadius: "50%", background: theme.primary, display: "flex", alignItems: "center", justifyContent: "center", fontFamily: theme.fontDisplay, fontSize: 13, color: "#fff", flexShrink: 0 }}>TO</div>
+            <div style={{ width: 38, height: 38, borderRadius: "50%", background: theme.primary, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}><img src="/the_owner_logo.png" style={{ width: "100%", height: "100%", borderRadius: "50%", objectFit: "cover" }} /></div>
             <span style={{ fontFamily: theme.fontDisplay, fontSize: 22, letterSpacing: 3, color: theme.text }}>THE OWNER</span>
           </button>
 
@@ -723,7 +723,7 @@ function AdminDashboard({ user, theme, setTheme, onLogout, onLanding }) {
         {/* Logo */}
         <div style={{ padding: "20px 20px 16px", borderBottom: `1px solid ${theme.border}` }}>
           <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
-            <div style={{ width: 38, height: 38, borderRadius: "50%", background: theme.primary, display: "flex", alignItems: "center", justifyContent: "center", fontFamily: theme.fontDisplay, fontSize: 13, color: "#fff", flexShrink: 0 }}>TO</div>
+            <div style={{ width: 38, height: 38, borderRadius: "50%", background: theme.primary, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}><img src="/the_owner_logo.png" style={{ width: "100%", height: "100%", borderRadius: "50%", objectFit: "cover" }} /></div>
             <div>
               <div style={{ fontFamily: theme.fontDisplay, fontSize: 16, letterSpacing: 2 }}>THE OWNER</div>
               <div style={{ fontSize: 11, color: theme.muted }}>Admin Panel</div>
