@@ -3,6 +3,8 @@ import { useState, useEffect, useRef } from "react";
 // ─────────────────────────────────────────────
 // CONSTANTS
 // ─────────────────────────────────────────────
+const GAS_URL = "https://script.google.com/macros/s/AKfycbytwotuAasn9-ikmI7WOodPmQBXppN9AFAScdGZnJ0M_mNrBFnqFsxTKIpn5TCn4SRK/exec";
+
 const COURSES = [
   { id: 1, name: "Product Growth 101", icon: "🚀", desc: "สร้างและพัฒนาผลิตภัณฑ์ที่ตลาดต้องการ" },
   { id: 2, name: "Business Growth 101", icon: "📈", desc: "กลยุทธ์ขยายธุรกิจให้เติบโตอย่างยั่งยืน" },
@@ -266,7 +268,31 @@ function LandingPage({ theme, onAdmin }) {
 
   const scrollTo = (id) => { setSection(id); setMobileMenu(false); document.getElementById(id)?.scrollIntoView({ behavior: "smooth" }); };
 
-  const handleSubmit = (e) => { e.preventDefault(); setSubmitted(true); };
+  const handleSubmit = async (e) => {
+  e.preventDefault();
+  try {
+    const res = await fetch(GAS_URL, {
+      method: "POST",
+      body: JSON.stringify({
+        action: "addMember",
+        lineId: form.lineId,
+        name: form.name,
+        phone: form.phone,
+        email: form.email,
+        package: form.pkg,
+        mode: form.mode,
+      })
+    });
+    const result = await res.json();
+    if (result.success) {
+      setSubmitted(true);
+    } else {
+      alert("เกิดข้อผิดพลาด: " + result.message);
+    }
+  } catch (err) {
+    alert("ไม่สามารถเชื่อมต่อได้ กรุณาลองใหม่อีกครั้ง");
+  }
+};
 
   const faqs = [
     ["สมัครสมาชิกได้อย่างไร?", "กรอกฟอร์มด้านล่าง เลือกแพ็กเกจ โอนเงินผ่าน PromptPay แล้วแนบสลิป admin จะยืนยันผ่าน Line OA ภายใน 24 ชม."],
@@ -673,7 +699,14 @@ function AdminLogin({ theme, onLogin, onBack }) {
 function AdminDashboard({ user, theme, setTheme, onLogout, onLanding }) {
   const [page, setPage] = useState("approvals");
   const [members, setMembers] = useState(MOCK_MEMBERS);
-  const [schedules, setSchedules] = useState(MOCK_SCHEDULES);
+  const [schedules, setSchedules] = useState([]);
+
+useEffect(() => {
+  fetch(GAS_URL + "?action=getSchedules")
+    .then(r => r.json())
+    .then(res => { if (res.success) setSchedules(res.data); })
+    .catch(() => setSchedules(MOCK_SCHEDULES));
+}, []);
   const [checkins, setCheckins] = useState(MOCK_CHECKINS);
   const [selected, setSelected] = useState(null);
   const [sidebarOpen, setSidebarOpen] = useState(true);
