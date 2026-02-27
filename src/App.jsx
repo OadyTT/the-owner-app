@@ -334,7 +334,7 @@ function LandingPage({ theme, onAdmin }) {
               <span className="pulse" style={{ width: 8, height: 8, borderRadius: "50%", background: theme.primary, display: "inline-block" }} />
               เปิดรับสมาชิกแล้ววันนี้
             </div>
-            <div style={{ width: 120, height: 120, borderRadius: "50%", background: theme.primary, margin: "0 auto 32px", display: "flex", alignItems: "center", justifyContent: "center", fontFamily: theme.fontDisplay, fontSize: 36, color: "#fff", boxShadow: `0 0 80px ${theme.primary}55`, letterSpacing: 2 }}>TO</div>
+            <div style={{ width: 120, height: 120, borderRadius: "50%", background: theme.primary, margin: "0 auto 32px", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}><img src="/the_owner_logo.png" style={{ width: "100%", height: "100%", borderRadius: "50%", objectFit: "cover" }} /></div>
           </div>
           <h1 className="fade-in" style={{ fontFamily: theme.fontDisplay, fontSize: "clamp(72px, 14vw, 160px)", lineHeight: 0.9, letterSpacing: 6, marginBottom: 24, animationDelay: "0.1s" }}>
             THE<br /><span style={{ color: theme.primary }}>OWNER</span>
@@ -642,7 +642,7 @@ function AdminLogin({ theme, onLogin, onBack }) {
       <div style={{ position: "absolute", top: "20%", left: "50%", transform: "translateX(-50%)", width: 500, height: 500, background: `radial-gradient(circle, ${theme.primary}20 0%, transparent 70%)`, pointerEvents: "none" }} />
       <div style={{ width: "100%", maxWidth: 440, position: "relative" }}>
         <div style={{ textAlign: "center", marginBottom: 40 }}>
-          <div style={{ width: 80, height: 80, borderRadius: "50%", background: theme.primary, margin: "0 auto 20px", display: "flex", alignItems: "center", justifyContent: "center", fontFamily: theme.fontDisplay, fontSize: 30, color: "#fff", boxShadow: `0 0 60px ${theme.primary}55` }}>TO</div>
+          <div style={{ width: 80, height: 80, borderRadius: "50%", background: theme.primary, margin: "0 auto 20px", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}><img src="/the_owner_logo.png" style={{ width: "100%", height: "100%", borderRadius: "50%", objectFit: "cover" }} /></div>
           <h1 style={{ fontFamily: theme.fontDisplay, fontSize: 36, letterSpacing: 3 }}>ADMIN LOGIN</h1>
           <p style={{ color: theme.muted, marginTop: 8, fontSize: 14 }}>The Owner Management System</p>
         </div>
