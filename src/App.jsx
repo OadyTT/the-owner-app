@@ -128,7 +128,7 @@ function GlobalStyles({ theme }) {
     <style>{`
       @import url('https://fonts.googleapis.com/css2?family=Sarabun:wght@300;400;500;600;700;800&family=Bebas+Neue&display=swap');
       *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-      html { scroll-behavior: smooth; }
+      html, body, #root { scroll-behavior: smooth; width: 100%; max-width: 100%; overflow-x: hidden; }
       body { background: ${theme.bg}; color: ${theme.text}; font-family: ${theme.fontBody}; font-size: ${theme.fontSize}px; line-height: 1.6; overflow-x: hidden; }
       ::-webkit-scrollbar { width: 6px; }
       ::-webkit-scrollbar-track { background: transparent; }
@@ -323,12 +323,12 @@ function LandingPage({ theme, onAdmin }) {
       </nav>
 
       {/* HERO */}
-      <section id="home" style={{ minHeight: "100vh", display: "flex", alignItems: "center", justifyContent: "center", padding: "120px 24px 80px", position: "relative", overflow: "hidden" }}>
+      <section id="home" style={{ minHeight: "100vh", display: "flex", alignItems: "center", justifyContent: "center", padding: "120px 24px 80px", position: "relative", overflow: "hidden", width: "100%", boxSizing: "border-box" }}>
         {/* bg decoration */}
         <div style={{ position: "absolute", top: "10%", left: "50%", transform: "translateX(-50%)", width: 700, height: 700, background: `radial-gradient(circle, ${theme.primary}22 0%, transparent 65%)`, pointerEvents: "none" }} />
         <div style={{ position: "absolute", bottom: "5%", right: "10%", width: 300, height: 300, background: `radial-gradient(circle, ${theme.accent}18 0%, transparent 70%)`, pointerEvents: "none" }} />
 
-        <div style={{ textAlign: "center", maxWidth: 800, position: "relative", margin: "0 auto", width: "100%" }}>
+        <div style={{ textAlign: "center", maxWidth: 800, position: "relative", margin: "0 auto", width: "100%", padding: "0 16px" }}>
           <div className="fade-in" style={{ marginBottom: 32 }}>
             <div style={{ display: "inline-flex", alignItems: "center", gap: 8, background: theme.primary + "22", border: `1px solid ${theme.primary}44`, borderRadius: 30, padding: "8px 20px", fontSize: 14, color: theme.primary, fontWeight: 600, marginBottom: 32 }}>
               <span className="pulse" style={{ width: 8, height: 8, borderRadius: "50%", background: theme.primary, display: "inline-block" }} />
