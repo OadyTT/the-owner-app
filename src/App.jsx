@@ -698,7 +698,40 @@ function AdminLogin({ theme, onLogin, onBack }) {
 // ─────────────────────────────────────────────
 function AdminDashboard({ user, theme, setTheme, onLogout, onLanding }) {
   const [page, setPage] = useState("approvals");
-  const [members, setMembers] = useState(MOCK_MEMBERS);
+  const [members, setMembers] = useState([]);
+
+  useEffect(() => {
+    fetch(GAS_URL + "?action=getMembers")
+      .then(r => r.json())
+      .then(res => {
+        if (res.success) {
+          const mapped = res.data.map((m, i) => ({
+            id: i + 1,
+            name: m.name,
+            phone: m.phone,
+            lineId: m.lineId,
+            pkg: m.package,
+            status: m.status,
+            slip: null,
+            registeredAt: m.registeredAt,
+            expiresAt: m.expiresAt,
+            checkedIn: m.checkedIn === "TRUE",
+            fine: m.fine || 0
+          }));
+          setMembers(mapped);
+        }
+      })
+      .catch(() => setMembers(MOCK_MEMBERS));
+  }, []);
+```
+
+---
+
+## บันทึกและ Push
+```
+git add .
+git commit -m "approve reject connect line"
+git push
   const [schedules, setSchedules] = useState([]);
 
 useEffect(() => {
@@ -716,13 +749,53 @@ useEffect(() => {
 
   const pending = members.filter(m => m.status === "pending");
 
-  const approve = (id) => {
-    setMembers(prev => prev.map(m => m.id === id ? { ...m, status: "approved", expiresAt: m.pkg === "quarter" ? "2025-05-26" : "2025-02-26" } : m));
-    if (selected?.id === id) setSelected(s => ({ ...s, status: "approved" }));
+  const approve = async (id) => {
+    const member = members.find(m => m.id === id);
+    if (!member) return;
+    try {
+      const res = await fetch(GAS_URL, {
+        method: "POST",
+        body: JSON.stringify({
+          action: "updateStatus",
+          lineId: member.lineId,
+          status: "approved"
+        })
+      });
+      const result = await res.json();
+      if (result.success) {
+        setMembers(prev => prev.map(m => m.id === id ? { ...m, status: "approved" } : m));
+        if (selected?.id === id) setSelected(s => ({ ...s, status: "approved" }));
+        alert("✅ อนุมัติสำเร็จ! แจ้งสมาชิกผ่าน Line แล้ว");
+      } else {
+        alert("เกิดข้อผิดพลาด: " + result.message);
+      }
+    } catch (err) {
+      alert("ไม่สามารถเชื่อมต่อได้");
+    }
   };
-  const reject = (id) => {
-    setMembers(prev => prev.map(m => m.id === id ? { ...m, status: "rejected" } : m));
-    if (selected?.id === id) setSelected(s => ({ ...s, status: "rejected" }));
+  const reject = async (id) => {
+    const member = members.find(m => m.id === id);
+    if (!member) return;
+    try {
+      const res = await fetch(GAS_URL, {
+        method: "POST",
+        body: JSON.stringify({
+          action: "updateStatus",
+          lineId: member.lineId,
+          status: "rejected"
+        })
+      });
+      const result = await res.json();
+      if (result.success) {
+        setMembers(prev => prev.map(m => m.id === id ? { ...m, status: "rejected" } : m));
+        if (selected?.id === id) setSelected(s => ({ ...s, status: "rejected" }));
+        alert("❌ ปฏิเสธแล้ว แจ้งสมาชิกผ่าน Line แล้ว");
+      } else {
+        alert("เกิดข้อผิดพลาด: " + result.message);
+      }
+    } catch (err) {
+      alert("ไม่สามารถเชื่อมต่อได้");
+    }
   };
 
   const copyText = (text) => {
