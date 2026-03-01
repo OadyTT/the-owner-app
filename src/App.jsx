@@ -1,6 +1,21 @@
 import { useState, useEffect } from "react";
 
+const LIFF_ID = "2009199519-UViGDRf7";
 const GAS_URL = "https://script.google.com/macros/s/AKfycbytwotuAasn9-ikmI7WOodPmQBXppN9AFAScdGZnJ0M_mNrBFnqFsxTKIpn5TCn4SRK/exec";
+
+async function initLiff() {
+  try {
+    await window.liff.init({ liffId: LIFF_ID });
+    if (!window.liff.isLoggedIn()) {
+      window.liff.login();
+      return null;
+    }
+    const profile = await window.liff.getProfile();
+    return profile.userId;
+  } catch {
+    return null;
+  }
+}
 
 const COURSES = [
   { id: 1, name: "Product Growth 101", icon: "🚀", desc: "สร้างและพัฒนาผลิตภัณฑ์ที่ตลาดต้องการ" },
@@ -207,6 +222,18 @@ function LandingPage({ theme, onAdmin }) {
   const [submitted, setSubmitted] = useState(false);
   const [openFaq, setOpenFaq] = useState(null);
   const [schedules, setSchedules] = useState(MOCK_SCHEDULES);
+  const [lineAutoId, setLineAutoId] = useState("");
+
+  useEffect(() => {
+    if (window.liff) {
+      initLiff().then(userId => {
+        if (userId) {
+          setLineAutoId(userId);
+          setForm(f => ({ ...f, lineId: userId }));
+        }
+      });
+    }
+  }, []);
 
   useEffect(() => {
     fetch(GAS_URL + "?action=getSchedules")
@@ -460,7 +487,20 @@ function LandingPage({ theme, onAdmin }) {
                 <Input label="ชื่อ-นามสกุล" value={form.name} onChange={v => setForm({...form, name: v})} placeholder="ตามบัตรประชาชน" required />
                 <Input label="เบอร์โทรศัพท์" value={form.phone} onChange={v => setForm({...form, phone: v})} placeholder="08x-xxx-xxxx" required />
               </div>
-              <Input label="Line ID" value={form.lineId} onChange={v => setForm({...form, lineId: v})} placeholder="Line ID ของคุณ (สำคัญมาก)" required />
+              {lineAutoId ? (
+  <div style={{ marginBottom: 16 }}>
+    <label style={{ display: "block", marginBottom: 6, fontSize: 13, fontWeight: 600, color: theme.muted }}>Line User ID</label>
+    <div style={{ background: theme.accent + "15", border: `1px solid ${theme.accent}40`, borderRadius: 12, padding: "13px 16px", display: "flex", alignItems: "center", gap: 10 }}>
+      <span style={{ fontSize: 20 }}>✅</span>
+      <div>
+        <div style={{ fontWeight: 700, color: theme.accent, fontSize: 13 }}>เชื่อมต่อ LINE อัตโนมัติแล้ว</div>
+        <div style={{ fontSize: 11, color: theme.muted, marginTop: 2 }}>{lineAutoId.slice(0,8)}...{lineAutoId.slice(-4)}</div>
+      </div>
+    </div>
+  </div>
+) : (
+  <Input label="Line User ID" value={form.lineId} onChange={v => setForm({...form, lineId: v})} placeholder="กรุณาเปิดจาก Line OA เพื่อรับ ID อัตโนมัติ" required />
+)}
               <Input label="อีเมล (ไม่บังคับ)" value={form.email} onChange={v => setForm({...form, email: v})} placeholder="example@email.com" type="email" />
               <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 16 }}>
                 <Select label="แพ็กเกจ" value={form.pkg} onChange={v => setForm({...form, pkg: v})} required options={PACKAGES.map(p => ({ value: p.id, label: `${p.label} – ${p.price} ฿` }))} />
