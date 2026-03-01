@@ -3,6 +3,32 @@ import { useState, useEffect } from "react";
 const LIFF_ID = "2009199519-UViGDRf7";
 const GAS_URL = "https://script.google.com/macros/s/AKfycbytwotuAasn9-ikmI7WOodPmQBXppN9AFAScdGZnJ0M_mNrBFnqFsxTKIpn5TCn4SRK/exec";
 
+async function uploadSlipToDrive(file, lineId) {
+  return new Promise((resolve) => {
+    const reader = new FileReader();
+    reader.onload = async (e) => {
+      const base64 = e.target.result.split(",")[1];
+      try {
+        const res = await fetch(GAS_URL, {
+          method: "POST",
+          body: JSON.stringify({
+            action: "uploadSlip",
+            base64,
+            mimeType: file.type,
+            fileName: `slip_${lineId}_${Date.now()}.${file.name.split(".").pop()}`,
+            lineId
+          })
+        });
+        const result = await res.json();
+        resolve(result);
+      } catch {
+        resolve({ success: false });
+      }
+    };
+    reader.readAsDataURL(file);
+  });
+}
+
 async function initLiff() {
   try {
     await window.liff.init({ liffId: LIFF_ID });
@@ -247,9 +273,26 @@ function LandingPage({ theme, onAdmin }) {
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
+      // 1. อัปโหลดสลิปก่อน
+      let slipUrl = "";
+      if (form.slip) {
+        const uploadResult = await uploadSlipToDrive(form.slip, form.lineId);
+        if (uploadResult.success) slipUrl = uploadResult.viewUrl;
+      }
+
+      // 2. ส่งข้อมูลสมาชิก
       const res = await fetch(GAS_URL, {
         method: "POST",
-        body: JSON.stringify({ action: "addMember", lineId: form.lineId, name: form.name, phone: form.phone, email: form.email, package: form.pkg, mode: form.mode })
+        body: JSON.stringify({
+          action: "addMember",
+          lineId: form.lineId,
+          name: form.name,
+          phone: form.phone,
+          email: form.email,
+          package: form.pkg,
+          mode: form.mode,
+          slipUrl
+        })
       });
       const result = await res.json();
       if (result.success) setSubmitted(true);
@@ -622,14 +665,15 @@ function AdminDashboard({ user, theme, setTheme, onLogout, onLanding }) {
   const [newSched, setNewSched] = useState({ date: "", time: "", course: COURSES[0].name, mode: "online", seats: 20, zoomId: "", zoomPw: "" });
   const [copyMsg, setCopyMsg] = useState("");
 
-  const mapMembers = (data) => data.map((m, i) => ({
+ const mapMembers = (data) => data.map((m, i) => ({
     id: i + 1,
     name: m.name,
     phone: m.phone,
     lineId: m.lineId,
     pkg: m.package,
     status: m.status,
-    slip: null,
+    slip: m.slipUrl || null,
+    
     registeredAt: m.registeredAt,
     expiresAt: m.expiresAt,
     checkedIn: m.checkedIn === "TRUE",
@@ -812,12 +856,24 @@ function AdminDashboard({ user, theme, setTheme, onLogout, onLanding }) {
                             </div>
                           ))}
                         </div>
-                        <div style={{ background: theme.bg, borderRadius: 16, height: 200, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", marginBottom: 20, border: `2px dashed ${theme.border}` }}>
-                          <Ic d={ICONS.eye} size={32} />
-                          <div style={{ color: theme.muted, fontSize: 13, marginTop: 8, textAlign: "center" }}>
-                            พื้นที่แสดงสลิป<br /><span style={{ fontSize: 11 }}>(เชื่อม Firebase Storage ในขั้นตอนถัดไป)</span>
-                          </div>
-                        </div>
+                        <div style={{ marginBottom: 20 }}>
+  {selected.slip ? (
+    <a href={selected.slip} target="_blank" rel="noreferrer">
+      <img src={selected.slip.replace("/view", "").replace("file/d/", "thumbnail?id=").replace("/", "&sz=w400")}
+        style={{ width: "100%", borderRadius: 16, objectFit: "cover", maxHeight: 280, cursor: "pointer" }}
+        onError={e => { e.target.style.display="none"; }}
+        alt="slip" />
+      <div style={{ textAlign: "center", marginTop: 8, color: theme.accent, fontSize: 13, fontWeight: 600 }}>
+        🔗 คลิกดูสลิปขนาดเต็ม
+      </div>
+    </a>
+  ) : (
+    <div style={{ background: theme.bg, borderRadius: 16, height: 160, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", border: `2px dashed ${theme.border}` }}>
+      <Ic d={ICONS.eye} size={32} />
+      <div style={{ color: theme.muted, fontSize: 13, marginTop: 8 }}>ไม่มีสลิปแนบ</div>
+    </div>
+  )}
+</div>
                         <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12 }}>
                           <Btn size="md" variant="success" fullWidth onClick={() => approve(selected.id)}><Ic d={ICONS.check} size={18} /> อนุมัติ & แจ้ง Line</Btn>
                           <Btn size="md" variant="danger" fullWidth onClick={() => reject(selected.id)}><Ic d={ICONS.x} size={18} /> ปฏิเสธ & แจ้ง Line</Btn>
