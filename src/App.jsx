@@ -916,7 +916,8 @@ function AdminDashboard({ user, theme, setTheme, onLogout, onLanding }) {
                   </Card>
                 ))}
               </div>
-              <Card style={{ overflowX: "auto" }}>
+              {/* Desktop Table */}
+              <Card style={{ overflowX: "auto", display: window.innerWidth < 768 ? "none" : "block" }}>
                 <table style={{ width: "100%", borderCollapse: "separate", borderSpacing: "0 6px", minWidth: 700 }}>
                   <thead>
                     <tr style={{ color: theme.muted, fontSize: 12, textTransform: "uppercase", letterSpacing: 1 }}>
@@ -945,6 +946,40 @@ function AdminDashboard({ user, theme, setTheme, onLogout, onLanding }) {
                   </tbody>
                 </table>
               </Card>
+
+              {/* Mobile Cards */}
+              <div style={{ display: window.innerWidth < 768 ? "flex" : "none", flexDirection: "column", gap: 12 }}>
+                {members.map(m => (
+                  <Card key={m.id} style={{ padding: 16 }}>
+                    <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: 12 }}>
+                      <div>
+                        <div style={{ fontWeight: 700, fontSize: 16 }}>{m.name}</div>
+                        <div style={{ color: theme.muted, fontSize: 13, marginTop: 2 }}>{m.phone}</div>
+                      </div>
+                      <div style={{ display: "flex", gap: 6, flexWrap: "wrap", justifyContent: "flex-end" }}>
+                        <StatusBadge status={m.pkg} />
+                        <StatusBadge status={m.status} />
+                      </div>
+                    </div>
+                    <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 8, marginBottom: 12 }}>
+                      <div style={{ background: theme.bg, borderRadius: 8, padding: "8px 12px" }}>
+                        <div style={{ fontSize: 10, color: theme.muted, marginBottom: 2 }}>LINE ID</div>
+                        <div style={{ fontSize: 12, fontWeight: 600, wordBreak: "break-all" }}>{m.lineId}</div>
+                      </div>
+                      <div style={{ background: theme.bg, borderRadius: 8, padding: "8px 12px" }}>
+                        <div style={{ fontSize: 10, color: theme.muted, marginBottom: 2 }}>หมดอายุ</div>
+                        <div style={{ fontSize: 12, fontWeight: 600 }}>{m.expiresAt ? m.expiresAt.toString().slice(0,10) : "—"}</div>
+                      </div>
+                    </div>
+                    {m.status === "pending" && (
+                      <div style={{ display: "flex", gap: 8 }}>
+                        <Btn size="sm" variant="success" fullWidth onClick={() => approve(m.id)}>✓ อนุมัติ</Btn>
+                        <Btn size="sm" variant="danger" fullWidth onClick={() => reject(m.id)}>✗ ปฏิเสธ</Btn>
+                      </div>
+                    )}
+                  </Card>
+                ))}
+              </div>
             </>
           )}
 
