@@ -860,7 +860,7 @@ function AdminDashboard({ user, theme, setTheme, onLogout, onLanding }) {
   {selected.slip ? (
     <a href={selected.slip} target="_blank" rel="noreferrer">
       <img src={selected.slip}
-        style={{ width: "100%", borderRadius: 16, objectFit: "cover", maxHeight: 280, cursor: "pointer" }}
+        style={{ width: "100%", borderRadius: 16, objectFit: "contain", maxHeight: 400, cursor: "pointer", background: "#fff" }}
         onError={e => { e.target.style.display="none"; }}
         alt="slip" />
       <div style={{ textAlign: "center", marginTop: 8, color: theme.accent, fontSize: 13, fontWeight: 600 }}>
