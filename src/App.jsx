@@ -672,8 +672,8 @@ function AdminDashboard({ user, theme, setTheme, onLogout, onLanding }) {
     lineId: m.lineId,
     pkg: m.package,
     status: m.status,
-    slip: m.slipUrl || null,
-    
+    slip: m.slipThumb || m.slipUrl || null,
+
     registeredAt: m.registeredAt,
     expiresAt: m.expiresAt,
     checkedIn: m.checkedIn === "TRUE",
@@ -859,7 +859,7 @@ function AdminDashboard({ user, theme, setTheme, onLogout, onLanding }) {
                         <div style={{ marginBottom: 20 }}>
   {selected.slip ? (
     <a href={selected.slip} target="_blank" rel="noreferrer">
-      <img src={selected.slip.replace("/view", "").replace("file/d/", "thumbnail?id=").replace("/", "&sz=w400")}
+      <img src={selected.slip}
         style={{ width: "100%", borderRadius: 16, objectFit: "cover", maxHeight: 280, cursor: "pointer" }}
         onError={e => { e.target.style.display="none"; }}
         alt="slip" />
