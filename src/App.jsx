@@ -664,6 +664,13 @@ function AdminDashboard({ user, theme, setTheme, onLogout, onLanding }) {
   const [showAddSched, setShowAddSched] = useState(false);
   const [newSched, setNewSched] = useState({ date: "", time: "", course: COURSES[0].name, mode: "online", seats: 20, zoomId: "", zoomPw: "" });
   const [copyMsg, setCopyMsg] = useState("");
+  const [isMobile, setIsMobile] = useState(window.innerWidth < 768);
+
+  useEffect(() => {
+    const handleResize = () => setIsMobile(window.innerWidth < 768);
+    window.addEventListener("resize", handleResize);
+    return () => window.removeEventListener("resize", handleResize);
+  }, []);
 
  const mapMembers = (data) => data.map((m, i) => ({
     id: i + 1,
@@ -917,7 +924,7 @@ function AdminDashboard({ user, theme, setTheme, onLogout, onLanding }) {
                 ))}
               </div>
               {/* Desktop Table */}
-              <Card style={{ overflowX: "auto", display: window.innerWidth < 768 ? "none" : "block" }}>
+              <Card style={{ overflowX: "auto", display: isMobile ? "none" : "block" }}>
                 <table style={{ width: "100%", borderCollapse: "separate", borderSpacing: "0 6px", minWidth: 700 }}>
                   <thead>
                     <tr style={{ color: theme.muted, fontSize: 12, textTransform: "uppercase", letterSpacing: 1 }}>
@@ -948,7 +955,7 @@ function AdminDashboard({ user, theme, setTheme, onLogout, onLanding }) {
               </Card>
 
               {/* Mobile Cards */}
-              <div style={{ display: window.innerWidth < 768 ? "flex" : "none", flexDirection: "column", gap: 12 }}>
+              <div style={{ display: isMobile ? "flex" : "none", flexDirection: "column", gap: 12 }}>
                 {members.map(m => (
                   <Card key={m.id} style={{ padding: 16 }}>
                     <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: 12 }}>
