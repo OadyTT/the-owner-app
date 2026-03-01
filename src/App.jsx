@@ -819,7 +819,7 @@ function AdminDashboard({ user, theme, setTheme, onLogout, onLanding }) {
                   <h3 style={{ fontSize: 22, fontWeight: 700 }}>ไม่มีรายการรออนุมัติ</h3>
                 </Card>
               ) : (
-                <div style={{ display: "grid", gridTemplateColumns: selected ? "1fr 1fr" : "1fr", gap: 24, alignItems: "start" }}>
+                <div style={{ display: "grid", gridTemplateColumns: selected ? "minmax(0,1fr) minmax(0,400px)" : "1fr", gap: 24, alignItems: "start" }}>
                   <div>
                     <h3 style={{ fontWeight: 700, marginBottom: 16, color: theme.muted, fontSize: 13, textTransform: "uppercase", letterSpacing: 1 }}>รายการรอตรวจสอบ ({pending.length})</h3>
                     {pending.map(m => (
@@ -842,7 +842,7 @@ function AdminDashboard({ user, theme, setTheme, onLogout, onLanding }) {
                   </div>
 
                   {selected && (
-                    <div style={{ position: "sticky", top: 24 }}>
+                    <div style={{ position: "sticky", top: 24, maxHeight: "90vh", overflowY: "auto" }}>
                       <Card glow>
                         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 20 }}>
                           <h3 style={{ fontWeight: 700, fontSize: 18 }}>รายละเอียด: {selected.name}</h3>
