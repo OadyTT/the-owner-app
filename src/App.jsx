@@ -924,8 +924,8 @@ function AdminDashboard({ user, theme, setTheme, onLogout, onLanding }) {
                 ))}
               </div>
               {/* Desktop Table */}
-              <Card style={{ overflowX: "auto", display: isMobile ? "none" : "block" }}>
-                <table style={{ width: "100%", borderCollapse: "separate", borderSpacing: "0 6px", minWidth: 700 }}>
+              <Card style={{ overflowX: "auto" }}>
+                <table style={{ width: "100%", borderCollapse: "separate", borderSpacing: "0 6px", minWidth: 900 }}>
                   <thead>
                     <tr style={{ color: theme.muted, fontSize: 12, textTransform: "uppercase", letterSpacing: 1 }}>
                       {["ชื่อ","เบอร์","Line ID","แพ็กเกจ","สถานะ","หมดอายุ","จัดการ"].map(h => <th key={h} style={{ textAlign: "left", padding: "8px 14px", fontWeight: 600 }}>{h}</th>)}
@@ -955,7 +955,7 @@ function AdminDashboard({ user, theme, setTheme, onLogout, onLanding }) {
               </Card>
 
               {/* Mobile Cards */}
-              <div style={{ display: isMobile ? "flex" : "none", flexDirection: "column", gap: 12 }}>
+              <div style={{ display: "none" }}>
                 {members.map(m => (
                   <Card key={m.id} style={{ padding: 16 }}>
                     <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: 12 }}>
