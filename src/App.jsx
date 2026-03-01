@@ -241,6 +241,118 @@ function Divider() {
 // ─────────────────────────────────────────────
 // LANDING PAGE
 // ─────────────────────────────────────────────
+function CheckinSection({ theme, gasUrl }) {
+  const [schedules, setSchedules] = useState([]);
+  const [myLineId, setMyLineId] = useState("");
+  const [loading, setLoading] = useState(true);
+  const [checking, setChecking] = useState(null);
+  const [doneMsg, setDoneMsg] = useState("");
+
+  useEffect(() => {
+    // ดึงตารางเรียน
+    fetch(gasUrl + "?action=getSchedules")
+      .then(r => r.json())
+      .then(res => { if (res.success) setSchedules(res.data); })
+      .finally(() => setLoading(false));
+
+    // ดึง Line ID จาก LIFF
+    if (window.liff?.isLoggedIn()) {
+      window.liff.getProfile().then(p => setMyLineId(p.userId));
+    }
+  }, []);
+
+  const handleCheckin = async (schedule) => {
+    if (!myLineId) {
+      alert("กรุณาเปิดจาก Line OA เพื่อ Check-in ครับ");
+      return;
+    }
+    setChecking(schedule.id);
+    try {
+      const res = await fetch(gasUrl, {
+        method: "POST",
+        body: JSON.stringify({
+          action: "addCheckin",
+          lineId: myLineId,
+          scheduleId: schedule.id,
+          type: "pre"
+        })
+      });
+      const result = await res.json();
+      if (result.success) {
+        setDoneMsg(`✅ Check-in สำเร็จ! ${schedule.mode === "online" ? "Zoom Link ส่งผ่าน Line แล้วครับ 🎉" : "พบกันที่สถานที่เรียนครับ 😊"}`);
+      } else {
+        alert("❌ " + result.message);
+      }
+    } catch {
+      alert("เกิดข้อผิดพลาด กรุณาลองใหม่");
+    }
+    setChecking(null);
+  };
+
+  if (doneMsg) return (
+    <Card glow style={{ textAlign: "center", padding: 48 }}>
+      <div style={{ fontSize: 64, marginBottom: 16 }}>🎉</div>
+      <h3 style={{ fontWeight: 700, fontSize: 22, marginBottom: 12 }}>{doneMsg}</h3>
+      <Btn variant="ghost" onClick={() => setDoneMsg("")}>Check-in คอร์สอื่น</Btn>
+    </Card>
+  );
+
+  if (loading) return <div style={{ textAlign: "center", color: theme.muted, padding: 40 }}>⏳ กำลังโหลดตารางเรียน...</div>;
+
+  const today = new Date().toISOString().slice(0, 10);
+  const upcoming = schedules.filter(s => String(s.date).slice(0, 10) >= today);
+
+  return (
+    <div>
+      {!myLineId && (
+        <InfoBox type="warning">กรุณาเปิดจาก <strong>Line OA The Owner</strong> เพื่อ Check-in อัตโนมัติ</InfoBox>
+      )}
+      {upcoming.length === 0 ? (
+        <Card style={{ textAlign: "center", padding: 48 }}>
+          <div style={{ fontSize: 48, marginBottom: 12 }}>📅</div>
+          <p style={{ color: theme.muted }}>ยังไม่มีตารางเรียนที่เปิดรับ Check-in ขณะนี้</p>
+        </Card>
+      ) : (
+        <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
+          {upcoming.map(s => {
+            const pct = (s.taken || 0) / s.seats;
+            const full = pct >= 1;
+            return (
+              <Card key={s.id}>
+                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", flexWrap: "wrap", gap: 12 }}>
+                  <div style={{ flex: 1 }}>
+                    <div style={{ display: "flex", gap: 8, flexWrap: "wrap", marginBottom: 8 }}>
+                      <StatusBadge status={s.mode} />
+                      {full && <Tag color="#EF4444">เต็มแล้ว</Tag>}
+                    </div>
+                    <h3 style={{ fontWeight: 700, fontSize: 18, marginBottom: 4 }}>{s.course}</h3>
+                    <div style={{ color: theme.muted, fontSize: 14 }}>
+                      📅 {String(s.date).slice(0, 10)} &nbsp;⏰ {s.time}
+                    </div>
+                    <div style={{ marginTop: 10, display: "flex", alignItems: "center", gap: 10 }}>
+                      <div style={{ width: 120, height: 5, background: "rgba(255,255,255,0.1)", borderRadius: 3, overflow: "hidden" }}>
+                        <div style={{ width: `${pct * 100}%`, height: "100%", background: pct > 0.8 ? "#EF4444" : theme.accent }} />
+                      </div>
+                      <span style={{ fontSize: 13, color: theme.muted }}>{s.taken || 0}/{s.seats} ที่นั่ง</span>
+                    </div>
+                  </div>
+                  <Btn
+                    disabled={full || checking === s.id || !myLineId}
+                    onClick={() => handleCheckin(s)}
+                    variant={full ? "ghost" : "primary"}
+                    style={{ minWidth: 120 }}>
+                    {checking === s.id ? "⏳ กำลังส่ง..." : full ? "เต็มแล้ว" : "✅ Check-in"}
+                  </Btn>
+                </div>
+              </Card>
+            );
+          })}
+        </div>
+      )}
+    </div>
+  );
+}
+
 function LandingPage({ theme, onAdmin }) {
   const [section, setSection] = useState("home");
   const [mobileMenu, setMobileMenu] = useState(false);
@@ -302,7 +414,7 @@ function LandingPage({ theme, onAdmin }) {
     }
   };
 
-  const navItems = [["home","หน้าหลัก"],["courses","คอร์ส"],["schedule","ตารางเรียน"],["packages","แพ็กเกจ"],["how","วิธีสมัคร"],["register","สมัครสมาชิก"],["faq","FAQ"]];
+  const navItems = [["home","หน้าหลัก"],["courses","คอร์ส"],["schedule","ตารางเรียน"],["packages","แพ็กเกจ"],["how","วิธีสมัคร"],["checkin","Check-in"],["register","สมัครสมาชิก"],["faq","FAQ"]];
 
   const faqs = [
     ["สมัครสมาชิกได้อย่างไร?","กรอกฟอร์มด้านล่าง เลือกแพ็กเกจ โอนเงินผ่าน PromptPay แล้วแนบสลิป admin จะยืนยันผ่าน Line OA ภายใน 24 ชม."],
@@ -572,6 +684,17 @@ function LandingPage({ theme, onAdmin }) {
         )}
       </section>
 
+      {/* CHECK-IN */}
+      <section id="checkin" style={{ padding: "100px 24px", maxWidth: 860, margin: "0 auto" }}>
+        <div style={{ marginBottom: 48, textAlign: "center" }}>
+          <h2 style={{ fontFamily: theme.fontDisplay, fontSize: "clamp(40px, 6vw, 64px)", letterSpacing: 2, marginBottom: 12 }}>
+            <span style={{ color: theme.primary }}>Check-in</span> เข้าเรียน
+          </h2>
+          <p style={{ color: theme.muted }}>เลือกคอร์สที่ต้องการเรียน ระบบจะส่ง Zoom Link ผ่าน Line ให้อัตโนมัติ</p>
+        </div>
+        <CheckinSection theme={theme} gasUrl={GAS_URL} />
+      </section>
+
       {/* FAQ */}
       <section id="faq" style={{ padding: "100px 24px", background: "rgba(255,255,255,0.015)" }}>
         <div style={{ maxWidth: 740, margin: "0 auto" }}>
@@ -608,6 +731,55 @@ function LandingPage({ theme, onAdmin }) {
 // ─────────────────────────────────────────────
 // ADMIN LOGIN
 // ─────────────────────────────────────────────
+function CheckinList({ scheduleId, theme, gasUrl }) {
+  const [checkins, setCheckins] = useState([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    fetch(gasUrl + "?action=getCheckins&scheduleId=" + scheduleId)
+      .then(r => r.json())
+      .then(res => { if (res.success) setCheckins(res.data); })
+      .finally(() => setLoading(false));
+  }, [scheduleId]);
+
+  return (
+    <div>
+      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 12 }}>
+        <h4 style={{ fontWeight: 700, fontSize: 15 }}>รายชื่อ Check-in ({checkins.length} คน)</h4>
+        <button onClick={() => {
+          setLoading(true);
+          fetch(gasUrl + "?action=getCheckins&scheduleId=" + scheduleId)
+            .then(r => r.json())
+            .then(res => { if (res.success) setCheckins(res.data); })
+            .finally(() => setLoading(false));
+        }} style={{ background: "none", border: `1px solid ${theme.border}`, color: theme.muted, padding: "4px 12px", borderRadius: 8, cursor: "pointer", fontSize: 12, fontFamily: theme.fontBody }}>
+          🔄 รีเฟรช
+        </button>
+      </div>
+      {loading ? (
+        <div style={{ color: theme.muted, fontSize: 13 }}>⏳ กำลังโหลด...</div>
+      ) : checkins.length === 0 ? (
+        <div style={{ color: theme.muted, fontSize: 13, padding: "20px 0" }}>ยังไม่มีสมาชิก Check-in</div>
+      ) : (
+        <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+          {checkins.map((c, i) => (
+            <div key={i} style={{ background: theme.card, borderRadius: 10, padding: "10px 14px", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+              <div>
+                <div style={{ fontWeight: 700, fontSize: 14 }}>{c.memberName}</div>
+                <div style={{ fontSize: 11, color: theme.muted }}>{c.lineId}</div>
+              </div>
+              <div style={{ display: "flex", gap: 6, alignItems: "center" }}>
+                <StatusBadge status={c.type === "emergency" ? "emergency" : "pre"} />
+                {c.fine > 0 && <Tag color="#EF4444">+{c.fine}฿</Tag>}
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
+
 function AdminLogin({ theme, onLogin, onBack }) {
   const [email, setEmail] = useState("");
   const [pass, setPass] = useState("");
@@ -665,6 +837,7 @@ function AdminDashboard({ user, theme, setTheme, onLogout, onLanding }) {
   const [newSched, setNewSched] = useState({ date: "", time: "", course: COURSES[0].name, mode: "online", seats: 20, zoomId: "", zoomPw: "" });
   const [copyMsg, setCopyMsg] = useState("");
   const [isMobile, setIsMobile] = useState(window.innerWidth < 768);
+  const [qrSchedule, setQrSchedule] = useState(null);
 
   useEffect(() => {
     const handleResize = () => setIsMobile(window.innerWidth < 768);
@@ -992,6 +1165,138 @@ function AdminDashboard({ user, theme, setTheme, onLogout, onLanding }) {
 
           {/* SCHEDULE */}
           {page === "schedule" && (
+            <>
+              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 32, flexWrap: "wrap", gap: 16 }}>
+                <div>
+                  <h1 style={{ fontFamily: theme.fontDisplay, fontSize: 40, letterSpacing: 2, marginBottom: 4 }}>จัดการ<span style={{ color: theme.primary }}>ตารางเรียน</span></h1>
+                  <p style={{ color: theme.muted }}>จัดการตารางเรียนและดูรายชื่อ Check-in</p>
+                </div>
+                <Btn onClick={() => setShowAddSched(!showAddSched)}><Ic d={ICONS.plus} size={18} /> เพิ่มตารางเรียน</Btn>
+              </div>
+
+              {showAddSched && (
+                <Card style={{ marginBottom: 24, border: `1px solid ${theme.primary}40` }}>
+                  <h3 style={{ fontWeight: 700, marginBottom: 20 }}>เพิ่มตารางเรียนใหม่</h3>
+                  <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(160px, 1fr))", gap: 12 }}>
+                    {[
+                      { label: "วันที่", el: <input type="date" style={inputStyle} value={newSched.date} onChange={e => setNewSched({...newSched, date: e.target.value})} /> },
+                      { label: "เวลา", el: <input style={inputStyle} placeholder="09:00–12:00" value={newSched.time} onChange={e => setNewSched({...newSched, time: e.target.value})} /> },
+                      { label: "คอร์ส", el: <select style={inputStyle} value={newSched.course} onChange={e => setNewSched({...newSched, course: e.target.value})}>{COURSES.map(c => <option key={c.id}>{c.name}</option>)}</select> },
+                      { label: "รูปแบบ", el: <select style={inputStyle} value={newSched.mode} onChange={e => setNewSched({...newSched, mode: e.target.value})}><option value="online">Online</option><option value="onsite">Onsite</option></select> },
+                      { label: "ที่นั่ง", el: <input type="number" style={inputStyle} value={newSched.seats} onChange={e => setNewSched({...newSched, seats: +e.target.value})} /> },
+                    ].map(({label, el}) => (
+                      <div key={label}>
+                        <label style={{ display: "block", fontSize: 12, color: theme.muted, marginBottom: 6, fontWeight: 600 }}>{label}</label>
+                        {el}
+                      </div>
+                    ))}
+                  </div>
+                  {newSched.mode === "online" && (
+                    <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12, marginTop: 12 }}>
+                      {[["Zoom Meeting ID","zoomId"],["Zoom Password","zoomPw"]].map(([label, key]) => (
+                        <div key={key}>
+                          <label style={{ display: "block", fontSize: 12, color: theme.muted, marginBottom: 6, fontWeight: 600 }}>{label}</label>
+                          <input style={inputStyle} value={newSched[key]} onChange={e => setNewSched({...newSched, [key]: e.target.value})} />
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                  <div style={{ display: "flex", gap: 12, marginTop: 20 }}>
+                    <Btn onClick={async () => {
+                      try {
+                        const res = await fetch(GAS_URL, {
+                          method: "POST",
+                          body: JSON.stringify({ action: "addSchedule", ...newSched })
+                        });
+                        const result = await res.json();
+                        if (result.success) {
+                          const refreshed = await fetch(GAS_URL + "?action=getSchedules").then(r => r.json());
+                          if (refreshed.success) setSchedules(refreshed.data);
+                          setShowAddSched(false);
+                          setNewSched({ date: "", time: "", course: COURSES[0].name, mode: "online", seats: 20, zoomId: "", zoomPw: "" });
+                          alert("✅ เพิ่มตารางเรียนสำเร็จ!");
+                        }
+                      } catch { alert("เกิดข้อผิดพลาด"); }
+                    }}>💾 บันทึกลง Google Sheet</Btn>
+                    <Btn variant="ghost" onClick={() => setShowAddSched(false)}>ยกเลิก</Btn>
+                  </div>
+                </Card>
+              )}
+
+              <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
+                {schedules.map(s => (
+                  <Card key={s.id} style={{ padding: 0, overflow: "hidden" }}>
+                    {/* Schedule Header */}
+                    <div style={{ padding: "16px 20px", display: "grid", gridTemplateColumns: "100px 80px 1fr auto auto auto", alignItems: "center", gap: 16 }}>
+                      <div>
+                        <div style={{ fontWeight: 700 }}>{String(s.date).slice(0,10)}</div>
+                        <div style={{ fontSize: 12, color: theme.muted }}>{s.time}</div>
+                      </div>
+                      <StatusBadge status={s.mode} />
+                      <div>
+                        <div style={{ fontWeight: 600, fontSize: 14 }}>{s.course}</div>
+                        {s.zoomId && <div style={{ fontSize: 12, color: theme.muted }}>ID: {s.zoomId}</div>}
+                      </div>
+                      <div style={{ textAlign: "center" }}>
+                        <div style={{ fontWeight: 700 }}>{s.taken || 0}/{s.seats}</div>
+                        <div style={{ fontSize: 11, color: theme.muted }}>ที่นั่ง</div>
+                      </div>
+                      {/* QR Button */}
+                      <button
+                        onClick={() => setQrSchedule(qrSchedule?.id === s.id ? null : s)}
+                        style={{ background: qrSchedule?.id === s.id ? theme.primary + "33" : "rgba(255,255,255,0.07)", border: `1px solid ${qrSchedule?.id === s.id ? theme.primary : theme.border}`, color: qrSchedule?.id === s.id ? theme.primary : theme.muted, padding: "6px 12px", borderRadius: 8, cursor: "pointer", fontSize: 12, fontFamily: theme.fontBody, fontWeight: 600 }}>
+                        📱 QR Code
+                      </button>
+                      <button onClick={async () => {
+                        if (!confirm("ลบตารางเรียนนี้?")) return;
+                        try {
+                          const res = await fetch(GAS_URL, {
+                            method: "POST",
+                            body: JSON.stringify({ action: "deleteSchedule", scheduleId: s.id })
+                          });
+                          const result = await res.json();
+                          if (result.success) {
+                            setSchedules(schedules.filter(x => x.id !== s.id));
+                            if (qrSchedule?.id === s.id) setQrSchedule(null);
+                          }
+                        } catch { alert("เกิดข้อผิดพลาด"); }
+                      }} style={{ background: "rgba(239,68,68,0.15)", border: "none", color: "#EF4444", padding: "6px 10px", borderRadius: 8, cursor: "pointer" }}>
+                        <Ic d={ICONS.trash} size={15} />
+                      </button>
+                    </div>
+
+                    {/* QR Code Panel */}
+                    {qrSchedule?.id === s.id && (
+                      <div style={{ borderTop: `1px solid ${theme.border}`, padding: 20, background: theme.bg, display: "grid", gridTemplateColumns: "auto 1fr", gap: 24, alignItems: "start" }}>
+                        {/* QR Code */}
+                        <div style={{ textAlign: "center" }}>
+                          <div style={{ background: "#fff", padding: 16, borderRadius: 16, display: "inline-block", marginBottom: 8 }}>
+                            <img
+                              src={`https://api.qrserver.com/v1/create-qr-code/?size=180x180&data=${encodeURIComponent(`https://liff.line.me/${LIFF_ID}?checkin=${s.id}&type=emergency`)}`}
+                              style={{ width: 180, height: 180, display: "block" }}
+                              alt="QR Check-in"
+                            />
+                          </div>
+                          <div style={{ fontSize: 12, color: theme.muted }}>QR Check-in ฉุกเฉิน</div>
+                          <div style={{ fontSize: 11, color: "#EF4444", marginTop: 4 }}>มีค่าปรับ 100฿</div>
+                          
+                            href={`https://api.qrserver.com/v1/create-qr-code/?size=400x400&data=${encodeURIComponent(`https://liff.line.me/${LIFF_ID}?checkin=${s.id}&type=emergency`)}`}
+                            download={`QR_${s.course}_${s.date}.png`}
+                            style={{ display: "inline-block", marginTop: 8, padding: "6px 16px", background: theme.primary, color: "#fff", borderRadius: 8, fontSize: 12, fontWeight: 700 }}>
+                            ⬇️ ดาวน์โหลด QR
+                          </a>
+                        </div>
+
+                        {/* Check-in List */}
+                        <CheckinList scheduleId={s.id} theme={theme} gasUrl={GAS_URL} />
+                      </div>
+                    )}
+                  </Card>
+                ))}
+              </div>
+              {copyMsg && <div style={{ position: "fixed", bottom: 32, right: 32, background: theme.accent, color: "#000", padding: "12px 24px", borderRadius: 12, fontWeight: 700, zIndex: 200 }}>✓ {copyMsg}</div>}
+            </>
+          )}
             <>
               <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 32, flexWrap: "wrap", gap: 16 }}>
                 <div>
