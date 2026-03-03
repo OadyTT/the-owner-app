@@ -27,9 +27,17 @@ async function initLiff() {
       if (!window.liff || !LIFF_ID) { resolve(null); return; }
       window.liff.init({ liffId: LIFF_ID })
         .then(() => {
-          if (!window.liff.isInClient()) { resolve(null); return; }
-          if (!window.liff.isLoggedIn()) { window.liff.login(); resolve(null); return; }
-          return window.liff.getProfile();
+          // ใน Line app — login ถ้ายังไม่ได้ login
+          if (window.liff.isInClient()) {
+            if (!window.liff.isLoggedIn()) {
+              window.liff.login();
+              resolve(null);
+              return;
+            }
+            return window.liff.getProfile();
+          }
+          // นอก Line app (browser ปกติ) — ไม่ต้อง login
+          resolve(null);
         })
         .then(profile => { if (profile) resolve(profile.userId); else resolve(null); })
         .catch(() => resolve(null));
