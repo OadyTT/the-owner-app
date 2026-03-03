@@ -1,0 +1,32 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>LIFF Test</title>
+  <script charset="utf-8" src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
+  <style>
+    body{font-family:sans-serif;padding:20px;background:#07091A;color:white}
+    p{padding:8px;border-radius:8px;margin:4px 0}
+    .ok{background:#064e3b}.err{background:#7f1d1d}.info{background:#1e3a5f}
+  </style>
+</head>
+<body>
+  <h2>LIFF Debug</h2>
+  <div id="log"></div>
+  <script>
+    function log(msg,type='info'){document.getElementById('log').innerHTML+=`<p class="${type}">${msg}</p>`}
+    log('1. SDK loaded','ok');
+    liff.init({liffId:'2009199519-UViGDRf7'})
+      .then(()=>{
+        log('2. liff.init() OK','ok');
+        log('isInClient: '+liff.isInClient(),'info');
+        log('isLoggedIn: '+liff.isLoggedIn(),'info');
+        if(!liff.isLoggedIn()){log('→ logging in...','info');liff.login({redirectUri:location.href});return;}
+        return liff.getProfile();
+      })
+      .then(p=>{if(p){log('3. userId: '+p.userId,'ok');log('name: '+p.displayName,'ok');}})
+      .catch(err=>{log('ERROR: '+err.message,'err');log(err.toString(),'err');});
+  </script>
+</body>
+</html>
