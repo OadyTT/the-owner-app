@@ -22,13 +22,19 @@ async function uploadSlipToDrive(file, lineId) {
 }
 
 async function initLiff() {
-  try {
-    if (!window.liff) return null;
-    await window.liff.init({ liffId: LIFF_ID });
-    if (!window.liff.isLoggedIn()) { window.liff.login(); return null; }
-    const profile = await window.liff.getProfile();
-    return profile.userId;
-  } catch { return null; }
+  return new Promise((resolve) => {
+    try {
+      if (!window.liff || !LIFF_ID) { resolve(null); return; }
+      window.liff.init({ liffId: LIFF_ID })
+        .then(() => {
+          if (!window.liff.isInClient()) { resolve(null); return; }
+          if (!window.liff.isLoggedIn()) { window.liff.login(); resolve(null); return; }
+          return window.liff.getProfile();
+        })
+        .then(profile => { if (profile) resolve(profile.userId); else resolve(null); })
+        .catch(() => resolve(null));
+    } catch { resolve(null); }
+  });
 }
 
 const COURSES = [
@@ -224,7 +230,9 @@ function CheckinSection({ theme, gasUrl }) {
 
   useEffect(() => {
     fetch(gasUrl + "?action=getSchedules").then(r => r.json()).then(res => { if (res.success) setSchedules(res.data); }).finally(() => setLoading(false));
-    if (window.liff?.isLoggedIn()) window.liff.getProfile().then(p => setMyLineId(p.userId));
+    if (window.liff?.isInClient?.() && window.liff?.isLoggedIn?.()) {
+      window.liff.getProfile().then(p => setMyLineId(p.userId)).catch(() => {});
+    }
   }, []);
 
   const handleCheckin = async (schedule) => {
@@ -305,7 +313,7 @@ function LandingPage({ theme, onAdmin }) {
   const [lineAutoId, setLineAutoId] = useState("");
 
   useEffect(() => {
-    if (window.liff && LIFF_ID) {
+    if (window.liff) {
       initLiff().then(userId => { if (userId) { setLineAutoId(userId); setForm(f => ({ ...f, lineId: userId })); } });
     }
     fetch(GAS_URL + "?action=getSchedules").then(r => r.json()).then(res => { if (res.success && res.data.length > 0) setSchedules(res.data); }).catch(() => {});
