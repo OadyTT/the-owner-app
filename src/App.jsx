@@ -23,6 +23,7 @@ async function uploadSlipToDrive(file, lineId) {
 
 async function initLiff() {
   try {
+    if (!window.liff) return null;
     await window.liff.init({ liffId: LIFF_ID });
     if (!window.liff.isLoggedIn()) { window.liff.login(); return null; }
     const profile = await window.liff.getProfile();
@@ -304,7 +305,7 @@ function LandingPage({ theme, onAdmin }) {
   const [lineAutoId, setLineAutoId] = useState("");
 
   useEffect(() => {
-    if (window.liff) {
+    if (window.liff && LIFF_ID) {
       initLiff().then(userId => { if (userId) { setLineAutoId(userId); setForm(f => ({ ...f, lineId: userId })); } });
     }
     fetch(GAS_URL + "?action=getSchedules").then(r => r.json()).then(res => { if (res.success && res.data.length > 0) setSchedules(res.data); }).catch(() => {});
