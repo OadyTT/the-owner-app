@@ -22,27 +22,15 @@ async function uploadSlipToDrive(file, lineId) {
 }
 
 async function initLiff() {
-  return new Promise((resolve) => {
-    try {
-      if (!window.liff || !LIFF_ID) { resolve(null); return; }
-      window.liff.init({ liffId: LIFF_ID })
-        .then(() => {
-          // ใน Line app — login ถ้ายังไม่ได้ login
-          if (window.liff.isInClient()) {
-            if (!window.liff.isLoggedIn()) {
-              window.liff.login();
-              resolve(null);
-              return;
-            }
-            return window.liff.getProfile();
-          }
-          // นอก Line app (browser ปกติ) — ไม่ต้อง login
-          resolve(null);
-        })
-        .then(profile => { if (profile) resolve(profile.userId); else resolve(null); })
-        .catch(() => resolve(null));
-    } catch { resolve(null); }
-  });
+  try {
+    if (window.__liffUserId) return window.__liffUserId;
+    if (!window.liff || !LIFF_ID) return null;
+    if (window.liff.isLoggedIn && window.liff.isLoggedIn()) {
+      const profile = await window.liff.getProfile();
+      return profile ? profile.userId : null;
+    }
+    return null;
+  } catch (e) { return null; }
 }
 
 const COURSES = [
