@@ -288,7 +288,14 @@ function CheckinSection({ theme, gasUrl, autoCheckinId, autoCheckinType }) {
 
   return (
     <div>
-      {!myLineId && <InfoBox type="warning">กรุณาเปิดจาก <strong>Line OA The Owner</strong> เพื่อ Check-in อัตโนมัติ</InfoBox>}
+      {/* Member info bar */}
+      {myLineId ? (
+        <InfoBox type="success" style={{ marginBottom: 16, display: "flex", alignItems: "center", gap: 10 }}>
+          ✅ เข้าสู่ระบบแล้ว — พร้อม Check-in ครับ
+        </InfoBox>
+      ) : (
+        <InfoBox type="warning">กรุณาเปิดจาก <strong>Line OA The Owner</strong> เพื่อ Check-in อัตโนมัติ — <a href={`https://liff.line.me/${LIFF_ID}`} style={{ color: "#06C755" }}>เปิดผ่าน Line</a></InfoBox>
+      )}
       {upcoming.length === 0 ? (
         <Card style={{ textAlign: "center", padding: 48 }}>
           <div style={{ fontSize: 48, marginBottom: 12 }}>📅</div>
@@ -738,6 +745,87 @@ function AdminLogin({ theme, onLogin, onBack }) {
 }
 
 // ─── ADMIN DASHBOARD ─────────────────────────
+
+// ─── CHECKINS REPORT (Admin) ─────────────────
+function CheckinsReport({ theme, gasUrl, schedules }) {
+  const [checkins, setCheckins] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [filterSched, setFilterSched] = useState("all");
+
+  useEffect(() => {
+    fetch(gasUrl + "?action=getCheckins")
+      .then(r => r.json())
+      .then(res => { if (res.success) setCheckins(res.data); })
+      .finally(() => setLoading(false));
+  }, []);
+
+  const filtered = filterSched === "all" ? checkins : checkins.filter(c => String(c.scheduleId) === String(filterSched));
+
+  return (
+    <>
+      <h1 style={{ fontFamily: theme.fontDisplay, fontSize: 40, letterSpacing: 2, marginBottom: 8 }}>รายงาน <span style={{ color: theme.primary }}>Check-in</span></h1>
+      <p style={{ color: theme.muted, marginBottom: 24 }}>ดูรายชื่อสมาชิกที่ check-in ทุกคอร์ส</p>
+
+      {/* Filter */}
+      <div style={{ marginBottom: 20, display: "flex", gap: 10, flexWrap: "wrap", alignItems: "center" }}>
+        <span style={{ color: theme.muted, fontSize: 14 }}>กรองตาม:</span>
+        <select value={filterSched} onChange={e => setFilterSched(e.target.value)}
+          style={{ background: theme.card, border: `1px solid ${theme.border}`, color: theme.text, padding: "8px 12px", borderRadius: 8, fontSize: 14 }}>
+          <option value="all">ทุกตาราง ({checkins.length})</option>
+          {schedules.map(s => (
+            <option key={s.id} value={s.id}>{String(s.date).slice(0,10)} — {s.course} ({checkins.filter(c => String(c.scheduleId) === String(s.id)).length} คน)</option>
+          ))}
+        </select>
+      </div>
+
+      {/* Stats */}
+      <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit,minmax(150px,1fr))", gap: 16, marginBottom: 24 }}>
+        {[
+          { label: "Check-in ทั้งหมด", value: checkins.length, color: theme.primary },
+          { label: "ล่วงหน้า", value: checkins.filter(c => c.type === "pre").length, color: "#10B981" },
+          { label: "ฉุกเฉิน", value: checkins.filter(c => c.type === "emergency").length, color: "#EF4444" },
+          { label: "ค่าปรับรวม", value: checkins.reduce((s,c) => s + (Number(c.fine)||0), 0) + " ฿", color: "#F59E0B" },
+        ].map((stat, i) => (
+          <Card key={i} style={{ textAlign: "center", padding: "16px 12px" }}>
+            <div style={{ fontSize: 28, fontWeight: 800, color: stat.color, fontFamily: theme.fontDisplay }}>{stat.value}</div>
+            <div style={{ fontSize: 12, color: theme.muted, marginTop: 4 }}>{stat.label}</div>
+          </Card>
+        ))}
+      </div>
+
+      {/* Table */}
+      <Card>
+        {loading ? <p style={{ color: theme.muted, textAlign: "center", padding: 32 }}>กำลังโหลด...</p> : filtered.length === 0 ? (
+          <p style={{ color: theme.muted, textAlign: "center", padding: 32 }}>ยังไม่มีข้อมูล Check-in</p>
+        ) : (
+          <div style={{ overflowX: "auto" }}>
+            <table style={{ width: "100%", borderCollapse: "collapse", fontSize: 14 }}>
+              <thead>
+                <tr style={{ borderBottom: `1px solid ${theme.border}` }}>
+                  {["ชื่อสมาชิก","คอร์ส","วันที่","ประเภท","ค่าปรับ"].map(h => (
+                    <th key={h} style={{ padding: "10px 12px", textAlign: "left", color: theme.muted, fontWeight: 600 }}>{h}</th>
+                  ))}
+                </tr>
+              </thead>
+              <tbody>
+                {filtered.map((c, i) => (
+                  <tr key={i} style={{ borderBottom: `1px solid ${theme.border}20` }}>
+                    <td style={{ padding: "10px 12px", fontWeight: 600 }}>{c.memberName || c.lineId}</td>
+                    <td style={{ padding: "10px 12px", color: theme.muted }}>{c.course}</td>
+                    <td style={{ padding: "10px 12px", color: theme.muted }}>{String(c.date).slice(0,10)}</td>
+                    <td style={{ padding: "10px 12px" }}><StatusBadge status={c.type} /></td>
+                    <td style={{ padding: "10px 12px", color: Number(c.fine) > 0 ? "#EF4444" : theme.muted }}>{Number(c.fine) > 0 ? `฿${c.fine}` : "-"}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        )}
+      </Card>
+    </>
+  );
+}
+
 function AdminDashboard({ user, theme, setTheme, onLogout, onLanding }) {
   const [page, setPage] = useState("approvals");
   const [members, setMembers] = useState([]);
@@ -805,6 +893,7 @@ function AdminDashboard({ user, theme, setTheme, onLogout, onLanding }) {
     { id: "approvals", label: `อนุมัติสมาชิก${pending.length ? ` (${pending.length})` : ""}`, icon: ICONS.check, roles: ["super_admin","helper"] },
     { id: "members", label: "รายชื่อสมาชิก", icon: ICONS.users, roles: ["super_admin","helper"] },
     { id: "schedule", label: "จัดการตารางเรียน", icon: ICONS.calendar, roles: ["super_admin","helper"] },
+    { id: "checkins", label: "รายงาน Check-in", icon: ICONS.check, roles: ["super_admin","helper"] },
     { id: "theme", label: "ปรับธีม", icon: ICONS.settings, roles: ["super_admin"] },
     { id: "admins", label: "จัดการ Admin", icon: ICONS.shield, roles: ["super_admin"] },
   ].filter(n => n.roles.includes(user.role));
@@ -1167,6 +1256,11 @@ function AdminDashboard({ user, theme, setTheme, onLogout, onLanding }) {
                 </div>
               </Card>
             </>
+          )}
+
+        {/* CHECKINS REPORT */}
+          {page === "checkins" && (
+            <CheckinsReport theme={theme} gasUrl={GAS_URL} schedules={schedules} />
           )}
 
         </div>
