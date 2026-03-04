@@ -97,6 +97,62 @@ function StatusBadge({ status }) {
   return <Tag color={color}>{label}</Tag>;
 }
 
+
+// ─── TIME INPUT (Dropdown + Manual) ──────────
+const TIME_OPTIONS = ["08:00-11:00","09:00-12:00","13:00-16:00","17:00-20:00","18:00-21:00","09:00-17:00","อื่นๆ (ระบุเอง)"];
+
+function TimeInput({ value, onChange, style: extraStyle }) {
+  const theme = window.__theme || DEFAULT_THEME;
+  const isCustom = value && !TIME_OPTIONS.slice(0,-1).includes(value);
+  const [custom, setCustom] = useState(false);
+  const inputStyle = { width: "100%", background: "rgba(255,255,255,0.05)", border: `1px solid ${theme.border}`, borderRadius: 10, padding: "10px 14px", color: theme.text, fontSize: 14, outline: "none", fontFamily: theme.fontBody, ...extraStyle };
+  
+  useEffect(() => { if (isCustom) setCustom(true); }, []);
+
+  if (custom) return (
+    <div style={{ display: "flex", gap: 6 }}>
+      <input style={{ ...inputStyle, flex: 1 }} placeholder="เช่น 10:00-13:00" value={value} onChange={e => onChange(e.target.value)} />
+      <button onClick={() => { setCustom(false); onChange("09:00-12:00"); }}
+        style={{ background: "rgba(255,255,255,0.1)", border: `1px solid ${theme.border}`, color: theme.muted, padding: "0 10px", borderRadius: 8, cursor: "pointer", fontSize: 18 }}>↩</button>
+    </div>
+  );
+  return (
+    <select style={inputStyle} value={value} onChange={e => { if (e.target.value === "อื่นๆ (ระบุเอง)") { setCustom(true); onChange(""); } else onChange(e.target.value); }}>
+      <option value="">เลือกเวลา</option>
+      {TIME_OPTIONS.map(t => <option key={t} value={t}>{t}</option>)}
+    </select>
+  );
+}
+
+
+// ─── SORTABLE TABLE HEADER ────────────────────
+function SortHeader({ label, field, sortBy, sortDir, onSort, style: extraStyle }) {
+  const theme = window.__theme || DEFAULT_THEME;
+  const active = sortBy === field;
+  return (
+    <th onClick={() => onSort(field)}
+      style={{ padding: "10px 12px", textAlign: "left", color: active ? theme.primary : theme.muted, fontWeight: 600, cursor: "pointer", userSelect: "none", whiteSpace: "nowrap", ...extraStyle }}>
+      {label} <span style={{ fontSize: 10, marginLeft: 2 }}>{active ? (sortDir === "asc" ? "▲" : "▼") : "⇅"}</span>
+    </th>
+  );
+}
+
+function useSortable(data, defaultField = "", defaultDir = "asc") {
+  const [sortBy, setSortBy] = useState(defaultField);
+  const [sortDir, setSortDir] = useState(defaultDir);
+  const onSort = (field) => {
+    if (sortBy === field) setSortDir(d => d === "asc" ? "desc" : "asc");
+    else { setSortBy(field); setSortDir("asc"); }
+  };
+  const sorted = [...data].sort((a, b) => {
+    if (!sortBy) return 0;
+    const va = a[sortBy] ?? ""; const vb = b[sortBy] ?? "";
+    const cmp = String(va).localeCompare(String(vb), "th", { numeric: true });
+    return sortDir === "asc" ? cmp : -cmp;
+  });
+  return { sorted, sortBy, sortDir, onSort };
+}
+
 function GlobalStyles({ theme }) {
   return (
     <style>{`
@@ -106,6 +162,8 @@ function GlobalStyles({ theme }) {
       body{background:${theme.bg};color:${theme.text};font-family:${theme.fontBody};font-size:${theme.fontSize}px;line-height:1.6}
       ::-webkit-scrollbar{width:6px}::-webkit-scrollbar-thumb{background:${theme.border};border-radius:3px}
       input,select,textarea,button{font-family:${theme.fontBody}}
+      select option{background:${theme.card};color:${theme.text}}
+      select{background:rgba(255,255,255,0.05);color:${theme.text};border:1px solid ${theme.border};border-radius:10px}
       .pulse{animation:pulse 2s infinite}@keyframes pulse{0%,100%{opacity:1}50%{opacity:0.6}}
     `}</style>
   );
@@ -778,6 +836,9 @@ function CheckinsReport({ theme, gasUrl, schedules }) {
   const [checkins, setCheckins] = useState([]);
   const [loading, setLoading] = useState(true);
   const [filterSched, setFilterSched] = useState("all");
+  const [sortBy, setSortBy] = useState("date");
+  const [sortDir, setSortDir] = useState("desc");
+  const onSort = (field) => { if (sortBy === field) setSortDir(d => d === "asc" ? "desc" : "asc"); else { setSortBy(field); setSortDir("asc"); } };
 
   useEffect(() => {
     fetch(gasUrl + "?action=getCheckins")
@@ -786,7 +847,8 @@ function CheckinsReport({ theme, gasUrl, schedules }) {
       .finally(() => setLoading(false));
   }, []);
 
-  const filtered = filterSched === "all" ? checkins : checkins.filter(c => String(c.scheduleId) === String(filterSched));
+  const base = filterSched === "all" ? checkins : checkins.filter(c => String(c.scheduleId) === String(filterSched));
+  const filtered = [...base].sort((a,b) => { const va = a[sortBy]??""; const vb = b[sortBy]??""; const cmp = String(va).localeCompare(String(vb),"th",{numeric:true}); return sortDir==="asc"?cmp:-cmp; });
 
   return (
     <>
@@ -829,9 +891,11 @@ function CheckinsReport({ theme, gasUrl, schedules }) {
             <table style={{ width: "100%", borderCollapse: "collapse", fontSize: 14 }}>
               <thead>
                 <tr style={{ borderBottom: `1px solid ${theme.border}` }}>
-                  {["ชื่อสมาชิก","คอร์ส","วันที่","ประเภท","ค่าปรับ"].map(h => (
-                    <th key={h} style={{ padding: "10px 12px", textAlign: "left", color: theme.muted, fontWeight: 600 }}>{h}</th>
-                  ))}
+                  <SortHeader label="ชื่อสมาชิก" field="memberName" sortBy={sortBy} sortDir={sortDir} onSort={onSort} />
+                  <SortHeader label="คอร์ส" field="course" sortBy={sortBy} sortDir={sortDir} onSort={onSort} />
+                  <SortHeader label="วันที่" field="date" sortBy={sortBy} sortDir={sortDir} onSort={onSort} />
+                  <SortHeader label="ประเภท" field="type" sortBy={sortBy} sortDir={sortDir} onSort={onSort} />
+                  <SortHeader label="ค่าปรับ" field="fine" sortBy={sortBy} sortDir={sortDir} onSort={onSort} />
                 </tr>
               </thead>
               <tbody>
@@ -848,6 +912,86 @@ function CheckinsReport({ theme, gasUrl, schedules }) {
             </table>
           </div>
         )}
+      </Card>
+    </>
+  );
+}
+
+
+// ─── MEMBERS PAGE (with sort + search) ────────
+function MembersPage({ theme, members, loadMembers, onApprove, onReject, gasUrl, inputStyle, selected, setSelected }) {
+  const [sortBy, setSortBy] = useState("name");
+  const [sortDir, setSortDir] = useState("asc");
+  const [search, setSearch] = useState("");
+  const onSort = (f) => { if(sortBy===f) setSortDir(d=>d==="asc"?"desc":"asc"); else{setSortBy(f);setSortDir("asc");} };
+  
+  const sortedMembers = [...members]
+    .filter(m => !search || m.name?.includes(search) || String(m.phone||"").includes(search) || String(m.lineId||"").includes(search))
+    .sort((a,b) => { const va=a[sortBy]??""; const vb=b[sortBy]??""; const c=String(va).localeCompare(String(vb),"th",{numeric:true}); return sortDir==="asc"?c:-c; });
+
+  const stats = [
+    { label: "สมาชิกทั้งหมด", value: members.length, color: theme.primary },
+    { label: "รออนุมัติ", value: members.filter(m=>m.status==="pending").length, color: "#F59E0B" },
+    { label: "อนุมัติแล้ว", value: members.filter(m=>m.status==="approved").length, color: "#10B981" },
+    { label: "หมดอายุ", value: members.filter(m=>m.status==="rejected").length, color: "#EF4444" },
+  ];
+
+  return (
+    <>
+      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: 8, flexWrap: "wrap", gap: 12 }}>
+        <h1 style={{ fontFamily: theme.fontDisplay, fontSize: 40, letterSpacing: 2 }}>รายชื่อ<span style={{ color: theme.primary }}>สมาชิก</span></h1>
+        <div style={{ display: "flex", gap: 10 }}>
+          <input style={{ background: "rgba(255,255,255,0.07)", border: `1px solid ${theme.border}`, borderRadius: 10, padding: "8px 14px", color: theme.text, fontSize: 14, width: 220 }}
+            placeholder="🔍 ค้นหาชื่อ / เบอร์ / Line ID" value={search} onChange={e => setSearch(e.target.value)} />
+          <Btn variant="ghost" size="sm" onClick={loadMembers}>🔄 รีเฟรช</Btn>
+        </div>
+      </div>
+
+      <div style={{ display: "grid", gridTemplateColumns: "repeat(4,1fr)", gap: 16, marginBottom: 24 }}>
+        {stats.map(s => (
+          <Card key={s.label} style={{ textAlign: "center", padding: 20 }}>
+            <div style={{ fontFamily: theme.fontDisplay, fontSize: 40, color: s.color }}>{s.value}</div>
+            <div style={{ fontSize: 12, color: theme.muted, marginTop: 4 }}>{s.label}</div>
+          </Card>
+        ))}
+      </div>
+
+      <Card style={{ overflowX: "auto" }}>
+        <table style={{ width: "100%", borderCollapse: "separate", borderSpacing: "0 6px", minWidth: 900 }}>
+          <thead>
+            <tr>
+              <SortHeader label="ชื่อ" field="name" sortBy={sortBy} sortDir={sortDir} onSort={onSort} style={{padding:"8px 14px"}}/>
+              <SortHeader label="เบอร์" field="phone" sortBy={sortBy} sortDir={sortDir} onSort={onSort} style={{padding:"8px 14px"}}/>
+              <th style={{ textAlign:"left", padding:"8px 14px", color:theme.muted, fontWeight:600, fontSize:12 }}>Line ID</th>
+              <SortHeader label="แพ็กเกจ" field="pkg" sortBy={sortBy} sortDir={sortDir} onSort={onSort} style={{padding:"8px 14px"}}/>
+              <SortHeader label="สถานะ" field="status" sortBy={sortBy} sortDir={sortDir} onSort={onSort} style={{padding:"8px 14px"}}/>
+              <SortHeader label="หมดอายุ" field="expiresAt" sortBy={sortBy} sortDir={sortDir} onSort={onSort} style={{padding:"8px 14px"}}/>
+              <th style={{ textAlign:"left", padding:"8px 14px", color:theme.muted, fontWeight:600, fontSize:12 }}>จัดการ</th>
+            </tr>
+          </thead>
+          <tbody>
+            {sortedMembers.map(m => (
+              <tr key={m.id} onClick={() => setSelected(selected?.id===m.id?null:m)} style={{ cursor:"pointer" }}>
+                <td style={{ padding:14, background:theme.card, borderRadius:"10px 0 0 10px", fontWeight:700 }}>{m.name}</td>
+                <td style={{ padding:14, background:theme.card, color:theme.muted, fontSize:13 }}>{m.phone}</td>
+                <td style={{ padding:14, background:theme.card, fontSize:11, color:theme.muted, maxWidth:120, overflow:"hidden", textOverflow:"ellipsis" }}>{m.lineId}</td>
+                <td style={{ padding:14, background:theme.card }}><StatusBadge status={m.pkg} /></td>
+                <td style={{ padding:14, background:theme.card }}><StatusBadge status={m.status} /></td>
+                <td style={{ padding:14, background:theme.card, fontSize:13, color:theme.muted }}>{m.expiresAt ? String(m.expiresAt).slice(0,10) : "-"}</td>
+                <td style={{ padding:14, background:theme.card, borderRadius:"0 10px 10px 0" }}>
+                  <div style={{ display:"flex", gap:6 }}>
+                    {m.status==="pending" && <>
+                      <button onClick={e=>{e.stopPropagation();onApprove(m.id);}} style={{ background:"#10B98122", border:"1px solid #10B981", color:"#10B981", padding:"5px 10px", borderRadius:6, cursor:"pointer", fontSize:12 }}>✅ อนุมัติ</button>
+                      <button onClick={e=>{e.stopPropagation();onReject(m.id);}} style={{ background:"#EF444422", border:"1px solid #EF4444", color:"#EF4444", padding:"5px 10px", borderRadius:6, cursor:"pointer", fontSize:12 }}>❌ ปฏิเสธ</button>
+                    </>}
+                    {m.slip && <a href={m.slip} target="_blank" rel="noreferrer" onClick={e=>e.stopPropagation()} style={{ background:"#3B82F622", border:"1px solid #3B82F6", color:"#3B82F6", padding:"5px 10px", borderRadius:6, cursor:"pointer", fontSize:12, textDecoration:"none" }}>🧾 สลิป</a>}
+                  </div>
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+        {sortedMembers.length === 0 && <p style={{ textAlign:"center", color:theme.muted, padding:32 }}>{search ? "ไม่พบผลการค้นหา" : "ยังไม่มีสมาชิก"}</p>}
       </Card>
     </>
   );
@@ -1134,48 +1278,7 @@ function AdminDashboard({ user, theme, setTheme, onLogout, onLanding }) {
           )}
 
           {/* MEMBERS */}
-          {page === "members" && (
-            <>
-              <h1 style={{ fontFamily: theme.fontDisplay, fontSize: 40, letterSpacing: 2, marginBottom: 8 }}>รายชื่อ<span style={{ color: theme.primary }}>สมาชิก</span></h1>
-              <div style={{ display: "grid", gridTemplateColumns: "repeat(4,1fr)", gap: 16, marginBottom: 32 }}>
-                {stats.map(s => (
-                  <Card key={s.label} style={{ textAlign: "center", padding: 20 }}>
-                    <div style={{ fontFamily: theme.fontDisplay, fontSize: 40, color: s.color }}>{s.value}</div>
-                    <div style={{ fontSize: 12, color: theme.muted, marginTop: 4 }}>{s.label}</div>
-                  </Card>
-                ))}
-              </div>
-              <Card style={{ overflowX: "auto" }}>
-                <table style={{ width: "100%", borderCollapse: "separate", borderSpacing: "0 6px", minWidth: 900 }}>
-                  <thead>
-                    <tr style={{ color: theme.muted, fontSize: 12, textTransform: "uppercase", letterSpacing: 1 }}>
-                      {["ชื่อ","เบอร์","Line ID","แพ็กเกจ","สถานะ","หมดอายุ","จัดการ"].map(h => <th key={h} style={{ textAlign: "left", padding: "8px 14px", fontWeight: 600 }}>{h}</th>)}
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {members.map(m => (
-                      <tr key={m.id}>
-                        <td style={{ padding: 14, background: theme.surface, borderRadius: "10px 0 0 10px", fontWeight: 700 }}>{m.name}</td>
-                        <td style={{ padding: 14, background: theme.surface, color: theme.muted, fontSize: 13 }}>{m.phone}</td>
-                        <td style={{ padding: 14, background: theme.surface, fontSize: 12, color: theme.muted }}>{m.lineId}</td>
-                        <td style={{ padding: 14, background: theme.surface }}><StatusBadge status={m.pkg} /></td>
-                        <td style={{ padding: 14, background: theme.surface }}><StatusBadge status={m.status} /></td>
-                        <td style={{ padding: 14, background: theme.surface, color: theme.muted, fontSize: 13 }}>{m.expiresAt ? String(m.expiresAt).slice(0,10) : "—"}</td>
-                        <td style={{ padding: 14, background: theme.surface, borderRadius: "0 10px 10px 0" }}>
-                          {m.status === "pending" && (
-                            <div style={{ display: "flex", gap: 6 }}>
-                              <Btn size="sm" variant="success" onClick={() => approve(m.id)}>อนุมัติ</Btn>
-                              <Btn size="sm" variant="danger" onClick={() => reject(m.id)}>ปฏิเสธ</Btn>
-                            </div>
-                          )}
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </Card>
-            </>
-          )}
+          {page === "members" && <MembersPage theme={theme} members={members} loadMembers={loadMembers} onApprove={approve} onReject={reject} gasUrl={GAS_URL} inputStyle={inputStyle} selected={selected} setSelected={setSelected} />
 
           {/* SCHEDULE */}
           {page === "schedule" && (
@@ -1197,10 +1300,7 @@ function AdminDashboard({ user, theme, setTheme, onLogout, onLanding }) {
                   <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(160px, 1fr))", gap: 12 }}>
                     {[
                       { label: "วันที่", el: <input type="date" style={inputStyle} value={newSched.date} onChange={e => setNewSched({...newSched, date: e.target.value})} /> },
-                      { label: "เวลา", el: <select style={inputStyle} value={newSched.time} onChange={e => setNewSched({...newSched, time: e.target.value})}>
-                        <option value="">เลือกเวลา</option>
-                        {["09:00-12:00","13:00-16:00","17:00-20:00","09:00-17:00","18:00-21:00","08:00-11:00"].map(t => <option key={t} value={t}>{t}</option>)}
-                      </select> },
+                      { label: "เวลา", el: <TimeInput value={newSched.time} onChange={v => setNewSched({...newSched, time: v})} /> },
                       { label: "คอร์ส", el: <select style={inputStyle} value={newSched.course} onChange={e => setNewSched({...newSched, course: e.target.value})}>{COURSES.map(c => <option key={c.id}>{c.name}</option>)}</select> },
                       { label: "รูปแบบ", el: <select style={inputStyle} value={newSched.mode} onChange={e => setNewSched({...newSched, mode: e.target.value})}><option value="online">Online</option><option value="onsite">Onsite</option></select> },
                       { label: "ที่นั่ง", el: <input type="number" style={inputStyle} value={newSched.seats} onChange={e => setNewSched({...newSched, seats: +e.target.value})} /> },
@@ -1344,11 +1444,7 @@ function AdminDashboard({ user, theme, setTheme, onLogout, onLanding }) {
                     <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12 }}>
                       {[
                         { label: "วันที่", el: <input type="date" style={inputStyle} value={String(editSched.date).slice(0,10)} onChange={e => setEditSched({...editSched, date: e.target.value})} /> },
-                        { label: "เวลา", el: (
-                          <select style={inputStyle} value={editSched.time} onChange={e => setEditSched({...editSched, time: e.target.value})}>
-                            {["09:00-12:00","13:00-16:00","17:00-20:00","09:00-17:00","18:00-21:00","08:00-11:00"].map(t => <option key={t} value={t}>{t}</option>)}
-                          </select>
-                        )},
+                        { label: "เวลา", el: <TimeInput value={editSched.time} onChange={v => setEditSched({...editSched, time: v})} /> },
                         { label: "คอร์ส", el: <select style={inputStyle} value={editSched.course} onChange={e => setEditSched({...editSched, course: e.target.value})}>{COURSES.map(c => <option key={c.id}>{c.name}</option>)}</select> },
                         { label: "รูปแบบ", el: <select style={inputStyle} value={editSched.mode} onChange={e => setEditSched({...editSched, mode: e.target.value})}><option value="online">Online</option><option value="onsite">Onsite</option></select> },
                         { label: "ที่นั่ง", el: <input type="number" style={inputStyle} value={editSched.seats} onChange={e => setEditSched({...editSched, seats: +e.target.value})} /> },
