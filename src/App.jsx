@@ -834,6 +834,8 @@ function AdminDashboard({ user, theme, setTheme, onLogout, onLanding }) {
   const [selected, setSelected] = useState(null);
   const [showAddSched, setShowAddSched] = useState(false);
   const [newSched, setNewSched] = useState({ date: "", time: "", course: COURSES[0].name, mode: "online", seats: 20, zoomId: "", zoomPw: "" });
+  const [editSched, setEditSched] = useState(null); // schedule กำลัง edit
+  const [savingZoom, setSavingZoom] = useState(null); // scheduleId ที่กำลัง save zoom
   const [copyMsg, setCopyMsg] = useState("");
   const [qrSchedule, setQrSchedule] = useState(null);
 
@@ -845,6 +847,40 @@ function AdminDashboard({ user, theme, setTheme, onLogout, onLanding }) {
   }));
 
   const loadMembers = () => fetch(GAS_URL + "?action=getMembers").then(r => r.json()).then(res => { if (res.success) setMembers(mapMembers(res.data)); }).catch(() => {});
+  const loadSchedules = () => fetch(GAS_URL + "?action=getSchedules").then(r => r.json()).then(res => { if (res.success) setSchedules(res.data); }).catch(() => {});
+
+  const handleUpdateSchedule = async (sched) => {
+    setSavingZoom(sched.id);
+    try {
+      // ลบของเดิมแล้วเพิ่มใหม่ (Apps Script ไม่มี update — workaround)
+      await fetch(GAS_URL, { method: "POST", body: JSON.stringify({ action: "deleteSchedule", scheduleId: sched.id }) });
+      const res = await fetch(GAS_URL, { method: "POST", body: JSON.stringify({ action: "addSchedule", ...sched }) });
+      const result = await res.json();
+      if (result.success) {
+        loadSchedules();
+        setEditSched(null);
+        alert("✅ อัปเดตตารางเรียนแล้ว");
+      }
+    } catch { alert("เกิดข้อผิดพลาด"); }
+    setSavingZoom(null);
+  };
+
+  const handleSendZoom = async (sched) => {
+    setSavingZoom(sched.id);
+    try {
+      // ดึงรายชื่อสมาชิกที่ check-in แล้วส่ง zoom
+      const res = await fetch(GAS_URL + "?action=getCheckins&scheduleId=" + sched.id);
+      const result = await res.json();
+      if (result.success && result.data.length > 0) {
+        // ส่ง zoom ให้แต่ละคนผ่าน notifyMember ใน Apps Script
+        await fetch(GAS_URL, { method: "POST", body: JSON.stringify({ action: "sendZoomToCheckins", scheduleId: sched.id, zoomId: sched.zoomId, zoomPw: sched.zoomPw }) });
+        alert(`✅ ส่ง Zoom Link ให้ ${result.data.length} คนแล้ว`);
+      } else {
+        alert("ยังไม่มีสมาชิก Check-in ในตารางนี้");
+      }
+    } catch { alert("เกิดข้อผิดพลาด"); }
+    setSavingZoom(null);
+  };
 
   useEffect(() => {
     Promise.all([
@@ -951,7 +987,10 @@ function AdminDashboard({ user, theme, setTheme, onLogout, onLanding }) {
           {/* APPROVALS */}
           {page === "approvals" && (
             <>
-              <h1 style={{ fontFamily: theme.fontDisplay, fontSize: 40, letterSpacing: 2, marginBottom: 8 }}>APPROVE <span style={{ color: theme.primary }}>สมาชิก</span></h1>
+              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: 8 }}>
+                <h1 style={{ fontFamily: theme.fontDisplay, fontSize: 40, letterSpacing: 2 }}>APPROVE <span style={{ color: theme.primary }}>สมาชิก</span></h1>
+                <Btn variant="ghost" size="sm" onClick={loadMembers}>🔄 รีเฟรช</Btn>
+              </div>
               <p style={{ color: theme.muted, marginBottom: 24 }}>ตรวจสอบสลิปและอนุมัติ — ระบบแจ้ง Line OA อัตโนมัติ</p>
               <InfoBox type="info">เมื่อกด <strong>อนุมัติ</strong> ระบบจะส่งข้อความยืนยันผ่าน Line OA ให้สมาชิกโดยอัตโนมัติ</InfoBox>
               {pending.length === 0 ? (
@@ -1083,7 +1122,10 @@ function AdminDashboard({ user, theme, setTheme, onLogout, onLanding }) {
                   <h1 style={{ fontFamily: theme.fontDisplay, fontSize: 40, letterSpacing: 2, marginBottom: 4 }}>จัดการ<span style={{ color: theme.primary }}>ตารางเรียน</span></h1>
                   <p style={{ color: theme.muted }}>จัดการตารางเรียนและดูรายชื่อ Check-in</p>
                 </div>
-                <Btn onClick={() => setShowAddSched(!showAddSched)}><Ic d={ICONS.plus} size={18} /> เพิ่มตารางเรียน</Btn>
+                <div style={{ display: "flex", gap: 10 }}>
+                  <Btn variant="ghost" onClick={loadSchedules}><Ic d={ICONS.refresh||"M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"} size={18} /> รีเฟรช</Btn>
+                  <Btn onClick={() => setShowAddSched(!showAddSched)}><Ic d={ICONS.plus} size={18} /> เพิ่มตารางเรียน</Btn>
+                </div>
               </div>
 
               {showAddSched && (
@@ -1092,7 +1134,10 @@ function AdminDashboard({ user, theme, setTheme, onLogout, onLanding }) {
                   <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(160px, 1fr))", gap: 12 }}>
                     {[
                       { label: "วันที่", el: <input type="date" style={inputStyle} value={newSched.date} onChange={e => setNewSched({...newSched, date: e.target.value})} /> },
-                      { label: "เวลา", el: <input style={inputStyle} placeholder="09:00–12:00" value={newSched.time} onChange={e => setNewSched({...newSched, time: e.target.value})} /> },
+                      { label: "เวลา", el: <select style={inputStyle} value={newSched.time} onChange={e => setNewSched({...newSched, time: e.target.value})}>
+                        <option value="">เลือกเวลา</option>
+                        {["09:00-12:00","13:00-16:00","17:00-20:00","09:00-17:00","18:00-21:00","08:00-11:00"].map(t => <option key={t} value={t}>{t}</option>)}
+                      </select> },
                       { label: "คอร์ส", el: <select style={inputStyle} value={newSched.course} onChange={e => setNewSched({...newSched, course: e.target.value})}>{COURSES.map(c => <option key={c.id}>{c.name}</option>)}</select> },
                       { label: "รูปแบบ", el: <select style={inputStyle} value={newSched.mode} onChange={e => setNewSched({...newSched, mode: e.target.value})}><option value="online">Online</option><option value="onsite">Onsite</option></select> },
                       { label: "ที่นั่ง", el: <input type="number" style={inputStyle} value={newSched.seats} onChange={e => setNewSched({...newSched, seats: +e.target.value})} /> },
@@ -1154,6 +1199,9 @@ function AdminDashboard({ user, theme, setTheme, onLogout, onLanding }) {
                         style={{ background: qrSchedule?.id === s.id ? theme.primary + "33" : "rgba(255,255,255,0.07)", border: `1px solid ${qrSchedule?.id === s.id ? theme.primary : theme.border}`, color: qrSchedule?.id === s.id ? theme.primary : theme.text, padding: "8px 14px", borderRadius: 10, cursor: "pointer", fontSize: 13, fontFamily: theme.fontBody, fontWeight: 700 }}>
                         📱 QR Code
                       </button>
+                      <button onClick={() => setEditSched({...s})} style={{ background: "rgba(99,102,241,0.15)", border: "none", color: "#818CF8", padding: "8px 10px", borderRadius: 8, cursor: "pointer" }}>
+                        ✏️ แก้ไข
+                      </button>
                       <button onClick={async () => {
                         if (!confirm("ลบตารางเรียนนี้?")) return;
                         try {
@@ -1185,12 +1233,83 @@ function AdminDashboard({ user, theme, setTheme, onLogout, onLanding }) {
                             ⬇️ ดาวน์โหลด QR
                           </a>
                         </div>
-                        <CheckinList scheduleId={s.id} theme={theme} gasUrl={GAS_URL} />
+                        <div style={{ marginBottom: 16 }}>
+                            <h4 style={{ fontWeight: 700, marginBottom: 10, fontSize: 14 }}>📹 Zoom Meeting</h4>
+                            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 8, marginBottom: 8 }}>
+                              <div>
+                                <label style={{ fontSize: 11, color: theme.muted, display: "block", marginBottom: 4 }}>Meeting ID</label>
+                                <input style={{ ...inputStyle, fontSize: 13 }} value={s.zoomId || ""} placeholder="123-456-789"
+                                  onChange={e => setSchedules(schedules.map(x => x.id === s.id ? {...x, zoomId: e.target.value} : x))} />
+                              </div>
+                              <div>
+                                <label style={{ fontSize: 11, color: theme.muted, display: "block", marginBottom: 4 }}>Password</label>
+                                <input style={{ ...inputStyle, fontSize: 13 }} value={s.zoomPw || ""} placeholder="password"
+                                  onChange={e => setSchedules(schedules.map(x => x.id === s.id ? {...x, zoomPw: e.target.value} : x))} />
+                              </div>
+                            </div>
+                            <div style={{ display: "flex", gap: 8 }}>
+                              <button onClick={() => handleUpdateSchedule(s)} disabled={savingZoom === s.id}
+                                style={{ flex: 1, background: "#10B98122", border: "1px solid #10B981", color: "#10B981", padding: "8px 12px", borderRadius: 8, cursor: "pointer", fontSize: 13, fontWeight: 700 }}>
+                                {savingZoom === s.id ? "กำลังบันทึก..." : "💾 บันทึก Zoom"}
+                              </button>
+                              <button onClick={() => handleSendZoom(s)} disabled={!s.zoomId || savingZoom === s.id}
+                                style={{ flex: 1, background: "#3B82F622", border: "1px solid #3B82F6", color: "#3B82F6", padding: "8px 12px", borderRadius: 8, cursor: !s.zoomId ? "not-allowed" : "pointer", fontSize: 13, fontWeight: 700, opacity: !s.zoomId ? 0.5 : 1 }}>
+                                📤 ส่ง Zoom ให้สมาชิก
+                              </button>
+                            </div>
+                          </div>
+                          <CheckinList scheduleId={s.id} theme={theme} gasUrl={GAS_URL} />
                       </div>
                     )}
                   </Card>
                 ))}
               </div>
+              {/* EDIT SCHEDULE MODAL */}
+              {editSched && (
+                <div style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.7)", zIndex: 200, display: "flex", alignItems: "center", justifyContent: "center", padding: 20 }}>
+                  <Card style={{ width: "100%", maxWidth: 560, maxHeight: "90vh", overflowY: "auto" }}>
+                    <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 20 }}>
+                      <h3 style={{ fontWeight: 700, fontSize: 20 }}>✏️ แก้ไขตารางเรียน</h3>
+                      <button onClick={() => setEditSched(null)} style={{ background: "none", border: "none", color: theme.muted, fontSize: 24, cursor: "pointer" }}>✕</button>
+                    </div>
+                    <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12 }}>
+                      {[
+                        { label: "วันที่", el: <input type="date" style={inputStyle} value={String(editSched.date).slice(0,10)} onChange={e => setEditSched({...editSched, date: e.target.value})} /> },
+                        { label: "เวลา", el: (
+                          <select style={inputStyle} value={editSched.time} onChange={e => setEditSched({...editSched, time: e.target.value})}>
+                            {["09:00-12:00","13:00-16:00","17:00-20:00","09:00-17:00","18:00-21:00","08:00-11:00"].map(t => <option key={t} value={t}>{t}</option>)}
+                          </select>
+                        )},
+                        { label: "คอร์ส", el: <select style={inputStyle} value={editSched.course} onChange={e => setEditSched({...editSched, course: e.target.value})}>{COURSES.map(c => <option key={c.id}>{c.name}</option>)}</select> },
+                        { label: "รูปแบบ", el: <select style={inputStyle} value={editSched.mode} onChange={e => setEditSched({...editSched, mode: e.target.value})}><option value="online">Online</option><option value="onsite">Onsite</option></select> },
+                        { label: "ที่นั่ง", el: <input type="number" style={inputStyle} value={editSched.seats} onChange={e => setEditSched({...editSched, seats: +e.target.value})} /> },
+                      ].map(({label, el}) => (
+                        <div key={label}>
+                          <label style={{ display: "block", fontSize: 12, color: theme.muted, marginBottom: 6, fontWeight: 600 }}>{label}</label>
+                          {el}
+                        </div>
+                      ))}
+                    </div>
+                    {editSched.mode === "online" && (
+                      <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12, marginTop: 12 }}>
+                        {[["Zoom Meeting ID","zoomId"],["Zoom Password","zoomPw"]].map(([label, key]) => (
+                          <div key={key}>
+                            <label style={{ display: "block", fontSize: 12, color: theme.muted, marginBottom: 6, fontWeight: 600 }}>{label}</label>
+                            <input style={inputStyle} value={editSched[key] || ""} onChange={e => setEditSched({...editSched, [key]: e.target.value})} />
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                    <div style={{ display: "flex", gap: 10, marginTop: 20 }}>
+                      <Btn onClick={() => handleUpdateSchedule(editSched)} disabled={savingZoom === editSched.id} style={{ flex: 1 }}>
+                        {savingZoom === editSched.id ? "กำลังบันทึก..." : "💾 บันทึกการแก้ไข"}
+                      </Btn>
+                      <Btn variant="ghost" onClick={() => setEditSched(null)}>ยกเลิก</Btn>
+                    </div>
+                  </Card>
+                </div>
+              )}
+
               {copyMsg && <div style={{ position: "fixed", bottom: 32, right: 32, background: theme.accent, color: "#000", padding: "12px 24px", borderRadius: 12, fontWeight: 700, zIndex: 200 }}>✓ {copyMsg}</div>}
             </>
           )}
