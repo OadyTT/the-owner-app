@@ -162,8 +162,9 @@ function GlobalStyles({ theme }) {
       body{background:${theme.bg};color:${theme.text};font-family:${theme.fontBody};font-size:${theme.fontSize}px;line-height:1.6}
       ::-webkit-scrollbar{width:6px}::-webkit-scrollbar-thumb{background:${theme.border};border-radius:3px}
       input,select,textarea,button{font-family:${theme.fontBody}}
-      select option{background:${theme.card};color:${theme.text}}
-      select{background:rgba(255,255,255,0.05);color:${theme.text};border:1px solid ${theme.border};border-radius:10px}
+      select{background:${theme.card} !important;color:${theme.text} !important;border:1px solid ${theme.border};border-radius:10px;-webkit-appearance:auto;appearance:auto;color-scheme:dark}
+      select option{background:${theme.card} !important;color:${theme.text} !important}
+      select optgroup{background:${theme.card} !important;color:${theme.text} !important}
       .pulse{animation:pulse 2s infinite}@keyframes pulse{0%,100%{opacity:1}50%{opacity:0.6}}
     `}</style>
   );
@@ -1140,6 +1141,7 @@ function MembersPage({ theme, members, loadMembers, onApprove, onReject, gasUrl,
         <table style={{ width: "100%", borderCollapse: "separate", borderSpacing: "0 6px", minWidth: 900 }}>
           <thead>
             <tr>
+              <th style={{ textAlign:"left", padding:"8px 14px", color:theme.muted, fontWeight:600, fontSize:12 }}>รหัส</th>
               <SortHeader label="ชื่อ" field="name" sortBy={sortBy} sortDir={sortDir} onSort={onSort} style={{padding:"8px 14px"}}/>
               <SortHeader label="เบอร์" field="phone" sortBy={sortBy} sortDir={sortDir} onSort={onSort} style={{padding:"8px 14px"}}/>
               <th style={{ textAlign:"left", padding:"8px 14px", color:theme.muted, fontWeight:600, fontSize:12 }}>Line ID</th>
@@ -1152,7 +1154,13 @@ function MembersPage({ theme, members, loadMembers, onApprove, onReject, gasUrl,
           <tbody>
             {sortedMembers.map(m => (
               <tr key={m.id} onClick={() => setSelected(selected?.id===m.id?null:m)} style={{ cursor:"pointer" }}>
-                <td style={{ padding:14, background:theme.card, borderRadius:"10px 0 0 10px", fontWeight:700 }}>{m.name}</td>
+                <td style={{ padding:"14px 14px", background:theme.card, borderRadius:"10px 0 0 10px" }}>
+                  {m.memberId
+                  ? <span style={{ fontSize:11, color: m.pkg==="trial"?"#F59E0B":"#10B981", background: m.pkg==="trial"?"#F59E0B22":"#10B98122", padding:"3px 8px", borderRadius:6, fontWeight:800, letterSpacing:0.5, display:"inline-block" }}>{m.memberId}</span>
+                  : <span style={{ fontSize:11, color:theme.muted, fontStyle:"italic" }}>รอ Approve</span>
+                }
+                </td>
+                <td style={{ padding:14, background:theme.card, fontWeight:700 }}>{m.name}</td>
                 <td style={{ padding:14, background:theme.card, color:theme.muted, fontSize:13 }}>{m.phone}</td>
                 <td style={{ padding:14, background:theme.card, fontSize:11, color:theme.muted, maxWidth:120, overflow:"hidden", textOverflow:"ellipsis" }}>{m.lineId}</td>
                 <td style={{ padding:14, background:theme.card }}><StatusBadge status={m.pkg} /></td>
@@ -1199,10 +1207,13 @@ function AdminDashboard({ user, theme, setTheme, onLogout, onLanding }) {
   const [qrSchedule, setQrSchedule] = useState(null);
 
   const mapMembers = (data) => data.map((m, i) => ({
-    id: i + 1, name: m.name, phone: m.phone, lineId: m.lineId, pkg: m.package,
+    id: i + 1,
+    memberId: m.memberId || "",   // รับจาก server, ว่างถ้ายังไม่ approve
+    name: m.name, phone: m.phone, lineId: m.lineId, pkg: m.package,
     status: m.status, slip: m.slipThumb || m.slipUrl || null,
     registeredAt: m.registeredAt, expiresAt: m.expiresAt,
-    checkedIn: m.checkedIn === "TRUE", fine: m.fine || 0
+    checkedIn: m.checkedIn === "TRUE", fine: m.fine || 0,
+    email: m.email || ""
   }));
 
   const loadMembers = () => fetch(GAS_URL + "?action=getMembers").then(r => r.json()).then(res => { if (res.success) setMembers(mapMembers(res.data)); }).catch(() => {});
@@ -1372,6 +1383,11 @@ function AdminDashboard({ user, theme, setTheme, onLogout, onLanding }) {
       <main style={{ marginLeft: 260, flex: 1, minHeight: "100vh", background: theme.bg, color: theme.text }}>
         <div style={{ padding: "32px 32px 80px" }}>
 
+          {/* DASHBOARD */}
+          {page === "dashboard" && (
+            <AdminDashboardPage theme={theme} members={members} schedules={schedules} gasUrl={GAS_URL} />
+          )}
+
           {/* APPROVALS */}
           {page === "approvals" && (
             <>
@@ -1395,8 +1411,14 @@ function AdminDashboard({ user, theme, setTheme, onLogout, onLanding }) {
                         style={{ background: theme.card, border: `1px solid ${selected?.id === m.id ? theme.primary : theme.border}`, borderRadius: 16, padding: 20, marginBottom: 12, cursor: "pointer" }}>
                         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: 12 }}>
                           <div>
-                            <div style={{ fontWeight: 700, fontSize: 17, marginBottom: 4 }}>{m.name}</div>
-                            <div style={{ color: theme.muted, fontSize: 13 }}>{m.phone} · Line: {m.lineId}</div>
+                            <div style={{ display:"flex", alignItems:"center", gap:10, marginBottom:4 }}>
+                              <span style={{ fontWeight: 700, fontSize: 17 }}>{m.name}</span>
+                              {m.memberId
+                              ? <span style={{ fontSize:11, color: m.pkg==="trial" ? "#F59E0B" : "#10B981", background: m.pkg==="trial" ? "#F59E0B22" : "#10B98122", padding:"2px 8px", borderRadius:6, fontWeight:800, letterSpacing:0.5 }}>{m.memberId}</span>
+                              : <span style={{ fontSize:11, color:theme.muted, background:"rgba(255,255,255,0.07)", padding:"2px 8px", borderRadius:6 }}>รอ Approve</span>
+                            }
+                            </div>
+                            <div style={{ color: theme.muted, fontSize: 13 }}>{m.phone} · Line: {m.lineId?.slice(0,20)}</div>
                           </div>
                           <StatusBadge status={m.pkg} />
                         </div>
@@ -1415,11 +1437,20 @@ function AdminDashboard({ user, theme, setTheme, onLogout, onLanding }) {
                           <h3 style={{ fontWeight: 700, fontSize: 18 }}>รายละเอียด: {selected.name}</h3>
                           <button onClick={() => setSelected(null)} style={{ background: "none", border: "none", color: theme.muted, cursor: "pointer" }}><Ic d={ICONS.x} size={20} /></button>
                         </div>
-                        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12, marginBottom: 20 }}>
-                          {[["ชื่อ-นามสกุล", selected.name],["เบอร์โทร", selected.phone],["LINE ID", selected.lineId],["แพ็กเกจ", selected.pkg === "trial" ? "Trial (150฿)" : "Quarter (600฿)"]].map(([k,v]) => (
-                            <div key={k} style={{ background: theme.bg, borderRadius: 12, padding: 14 }}>
-                              <div style={{ fontSize: 11, color: theme.muted, marginBottom: 4, textTransform: "uppercase" }}>{k}</div>
-                              <div style={{ fontWeight: 700 }}>{v}</div>
+                        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10, marginBottom: 20 }}>
+                          {[
+                            ["รหัสสมาชิก", selected.memberId || (selected.status === "pending" ? "รอ Approve" : "-")],
+                            ["ชื่อ-นามสกุล", selected.name],
+                            ["เบอร์โทร", selected.phone || "-"],
+                            ["LINE ID", selected.lineId ? selected.lineId.slice(0,20) + (selected.lineId.length > 20 ? "..." : "") : "-"],
+                            ["แพ็กเกจ", selected.pkg === "trial" ? "Trial (150฿)" : selected.pkg === "quarter" ? "Quarter (600฿)" : selected.pkg || "-"],
+                            ["สถานะ", selected.status || "-"],
+                            ["สมัครเมื่อ", selected.registeredAt ? String(selected.registeredAt).slice(0,10) : "-"],
+                            ["หมดอายุ", selected.expiresAt ? String(selected.expiresAt).slice(0,10) : "-"],
+                          ].map(([k,v]) => (
+                            <div key={k} style={{ background: theme.bg, borderRadius: 10, padding: 12 }}>
+                              <div style={{ fontSize: 10, color: theme.muted, marginBottom: 3, textTransform: "uppercase", letterSpacing: 0.5 }}>{k}</div>
+                              <div style={{ fontWeight: 700, fontSize: 13, wordBreak: "break-all" }}>{v}</div>
                             </div>
                           ))}
                         </div>
@@ -1447,9 +1478,17 @@ function AdminDashboard({ user, theme, setTheme, onLogout, onLanding }) {
               {members.filter(m => m.status !== "pending").length > 0 && (
                 <>
                   <h3 style={{ fontWeight: 700, marginTop: 40, marginBottom: 16, color: theme.muted, fontSize: 13, textTransform: "uppercase", letterSpacing: 1 }}>ดำเนินการแล้ว</h3>
-                  {members.filter(m => m.status !== "pending").map(m => (
-                    <Card key={m.id} style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "16px 20px", marginBottom: 8 }}>
-                      <div><span style={{ fontWeight: 700 }}>{m.name}</span><span style={{ color: theme.muted, fontSize: 13, marginLeft: 12 }}>{m.phone}</span></div>
+                  {members.filter(m => m.status !== "pending").sort((a,b) => String(a.name).localeCompare(String(b.name),"th")).map(m => (
+                    <Card key={m.id} onClick={() => setSelected(selected?.id === m.id ? null : m)}
+                      style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "14px 20px", marginBottom: 6, cursor:"pointer", border:`1px solid ${selected?.id===m.id?theme.primary:theme.border}` }}>
+                      <div style={{ display:"flex", alignItems:"center", gap:10 }}>
+                        {m.memberId
+                  ? <span style={{ fontSize:11, color: m.pkg==="trial"?"#F59E0B":"#10B981", background: m.pkg==="trial"?"#F59E0B22":"#10B98122", padding:"2px 8px", borderRadius:6, fontWeight:800, letterSpacing:0.5, minWidth:80, textAlign:"center", display:"inline-block" }}>{m.memberId}</span>
+                  : <span style={{ fontSize:11, color:theme.muted, minWidth:80, display:"inline-block" }}>-</span>
+                }
+                        <span style={{ fontWeight: 700 }}>{m.name}</span>
+                        <span style={{ color: theme.muted, fontSize: 13 }}>{m.phone}</span>
+                      </div>
                       <div style={{ display: "flex", gap: 8 }}><StatusBadge status={m.pkg} /><StatusBadge status={m.status} /></div>
                     </Card>
                   ))}
@@ -1779,10 +1818,6 @@ function AdminDashboard({ user, theme, setTheme, onLogout, onLanding }) {
             </>
           )}
 
-        {/* DASHBOARD */}
-          {page === "dashboard" && (
-            <AdminDashboardPage theme={theme} members={members} schedules={schedules} gasUrl={GAS_URL} />
-          )}
 
         {/* CHECKINS REPORT */}
           {page === "checkins" && (
