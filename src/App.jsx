@@ -531,12 +531,60 @@ function LandingPage({ theme, onAdmin }) {
           <h2 style={{ fontFamily: theme.fontDisplay, fontSize: "clamp(40px,6vw,64px)", letterSpacing: 2, marginBottom: 12 }}>สมัคร<span style={{ color: theme.primary }}>สมาชิก</span></h2>
         </div>
         {submitted ? (
-          <Card glow style={{ textAlign: "center", padding: 60 }}>
-            <div style={{ fontSize: 72, marginBottom: 20 }}>✅</div>
-            <h2 style={{ fontFamily: theme.fontDisplay, fontSize: 40, letterSpacing: 2, marginBottom: 16 }}>ส่งข้อมูลแล้ว!</h2>
-            <p style={{ color: theme.muted, lineHeight: 1.9, fontSize: 16, maxWidth: 440, margin: "0 auto 32px" }}>Admin จะตรวจสอบสลิปและส่งข้อมูลยืนยันกลับผ่าน <strong style={{ color: theme.text }}>Line OA "The Owner"</strong> ภายใน 1–24 ชั่วโมง</p>
-            <Btn variant="ghost" onClick={() => setSubmitted(false)}>สมัครอีกครั้ง</Btn>
-          </Card>
+          <div style={{ display: "flex", alignItems: "center", justifyContent: "center", minHeight: 500 }}>
+            <style>{`
+              @keyframes popIn {
+                0% { transform: scale(0); opacity: 0; }
+                60% { transform: scale(1.2); opacity: 1; }
+                80% { transform: scale(0.95); }
+                100% { transform: scale(1); }
+              }
+              @keyframes fadeSlideUp {
+                from { opacity: 0; transform: translateY(24px); }
+                to { opacity: 1; transform: translateY(0); }
+              }
+              @keyframes drawCircle {
+                from { stroke-dashoffset: 314; }
+                to { stroke-dashoffset: 0; }
+              }
+              @keyframes drawCheck {
+                from { stroke-dashoffset: 100; }
+                to { stroke-dashoffset: 0; }
+              }
+              @keyframes pulse-ring {
+                0% { transform: scale(1); opacity: 0.6; }
+                100% { transform: scale(1.5); opacity: 0; }
+              }
+            `}</style>
+            <Card glow style={{ textAlign: "center", padding: "60px 40px", maxWidth: 480, width: "100%", position: "relative", overflow: "hidden" }}>
+              {/* pulse ring */}
+              <div style={{ position: "absolute", top: "50%", left: "50%", transform: "translate(-50%,-80%)", width: 160, height: 160, borderRadius: "50%", border: "3px solid #10B981", animation: "pulse-ring 1.5s ease-out 0.5s infinite", pointerEvents: "none" }} />
+
+              {/* SVG checkmark animation */}
+              <div style={{ display: "flex", justifyContent: "center", marginBottom: 32, animation: "popIn 0.6s cubic-bezier(0.175,0.885,0.32,1.275) forwards" }}>
+                <svg width="120" height="120" viewBox="0 0 120 120">
+                  <circle cx="60" cy="60" r="50" fill="none" stroke="#10B981" strokeWidth="6"
+                    strokeDasharray="314" strokeDashoffset="314"
+                    style={{ animation: "drawCircle 0.8s ease forwards 0.1s", transformOrigin: "center", transform: "rotate(-90deg)" }} />
+                  <polyline points="35,62 52,79 85,45" fill="none" stroke="#10B981" strokeWidth="7" strokeLinecap="round" strokeLinejoin="round"
+                    strokeDasharray="100" strokeDashoffset="100"
+                    style={{ animation: "drawCheck 0.5s ease forwards 0.7s" }} />
+                </svg>
+              </div>
+
+              <h2 style={{ fontFamily: theme.fontDisplay, fontSize: 44, letterSpacing: 2, marginBottom: 12, color: "#10B981", animation: "fadeSlideUp 0.5s ease forwards 0.9s", opacity: 0 }}>
+                ส่งข้อมูลแล้ว!
+              </h2>
+              <p style={{ color: theme.muted, lineHeight: 1.9, fontSize: 16, maxWidth: 380, margin: "0 auto 32px", animation: "fadeSlideUp 0.5s ease forwards 1.1s", opacity: 0 }}>
+                Admin จะตรวจสอบสลิปและส่งข้อมูลยืนยันกลับผ่าน{" "}
+                <strong style={{ color: "#06C755" }}>Line OA "The Owner"</strong>{" "}
+                ภายใน 1–24 ชั่วโมง
+              </p>
+              <div style={{ animation: "fadeSlideUp 0.5s ease forwards 1.3s", opacity: 0 }}>
+                <Btn variant="ghost" onClick={() => setSubmitted(false)}>สมัครอีกครั้ง</Btn>
+              </div>
+            </Card>
+          </div>
         ) : (
           <Card>
             <form onSubmit={handleSubmit}>
