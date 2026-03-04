@@ -217,19 +217,49 @@ function CheckinList({ scheduleId, theme, gasUrl }) {
 }
 
 // ─── CHECKIN SECTION (Landing) ───────────────
-function CheckinSection({ theme, gasUrl }) {
+function CheckinSection({ theme, gasUrl, autoCheckinId, autoCheckinType }) {
   const [schedules, setSchedules] = useState([]);
-  const [myLineId, setMyLineId] = useState("");
+  const [myLineId, setMyLineId] = useState(window.__liffUserId || "");
   const [loading, setLoading] = useState(true);
   const [checking, setChecking] = useState(null);
   const [doneMsg, setDoneMsg] = useState("");
+  const [autoCheckinDone, setAutoCheckinDone] = useState(false);
 
   useEffect(() => {
     fetch(gasUrl + "?action=getSchedules").then(r => r.json()).then(res => { if (res.success) setSchedules(res.data); }).finally(() => setLoading(false));
-    if (window.liff?.isInClient?.() && window.liff?.isLoggedIn?.()) {
+    // ดึง lineId จาก LIFF
+    const lineId = window.__liffUserId;
+    if (lineId) {
+      setMyLineId(lineId);
+    } else if (window.liff?.isLoggedIn?.()) {
       window.liff.getProfile().then(p => setMyLineId(p.userId)).catch(() => {});
     }
   }, []);
+
+  // Auto check-in เมื่อมาจาก QR Code
+  useEffect(() => {
+    if (!autoCheckinId || !myLineId || autoCheckinDone) return;
+    setAutoCheckinDone(true);
+    setChecking(autoCheckinId);
+    fetch(gasUrl, {
+      method: "POST",
+      body: JSON.stringify({ action: "addCheckin", lineId: myLineId, scheduleId: autoCheckinId, type: autoCheckinType || "emergency" })
+    })
+      .then(r => r.json())
+      .then(result => {
+        if (result.success) {
+          const fine = result.fine > 0 ? `
+⚠️ มีค่าปรับ ${result.fine} ฿ เนื่องจาก Check-in ฉุกเฉิน` : "";
+          setDoneMsg(`✅ Check-in สำเร็จ! Zoom Link ส่งผ่าน Line แล้วครับ 🎉${fine}`);
+        } else {
+          setDoneMsg("❌ " + result.message);
+        }
+        setChecking(null);
+        // clear URL params
+        window.history.replaceState({}, "", window.location.pathname);
+      })
+      .catch(() => { setDoneMsg("❌ เกิดข้อผิดพลาด กรุณาลองใหม่"); setChecking(null); });
+  }, [autoCheckinId, myLineId, autoCheckinDone]);
 
   const handleCheckin = async (schedule) => {
     if (!myLineId) { alert("กรุณาเปิดจาก Line OA เพื่อ Check-in ครับ"); return; }
@@ -300,8 +330,14 @@ function CheckinSection({ theme, gasUrl }) {
 }
 
 // ─── LANDING PAGE ────────────────────────────
-function LandingPage({ theme, onAdmin }) {
-  const [section, setSection] = useState("home");
+function LandingPage({ theme, onAdmin, autoCheckinId, autoCheckinType }) {
+  const [section, setSection] = useState(autoCheckinId ? "checkin" : "home");
+
+  useEffect(() => {
+    if (autoCheckinId) {
+      setTimeout(() => document.getElementById("checkin")?.scrollIntoView({ behavior: "smooth" }), 300);
+    }
+  }, [autoCheckinId]);
   const [form, setForm] = useState({ name: "", phone: "", lineId: "", email: "", pkg: "trial", mode: "online", slip: null });
   const [submitted, setSubmitted] = useState(false);
   const [openFaq, setOpenFaq] = useState(null);
@@ -522,7 +558,7 @@ function LandingPage({ theme, onAdmin }) {
           </h2>
           <p style={{ color: theme.muted }}>เลือกคอร์สที่ต้องการเรียน ระบบจะส่ง Zoom Link ผ่าน Line ให้อัตโนมัติ</p>
         </div>
-        <CheckinSection theme={theme} gasUrl={GAS_URL} />
+        <CheckinSection theme={theme} gasUrl={GAS_URL} autoCheckinId={autoCheckinId} autoCheckinType={autoCheckinType} />
       </section>
 
       {/* REGISTER */}
@@ -1141,7 +1177,12 @@ function AdminDashboard({ user, theme, setTheme, onLogout, onLanding }) {
 
 // ─── ROOT APP ─────────────────────────────────
 export default function App() {
-  const [view, setView] = useState("landing");
+  // อ่าน URL params จาก QR Code
+  const urlParams = new URLSearchParams(window.location.search);
+  const qrCheckinId = urlParams.get("checkin");
+  const qrCheckinType = urlParams.get("type");
+
+  const [view, setView] = useState(qrCheckinId ? "checkin" : "landing");
   const [adminUser, setAdminUser] = useState(null);
   const [theme, setTheme] = useState(DEFAULT_THEME);
   window.__theme = theme;
@@ -1149,7 +1190,7 @@ export default function App() {
   return (
     <>
       <GlobalStyles theme={theme} />
-      {view === "landing" && <LandingPage theme={theme} onAdmin={() => setView("admin-login")} />}
+      {view === "landing" && <LandingPage theme={theme} onAdmin={() => setView("admin-login")} autoCheckinId={qrCheckinId} autoCheckinType={qrCheckinType} />}
       {view === "admin-login" && <AdminLogin theme={theme} onLogin={u => { setAdminUser(u); setView("admin"); }} onBack={() => setView("landing")} />}
       {view === "admin" && adminUser && <AdminDashboard user={adminUser} theme={theme} setTheme={setTheme} onLogout={() => { setAdminUser(null); setView("admin-login"); }} onLanding={() => setView("landing")} />}
     </>
