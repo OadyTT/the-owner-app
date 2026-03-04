@@ -34,10 +34,10 @@ async function initLiff() {
 }
 
 const COURSES = [
-  { id: 1, name: "Product Growth 101", icon: "🚀", desc: "สร้างและพัฒนาผลิตภัณฑ์ที่ตลาดต้องการ" },
-  { id: 2, name: "Business Growth 101", icon: "📈", desc: "กลยุทธ์ขยายธุรกิจให้เติบโตอย่างยั่งยืน" },
-  { id: 3, name: "Health Buddy Growth 101", icon: "💪", desc: "สุขภาพดี พลังงานเต็ม เพื่อธุรกิจที่ดีกว่า" },
-  { id: 4, name: "Digital Growth 101", icon: "💻", desc: "Digital Marketing & Tools สำหรับยุคใหม่" },
+  { id: 1, name: "Product Growth 101", icon: "🚀", desc: "สร้างและพัฒนาผลิตภัณฑ์ที่ตลาดต้องการ", img: "" },
+  { id: 2, name: "Business Growth 101", icon: "📈", desc: "กลยุทธ์ขยายธุรกิจให้เติบโตอย่างยั่งยืน", img: "" },
+  { id: 3, name: "Health Buddy Growth 101", icon: "💪", desc: "สุขภาพดี พลังงานเต็ม เพื่อธุรกิจที่ดีกว่า", img: "" },
+  { id: 4, name: "Digital Growth 101", icon: "💻", desc: "Digital Marketing & Growth Hacking", img: "" },
 ];
 
 const PACKAGES = [
@@ -264,22 +264,49 @@ function CheckinSection({ theme, gasUrl, autoCheckinId, autoCheckinType }) {
   const handleCheckin = async (schedule) => {
     if (!myLineId) { alert("กรุณาเปิดจาก Line OA เพื่อ Check-in ครับ"); return; }
     setChecking(schedule.id);
+    // แสดงผลทันที ไม่รอ API
+    setDoneMsg(`⏳ กำลัง Check-in คอร์ส ${schedule.course}...`);
     try {
       const res = await fetch(gasUrl, { method: "POST", body: JSON.stringify({ action: "addCheckin", lineId: myLineId, scheduleId: schedule.id, type: "pre" }) });
       const result = await res.json();
-      if (result.success) setDoneMsg(`✅ Check-in สำเร็จ! ${schedule.mode === "online" ? "Zoom Link ส่งผ่าน Line แล้วครับ 🎉" : "พบกันที่สถานที่เรียนครับ 😊"}`);
-      else alert("❌ " + result.message);
-    } catch { alert("เกิดข้อผิดพลาด กรุณาลองใหม่"); }
+      if (result.success) {
+        // อัปเดต count ใน schedules ทันที
+        setSchedules(prev => prev.map(s => s.id === schedule.id ? { ...s, checkinCount: (s.checkinCount||0) + 1 } : s));
+        setDoneMsg(schedule.mode === "online"
+          ? `✅ Check-in สำเร็จ!
+📚 ${schedule.course}
+📅 ${String(schedule.date).slice(0,10)} ⏰ ${schedule.time||""}
+
+🎥 Zoom Link ส่งผ่าน Line แล้วครับ`
+          : `✅ Check-in สำเร็จ!
+📚 ${schedule.course}
+📅 ${String(schedule.date).slice(0,10)} ⏰ ${schedule.time||""}
+
+📍 พบกันที่สถานที่เรียนครับ 😊`);
+      } else {
+        setDoneMsg("❌ " + result.message);
+      }
+    } catch { setDoneMsg("❌ เกิดข้อผิดพลาด กรุณาลองใหม่"); }
     setChecking(null);
   };
 
-  if (doneMsg) return (
-    <Card glow style={{ textAlign: "center", padding: 48 }}>
-      <div style={{ fontSize: 64, marginBottom: 16 }}>🎉</div>
-      <h3 style={{ fontWeight: 700, fontSize: 22, marginBottom: 12 }}>{doneMsg}</h3>
-      <Btn variant="ghost" onClick={() => setDoneMsg("")}>Check-in คอร์สอื่น</Btn>
-    </Card>
-  );
+  if (doneMsg) {
+    const isSuccess = doneMsg.startsWith("✅");
+    const isLoading = doneMsg.startsWith("⏳");
+    const isError = doneMsg.startsWith("❌");
+    return (
+      <div style={{ display: "flex", alignItems: "center", justifyContent: "center", minHeight: 400 }}>
+        <Card glow style={{ textAlign: "center", padding: "48px 32px", maxWidth: 420, width: "100%" }}>
+          <div style={{ fontSize: 64, marginBottom: 16, animation: isLoading ? "spin 1s linear infinite" : "none" }}>
+            {isLoading ? "⏳" : isSuccess ? "🎉" : "❌"}
+          </div>
+          <style>{`@keyframes spin { from{transform:rotate(0deg)} to{transform:rotate(360deg)} }`}</style>
+          <p style={{ fontWeight: 700, fontSize: 17, whiteSpace: "pre-line", lineHeight: 1.8, marginBottom: 24, color: isError ? "#EF4444" : isLoading ? theme.muted : theme.text }}>{doneMsg}</p>
+          {!isLoading && <Btn variant="ghost" onClick={() => setDoneMsg("")}>Check-in คอร์สอื่น</Btn>}
+        </Card>
+      </div>
+    );
+  }
 
   if (loading) return <div style={{ textAlign: "center", color: theme.muted, padding: 40 }}>⏳ กำลังโหลดตารางเรียน...</div>;
 
@@ -836,6 +863,14 @@ function AdminDashboard({ user, theme, setTheme, onLogout, onLanding }) {
   const [newSched, setNewSched] = useState({ date: "", time: "", course: COURSES[0].name, mode: "online", seats: 20, zoomId: "", zoomPw: "" });
   const [editSched, setEditSched] = useState(null); // schedule กำลัง edit
   const [savingZoom, setSavingZoom] = useState(null); // scheduleId ที่กำลัง save zoom
+  const [courseImgs, setCourseImgs] = useState(() => {
+    try { return JSON.parse(localStorage.getItem("courseImgs") || "{}"); } catch { return {}; }
+  });
+  const saveCourseImg = (courseId, url) => {
+    const updated = { ...courseImgs, [courseId]: url };
+    setCourseImgs(updated);
+    try { localStorage.setItem("courseImgs", JSON.stringify(updated)); } catch {}
+  };
   const [copyMsg, setCopyMsg] = useState("");
   const [qrSchedule, setQrSchedule] = useState(null);
 
@@ -957,6 +992,7 @@ function AdminDashboard({ user, theme, setTheme, onLogout, onLanding }) {
     { id: "members", label: "รายชื่อสมาชิก", icon: ICONS.users, roles: ["super_admin","helper"] },
     { id: "schedule", label: "จัดการตารางเรียน", icon: ICONS.calendar, roles: ["super_admin","helper"] },
     { id: "checkins", label: "รายงาน Check-in", icon: ICONS.check, roles: ["super_admin","helper"] },
+    { id: "courses", label: "จัดการคอร์ส", icon: ICONS.book||"M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.746 0 3.332.477 4.5 1.253v13C19.832 18.477 18.246 18 16.5 18c-1.746 0-3.332.477-4.5 1.253", roles: ["super_admin","helper"] },
     { id: "theme", label: "ปรับธีม", icon: ICONS.settings, roles: ["super_admin"] },
     { id: "admins", label: "จัดการ Admin", icon: ICONS.shield, roles: ["super_admin"] },
   ].filter(n => n.roles.includes(user.role));
@@ -1232,8 +1268,8 @@ function AdminDashboard({ user, theme, setTheme, onLogout, onLanding }) {
                         style={{ background: qrSchedule?.id === s.id ? theme.primary + "33" : "rgba(255,255,255,0.07)", border: `1px solid ${qrSchedule?.id === s.id ? theme.primary : theme.border}`, color: qrSchedule?.id === s.id ? theme.primary : theme.text, padding: "8px 14px", borderRadius: 10, cursor: "pointer", fontSize: 13, fontFamily: theme.fontBody, fontWeight: 700 }}>
                         📱 QR Code
                       </button>
-                      <button onClick={() => setEditSched({...s})} style={{ background: "rgba(99,102,241,0.15)", border: "none", color: "#818CF8", padding: "8px 10px", borderRadius: 8, cursor: "pointer" }}>
-                        ✏️ แก้ไข
+                      <button onClick={() => setEditSched({...s})} style={{ background: "rgba(99,102,241,0.15)", border: "1px solid #818CF8", color: "#818CF8", padding: "8px 14px", borderRadius: 8, cursor: "pointer", fontSize: 13, fontWeight: 700 }}>
+                        ✏️ แก้ไข / Zoom
                       </button>
                       <button onClick={async () => {
                         if (!confirm("ลบตารางเรียนนี้?")) return;
@@ -1323,14 +1359,25 @@ function AdminDashboard({ user, theme, setTheme, onLogout, onLanding }) {
                         </div>
                       ))}
                     </div>
-                    {editSched.mode === "online" && (
-                      <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12, marginTop: 12 }}>
-                        {[["Zoom Meeting ID","zoomId"],["Zoom Password","zoomPw"]].map(([label, key]) => (
-                          <div key={key}>
-                            <label style={{ display: "block", fontSize: 12, color: theme.muted, marginBottom: 6, fontWeight: 600 }}>{label}</label>
-                            <input style={inputStyle} value={editSched[key] || ""} onChange={e => setEditSched({...editSched, [key]: e.target.value})} />
+                    <div style={{ marginTop: 16, padding: 16, background: "#3B82F611", borderRadius: 12, border: "1px solid #3B82F633" }}>
+                        <div style={{ fontSize: 13, fontWeight: 700, color: "#3B82F6", marginBottom: 12 }}>🎥 Zoom Meeting</div>
+                        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12 }}>
+                          {[["Meeting ID","zoomId","123-456-789"],["Password","zoomPw","password"]].map(([label, key, ph]) => (
+                            <div key={key}>
+                              <label style={{ display: "block", fontSize: 12, color: theme.muted, marginBottom: 6, fontWeight: 600 }}>{label}</label>
+                              <input style={inputStyle} placeholder={ph} value={editSched[key] || ""} onChange={e => setEditSched({...editSched, [key]: e.target.value})} />
+                            </div>
+                          ))}
+                        </div>
+                        {editSched.zoomId && (
+                          <div style={{ marginTop: 10, fontSize: 12, color: "#10B981" }}>
+                            🔗 Zoom Link: https://zoom.us/j/{editSched.zoomId.replace(/-/g,"")}?pwd={editSched.zoomPw}
                           </div>
-                        ))}
+                        )}
+                        <button onClick={() => handleSendZoom(editSched)} disabled={!editSched.zoomId || savingZoom === editSched.id}
+                          style={{ marginTop: 10, width: "100%", background: "#3B82F622", border: "1px solid #3B82F6", color: "#3B82F6", padding: "8px 12px", borderRadius: 8, cursor: !editSched.zoomId ? "not-allowed" : "pointer", fontSize: 13, fontWeight: 700, opacity: !editSched.zoomId ? 0.5 : 1 }}>
+                          📤 ส่ง Zoom Link ให้สมาชิกที่ Check-in แล้ว
+                        </button>
                       </div>
                     )}
                     <div style={{ display: "flex", gap: 10, marginTop: 20 }}>
@@ -1407,6 +1454,51 @@ function AdminDashboard({ user, theme, setTheme, onLogout, onLanding }) {
                   <Btn variant="outline"><Ic d={ICONS.plus} size={16} /> เพิ่ม Admin ใหม่</Btn>
                 </div>
               </Card>
+            </>
+          )}
+
+        {/* COURSES MANAGEMENT */}
+          {page === "courses" && (
+            <>
+              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 8 }}>
+                <h1 style={{ fontFamily: theme.fontDisplay, fontSize: 40, letterSpacing: 2 }}>จัดการ<span style={{ color: theme.primary }}>คอร์ส</span></h1>
+              </div>
+              <p style={{ color: theme.muted, marginBottom: 24 }}>ใส่รูปภาพและ Zoom สำหรับแต่ละคอร์ส</p>
+              <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill,minmax(320px,1fr))", gap: 20 }}>
+                {COURSES.map(c => (
+                  <Card key={c.id} style={{ padding: 0, overflow: "hidden" }}>
+                    {/* Course Image */}
+                    <div style={{ height: 180, background: theme.bg, position: "relative", overflow: "hidden" }}>
+                      {courseImgs[c.id]
+                        ? <img src={courseImgs[c.id]} alt={c.name} style={{ width: "100%", height: "100%", objectFit: "cover" }} onError={e => e.target.style.display="none"} />
+                        : <div style={{ width: "100%", height: "100%", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 64 }}>{c.icon}</div>
+                      }
+                      <div style={{ position: "absolute", bottom: 0, left: 0, right: 0, background: "linear-gradient(transparent,rgba(0,0,0,0.8))", padding: "24px 16px 12px" }}>
+                        <div style={{ color: "#fff", fontWeight: 700, fontSize: 15 }}>{c.name}</div>
+                      </div>
+                    </div>
+                    <div style={{ padding: 20 }}>
+                      <div style={{ marginBottom: 12 }}>
+                        <label style={{ display: "block", fontSize: 12, color: theme.muted, marginBottom: 6, fontWeight: 600 }}>🖼 URL รูปภาพ</label>
+                        <div style={{ display: "flex", gap: 8 }}>
+                          <input style={{ ...inputStyle, flex: 1, fontSize: 13 }}
+                            value={courseImgs[c.id] || ""}
+                            placeholder="https://... หรือ Google Drive URL"
+                            onChange={e => saveCourseImg(c.id, e.target.value)} />
+                          {courseImgs[c.id] && (
+                            <button onClick={() => saveCourseImg(c.id, "")}
+                              style={{ background: "rgba(239,68,68,0.15)", border: "none", color: "#EF4444", padding: "0 10px", borderRadius: 8, cursor: "pointer" }}>✕</button>
+                          )}
+                        </div>
+                        <p style={{ fontSize: 11, color: theme.muted, marginTop: 4 }}>วาง URL รูปตรงๆ หรืออัปโหลดไปยัง Google Drive แล้วเอา direct link มาวาง</p>
+                      </div>
+                      <div style={{ borderTop: `1px solid ${theme.border}`, paddingTop: 12 }}>
+                        <div style={{ fontSize: 12, color: theme.muted }}>{c.desc}</div>
+                      </div>
+                    </div>
+                  </Card>
+                ))}
+              </div>
             </>
           )}
 
