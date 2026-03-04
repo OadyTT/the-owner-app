@@ -847,20 +847,38 @@ function AdminDashboard({ user, theme, setTheme, onLogout, onLanding }) {
   }));
 
   const loadMembers = () => fetch(GAS_URL + "?action=getMembers").then(r => r.json()).then(res => { if (res.success) setMembers(mapMembers(res.data)); }).catch(() => {});
-  const loadSchedules = () => fetch(GAS_URL + "?action=getSchedules").then(r => r.json()).then(res => { if (res.success) setSchedules(res.data); }).catch(() => {});
+  const loadSchedules = async () => {
+    try {
+      const [schedsRes, checkinsRes] = await Promise.all([
+        fetch(GAS_URL + "?action=getSchedules").then(r => r.json()),
+        fetch(GAS_URL + "?action=getCheckins").then(r => r.json())
+      ]);
+      if (schedsRes.success) {
+        const checkins = checkinsRes.success ? checkinsRes.data : [];
+        // นับ checkin count ของแต่ละ schedule
+        const countMap = {};
+        checkins.forEach(c => { countMap[String(c.scheduleId)] = (countMap[String(c.scheduleId)] || 0) + 1; });
+        setSchedules(schedsRes.data.map(s => ({ ...s, checkinCount: countMap[String(s.id)] || 0 })));
+      }
+    } catch {}
+  };
 
   const handleUpdateSchedule = async (sched) => {
     setSavingZoom(sched.id);
     try {
-      // ลบของเดิมแล้วเพิ่มใหม่ (Apps Script ไม่มี update — workaround)
-      await fetch(GAS_URL, { method: "POST", body: JSON.stringify({ action: "deleteSchedule", scheduleId: sched.id }) });
-      const res = await fetch(GAS_URL, { method: "POST", body: JSON.stringify({ action: "addSchedule", ...sched }) });
+      const res = await fetch(GAS_URL, { method: "POST", body: JSON.stringify({
+        action: "updateSchedule", scheduleId: sched.id,
+        date: sched.date, time: sched.time, course: sched.course,
+        mode: sched.mode, seats: sched.seats,
+        zoomId: sched.zoomId || "", zoomPw: sched.zoomPw || ""
+      })});
       const result = await res.json();
       if (result.success) {
-        loadSchedules();
+        await loadSchedules();
         setEditSched(null);
-        alert("✅ อัปเดตตารางเรียนแล้ว");
-      }
+        // update local state ทันที
+        setSchedules(prev => prev.map(s => s.id === sched.id ? { ...s, ...sched } : s));
+      } else { alert("❌ " + result.message); }
     } catch { alert("เกิดข้อผิดพลาด"); }
     setSavingZoom(null);
   };
@@ -885,7 +903,16 @@ function AdminDashboard({ user, theme, setTheme, onLogout, onLanding }) {
   useEffect(() => {
     Promise.all([
       fetch(GAS_URL + "?action=getMembers").then(r => r.json()).then(res => { if (res.success) setMembers(mapMembers(res.data)); else setMembers(MOCK_MEMBERS); }).catch(() => setMembers(MOCK_MEMBERS)),
-      fetch(GAS_URL + "?action=getSchedules").then(r => r.json()).then(res => { if (res.success && res.data.length > 0) setSchedules(res.data); else setSchedules(MOCK_SCHEDULES); }).catch(() => setSchedules(MOCK_SCHEDULES)),
+      Promise.all([
+        fetch(GAS_URL + "?action=getSchedules").then(r => r.json()),
+        fetch(GAS_URL + "?action=getCheckins").then(r => r.json())
+      ]).then(([schedsRes, checkinsRes]) => {
+        const data = schedsRes.success && schedsRes.data.length > 0 ? schedsRes.data : MOCK_SCHEDULES;
+        const checkins = checkinsRes.success ? checkinsRes.data : [];
+        const countMap = {};
+        checkins.forEach(c => { countMap[String(c.scheduleId)] = (countMap[String(c.scheduleId)] || 0) + 1; });
+        setSchedules(data.map(s => ({ ...s, checkinCount: countMap[String(s.id)] || 0 })));
+      }).catch(() => setSchedules(MOCK_SCHEDULES)),
     ]).finally(() => setLoading(false));
   }, []);
 
@@ -1186,13 +1213,19 @@ function AdminDashboard({ user, theme, setTheme, onLogout, onLanding }) {
                         <div style={{ fontSize: 12, color: theme.muted }}>{s.time}</div>
                       </div>
                       <StatusBadge status={s.mode} />
-                      <div style={{ flex: 1, minWidth: 160 }}>
-                        <div style={{ fontWeight: 600, fontSize: 14 }}>{s.course}</div>
-                        {s.zoomId && <div style={{ fontSize: 12, color: theme.muted }}>ID: {s.zoomId}</div>}
+                      <div style={{ flex: 1, minWidth: 200 }}>
+                        <div style={{ fontWeight: 700, fontSize: 15, marginBottom: 4 }}>{s.course}</div>
+                        <div style={{ display: "flex", gap: 12, flexWrap: "wrap", fontSize: 13, color: theme.muted }}>
+                          <span>📅 {String(s.date).slice(0,10)}</span>
+                          <span>⏰ {s.time || "-"}</span>
+                          {s.mode === "online" && s.zoomId
+                            ? <span style={{ color: "#10B981" }}>✅ Zoom: {s.zoomId}</span>
+                            : s.mode === "online" ? <span style={{ color: "#EF4444" }}>⚠️ ยังไม่มี Zoom</span> : null}
+                        </div>
                       </div>
-                      <div style={{ textAlign: "center", minWidth: 60 }}>
-                        <div style={{ fontWeight: 700 }}>{s.taken || 0}/{s.seats}</div>
-                        <div style={{ fontSize: 11, color: theme.muted }}>ที่นั่ง</div>
+                      <div style={{ textAlign: "center", minWidth: 70 }}>
+                        <div style={{ fontWeight: 800, fontSize: 18, color: s.checkinCount >= s.seats ? "#EF4444" : theme.primary }}>{s.checkinCount || 0}/{s.seats}</div>
+                        <div style={{ fontSize: 11, color: theme.muted }}>Check-in/ที่นั่ง</div>
                       </div>
                       <button
                         onClick={() => setQrSchedule(qrSchedule?.id === s.id ? null : s)}
