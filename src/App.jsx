@@ -556,12 +556,11 @@ function LandingPage({ theme, onAdmin }) {
                 100% { transform: scale(1.5); opacity: 0; }
               }
             `}</style>
-            <Card glow style={{ textAlign: "center", padding: "60px 40px", maxWidth: 480, width: "100%", position: "relative", overflow: "hidden" }}>
-              {/* pulse ring */}
-              <div style={{ position: "absolute", top: "50%", left: "50%", transform: "translate(-50%,-80%)", width: 160, height: 160, borderRadius: "50%", border: "3px solid #10B981", animation: "pulse-ring 1.5s ease-out 0.5s infinite", pointerEvents: "none" }} />
-
+            <Card glow style={{ textAlign: "center", padding: "60px 40px", maxWidth: 480, width: "100%", position: "relative", overflow: "visible" }}>
               {/* SVG checkmark animation */}
-              <div style={{ display: "flex", justifyContent: "center", marginBottom: 32, animation: "popIn 0.6s cubic-bezier(0.175,0.885,0.32,1.275) forwards" }}>
+              <div style={{ display: "flex", justifyContent: "center", marginBottom: 32, animation: "popIn 0.6s cubic-bezier(0.175,0.885,0.32,1.275) forwards", position: "relative" }}>
+                {/* pulse ring */}
+                <div style={{ position: "absolute", top: "50%", left: "50%", transform: "translate(-50%,-50%)", width: 130, height: 130, borderRadius: "50%", border: "3px solid #10B981", animation: "pulse-ring 1.5s ease-out 0.8s infinite", pointerEvents: "none" }} />
                 <svg width="120" height="120" viewBox="0 0 120 120">
                   <circle cx="60" cy="60" r="50" fill="none" stroke="#10B981" strokeWidth="6"
                     strokeDasharray="314" strokeDashoffset="314"
