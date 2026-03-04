@@ -282,69 +282,105 @@ function CheckinSection({ theme, gasUrl, autoCheckinId, autoCheckinType }) {
   const [checking, setChecking] = useState(null);
   const [doneMsg, setDoneMsg] = useState("");
   const [autoCheckinDone, setAutoCheckinDone] = useState(false);
+  const [myCheckins, setMyCheckins] = useState([]); // scheduleIds ที่ user check-in แล้ว
+
+  const loadData = async () => {
+    try {
+      // โหลด schedules + checkins พร้อมกัน
+      const [schedsRes, checkinsRes] = await Promise.all([
+        fetch(gasUrl + "?action=getSchedules").then(r => r.json()),
+        fetch(gasUrl + "?action=getCheckins").then(r => r.json())
+      ]);
+      const checkins = checkinsRes.success ? checkinsRes.data : [];
+      const countMap = {};
+      checkins.forEach(c => { countMap[String(c.scheduleId)] = (countMap[String(c.scheduleId)] || 0) + 1; });
+      if (schedsRes.success) {
+        setSchedules(schedsRes.data.map(s => ({ ...s, checkinCount: countMap[String(s.id)] || 0 })));
+      }
+      // เช็คว่า user check-in course ไหนไปแล้ว
+      const lineId = myLineId || window.__liffUserId;
+      if (lineId) {
+        setMyCheckins(checkins.filter(c => String(c.lineId) === String(lineId)).map(c => String(c.scheduleId)));
+      }
+    } catch {}
+    setLoading(false);
+  };
 
   useEffect(() => {
-    fetch(gasUrl + "?action=getSchedules").then(r => r.json()).then(res => { if (res.success) setSchedules(res.data); }).finally(() => setLoading(false));
     // ดึง lineId จาก LIFF
     const lineId = window.__liffUserId;
-    if (lineId) {
-      setMyLineId(lineId);
-    } else if (window.liff?.isLoggedIn?.()) {
+    if (lineId) setMyLineId(lineId);
+    else if (window.liff?.isLoggedIn?.()) {
       window.liff.getProfile().then(p => setMyLineId(p.userId)).catch(() => {});
     }
+    loadData();
   }, []);
+
+  // อัปเดต myCheckins เมื่อได้ myLineId
+  useEffect(() => {
+    if (myLineId && schedules.length > 0) {
+      fetch(gasUrl + "?action=getCheckins").then(r => r.json()).then(res => {
+        if (res.success) {
+          setMyCheckins(res.data.filter(c => String(c.lineId) === String(myLineId)).map(c => String(c.scheduleId)));
+        }
+      }).catch(() => {});
+    }
+  }, [myLineId]);
 
   // Auto check-in เมื่อมาจาก QR Code
   useEffect(() => {
     if (!autoCheckinId || !myLineId || autoCheckinDone) return;
     setAutoCheckinDone(true);
+    setDoneMsg(`⏳ กำลัง Check-in ฉุกเฉิน...`);
     setChecking(autoCheckinId);
-    fetch(gasUrl, {
-      method: "POST",
-      body: JSON.stringify({ action: "addCheckin", lineId: myLineId, scheduleId: autoCheckinId, type: autoCheckinType || "emergency" })
-    })
+    fetch(gasUrl, { method: "POST", body: JSON.stringify({ action: "addCheckin", lineId: myLineId, scheduleId: autoCheckinId, type: autoCheckinType || "emergency" }) })
       .then(r => r.json())
       .then(result => {
         if (result.success) {
           const fine = result.fine > 0 ? `
-⚠️ มีค่าปรับ ${result.fine} ฿ เนื่องจาก Check-in ฉุกเฉิน` : "";
+⚠️ มีค่าปรับ ${result.fine} ฿` : "";
           setDoneMsg(`✅ Check-in สำเร็จ! Zoom Link ส่งผ่าน Line แล้วครับ 🎉${fine}`);
-        } else {
-          setDoneMsg("❌ " + result.message);
-        }
+          setMyCheckins(prev => [...prev, String(autoCheckinId)]);
+          setSchedules(prev => prev.map(s => String(s.id) === String(autoCheckinId) ? { ...s, checkinCount: (s.checkinCount || 0) + 1 } : s));
+        } else { setDoneMsg("❌ " + result.message); }
         setChecking(null);
-        // clear URL params
         window.history.replaceState({}, "", window.location.pathname);
       })
-      .catch(() => { setDoneMsg("❌ เกิดข้อผิดพลาด กรุณาลองใหม่"); setChecking(null); });
+      .catch(() => { setDoneMsg("❌ เกิดข้อผิดพลาด"); setChecking(null); });
   }, [autoCheckinId, myLineId, autoCheckinDone]);
 
   const handleCheckin = async (schedule) => {
     if (!myLineId) { alert("กรุณาเปิดจาก Line OA เพื่อ Check-in ครับ"); return; }
+    // Optimistic update ทันที
     setChecking(schedule.id);
-    // แสดงผลทันที ไม่รอ API
     setDoneMsg(`⏳ กำลัง Check-in คอร์ส ${schedule.course}...`);
+    setMyCheckins(prev => [...prev, String(schedule.id)]);
+    setSchedules(prev => prev.map(s => s.id === schedule.id ? { ...s, checkinCount: (s.checkinCount || 0) + 1 } : s));
     try {
       const res = await fetch(gasUrl, { method: "POST", body: JSON.stringify({ action: "addCheckin", lineId: myLineId, scheduleId: schedule.id, type: "pre" }) });
       const result = await res.json();
       if (result.success) {
-        // อัปเดต count ใน schedules ทันที
-        setSchedules(prev => prev.map(s => s.id === schedule.id ? { ...s, checkinCount: (s.checkinCount||0) + 1 } : s));
         setDoneMsg(schedule.mode === "online"
           ? `✅ Check-in สำเร็จ!
 📚 ${schedule.course}
-📅 ${String(schedule.date).slice(0,10)} ⏰ ${schedule.time||""}
+📅 ${String(schedule.date).slice(0,10)} ⏰ ${schedule.time || ""}
 
 🎥 Zoom Link ส่งผ่าน Line แล้วครับ`
           : `✅ Check-in สำเร็จ!
 📚 ${schedule.course}
-📅 ${String(schedule.date).slice(0,10)} ⏰ ${schedule.time||""}
+📅 ${String(schedule.date).slice(0,10)} ⏰ ${schedule.time || ""}
 
 📍 พบกันที่สถานที่เรียนครับ 😊`);
       } else {
+        // Rollback ถ้า fail
+        setMyCheckins(prev => prev.filter(id => id !== String(schedule.id)));
+        setSchedules(prev => prev.map(s => s.id === schedule.id ? { ...s, checkinCount: Math.max(0, (s.checkinCount || 1) - 1) } : s));
         setDoneMsg("❌ " + result.message);
       }
-    } catch { setDoneMsg("❌ เกิดข้อผิดพลาด กรุณาลองใหม่"); }
+    } catch {
+      setMyCheckins(prev => prev.filter(id => id !== String(schedule.id)));
+      setDoneMsg("❌ เกิดข้อผิดพลาด กรุณาลองใหม่");
+    }
     setChecking(null);
   };
 
@@ -373,11 +409,8 @@ function CheckinSection({ theme, gasUrl, autoCheckinId, autoCheckinType }) {
 
   return (
     <div>
-      {/* Member info bar */}
       {myLineId ? (
-        <InfoBox type="success" style={{ marginBottom: 16, display: "flex", alignItems: "center", gap: 10 }}>
-          ✅ เข้าสู่ระบบแล้ว — พร้อม Check-in ครับ
-        </InfoBox>
+        <InfoBox type="success" style={{ marginBottom: 16 }}>✅ เข้าสู่ระบบแล้ว — พร้อม Check-in ครับ</InfoBox>
       ) : (
         <InfoBox type="warning">กรุณาเปิดจาก <strong>Line OA The Owner</strong> เพื่อ Check-in อัตโนมัติ — <a href={`https://liff.line.me/${LIFF_ID}`} style={{ color: "#06C755" }}>เปิดผ่าน Line</a></InfoBox>
       )}
@@ -389,28 +422,37 @@ function CheckinSection({ theme, gasUrl, autoCheckinId, autoCheckinType }) {
       ) : (
         <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
           {upcoming.map(s => {
-            const pct = (s.taken || 0) / s.seats;
-            const full = pct >= 1;
+            const count = s.checkinCount || 0;
+            const full = count >= s.seats;
+            const alreadyCheckin = myCheckins.includes(String(s.id));
             return (
-              <Card key={s.id}>
+              <Card key={s.id} style={{ border: alreadyCheckin ? `1px solid #10B98155` : undefined }}>
                 <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", flexWrap: "wrap", gap: 12 }}>
                   <div style={{ flex: 1 }}>
                     <div style={{ display: "flex", gap: 8, flexWrap: "wrap", marginBottom: 8 }}>
                       <StatusBadge status={s.mode} />
-                      {full && <Tag color="#EF4444">เต็มแล้ว</Tag>}
+                      {full && !alreadyCheckin && <Tag color="#EF4444">เต็มแล้ว</Tag>}
+                      {alreadyCheckin && <Tag color="#10B981">✓ ลงเรียนแล้ว</Tag>}
                     </div>
                     <h3 style={{ fontWeight: 700, fontSize: 18, marginBottom: 4 }}>{s.course}</h3>
                     <div style={{ color: theme.muted, fontSize: 14 }}>📅 {String(s.date).slice(0, 10)} &nbsp;⏰ {s.time}</div>
                     <div style={{ marginTop: 10, display: "flex", alignItems: "center", gap: 10 }}>
-                      <div style={{ width: 120, height: 5, background: "rgba(255,255,255,0.1)", borderRadius: 3, overflow: "hidden" }}>
-                        <div style={{ width: `${pct * 100}%`, height: "100%", background: pct > 0.8 ? "#EF4444" : theme.accent }} />
+                      <div style={{ flex: 1, height: 6, background: "rgba(255,255,255,0.1)", borderRadius: 3, overflow: "hidden" }}>
+                        <div style={{ height: "100%", width: `${Math.min(100, (count / s.seats) * 100)}%`, background: full ? "#EF4444" : "#10B981", borderRadius: 3, transition: "width 0.5s" }} />
                       </div>
-                      <span style={{ fontSize: 13, color: theme.muted }}>{s.taken || 0}/{s.seats} ที่นั่ง</span>
+                      <span style={{ fontSize: 13, color: theme.muted }}>{count}/{s.seats} ที่นั่ง</span>
                     </div>
                   </div>
-                  <Btn disabled={full || checking === s.id || !myLineId} onClick={() => handleCheckin(s)} variant={full ? "ghost" : "primary"} style={{ minWidth: 120 }}>
-                    {checking === s.id ? "⏳ กำลังส่ง..." : full ? "เต็มแล้ว" : "✅ Check-in"}
-                  </Btn>
+                  {alreadyCheckin ? (
+                    <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 4, minWidth: 100 }}>
+                      <div style={{ fontSize: 32 }}>✅</div>
+                      <div style={{ fontSize: 12, color: "#10B981", fontWeight: 700 }}>ลงเรียนแล้ว</div>
+                    </div>
+                  ) : (
+                    <Btn disabled={full || checking === s.id || !myLineId} onClick={() => handleCheckin(s)} variant={full ? "ghost" : "primary"} style={{ minWidth: 120 }}>
+                      {checking === s.id ? "⏳ กำลังส่ง..." : full ? "เต็มแล้ว" : "✅ Check-in"}
+                    </Btn>
+                  )}
                 </div>
               </Card>
             );
@@ -421,7 +463,7 @@ function CheckinSection({ theme, gasUrl, autoCheckinId, autoCheckinType }) {
   );
 }
 
-// ─── LANDING PAGE ────────────────────────────
+
 function LandingPage({ theme, onAdmin, autoCheckinId, autoCheckinType }) {
   const [section, setSection] = useState(autoCheckinId ? "checkin" : "home");
 
@@ -831,6 +873,141 @@ function AdminLogin({ theme, onLogin, onBack }) {
 
 // ─── ADMIN DASHBOARD ─────────────────────────
 
+
+// ─── DASHBOARD ───────────────────────────────────
+function exportCSV(data, filename) {
+  if (!data.length) return;
+  const headers = Object.keys(data[0]);
+  const rows = data.map(r => headers.map(h => `"${String(r[h]||"").replace(/"/g,'""')}"`).join(","));
+  const csv = [headers.join(","), ...rows].join("\n");
+  const blob = new Blob(["\uFEFF"+csv], { type: "text/csv;charset=utf-8;" });
+  const a = document.createElement("a"); a.href = URL.createObjectURL(blob); a.download = filename; a.click();
+}
+
+function AdminDashboardPage({ theme, members, schedules, gasUrl }) {
+  const [checkins, setCheckins] = useState([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    fetch(gasUrl + "?action=getCheckins").then(r => r.json())
+      .then(res => { if (res.success) setCheckins(res.data); })
+      .finally(() => setLoading(false));
+  }, []);
+
+  const approved = members.filter(m => m.status === "approved");
+  const pending  = members.filter(m => m.status === "pending");
+  const totalFine = checkins.reduce((s,c) => s + (Number(c.fine)||0), 0);
+
+  // Revenue estimate
+  const revenue = approved.filter(m => m.pkg === "trial").length * 150
+                + approved.filter(m => m.pkg === "quarter").length * 600;
+
+  // checkins by course
+  const byCourse = {};
+  checkins.forEach(c => { byCourse[c.course] = (byCourse[c.course]||0) + 1; });
+  const courseStats = Object.entries(byCourse).sort((a,b) => b[1]-a[1]);
+
+  // checkins by date (last 7 days)
+  const byDate = {};
+  const today = new Date();
+  for (let i=6; i>=0; i--) {
+    const d = new Date(today); d.setDate(d.getDate()-i);
+    byDate[d.toISOString().slice(0,10)] = 0;
+  }
+  checkins.forEach(c => {
+    const d = String(c.date).slice(0,10);
+    if (byDate[d] !== undefined) byDate[d]++;
+  });
+  const dateData = Object.entries(byDate);
+  const maxCount = Math.max(...dateData.map(([,v]) => v), 1);
+
+  const statCards = [
+    { label: "สมาชิกทั้งหมด", value: members.length, color: theme.primary, icon: "👥" },
+    { label: "รออนุมัติ", value: pending.length, color: "#F59E0B", icon: "⏳" },
+    { label: "Check-in ทั้งหมด", value: checkins.length, color: "#10B981", icon: "✅" },
+    { label: "ค่าปรับรวม", value: totalFine + " ฿", color: "#EF4444", icon: "⚠️" },
+    { label: "คอร์สที่เปิด", value: schedules.length, color: "#8B5CF6", icon: "📚" },
+    { label: "รายได้โดยประมาณ", value: revenue.toLocaleString() + " ฿", color: "#06C755", icon: "💰" },
+  ];
+
+  return (
+    <>
+      <div style={{ display:"flex", justifyContent:"space-between", alignItems:"center", marginBottom:8, flexWrap:"wrap", gap:12 }}>
+        <h1 style={{ fontFamily:theme.fontDisplay, fontSize:40, letterSpacing:2 }}>DASH<span style={{ color:theme.primary }}>BOARD</span></h1>
+        <div style={{ display:"flex", gap:10 }}>
+          <Btn variant="ghost" size="sm" onClick={() => exportCSV(members.map(m => ({ ชื่อ:m.name, เบอร์:m.phone, LineID:m.lineId, แพ็กเกจ:m.pkg, สถานะ:m.status, หมดอายุ:m.expiresAt })), "members_report.csv")}>
+            📥 Export สมาชิก
+          </Btn>
+          <Btn variant="ghost" size="sm" onClick={() => exportCSV(checkins.map(c => ({ ชื่อ:c.memberName, คอร์ส:c.course, วันที่:c.date, ประเภท:c.type, ค่าปรับ:c.fine })), "checkins_report.csv")}>
+            📥 Export Check-in
+          </Btn>
+        </div>
+      </div>
+
+      {/* Stat Cards */}
+      <div style={{ display:"grid", gridTemplateColumns:"repeat(auto-fit,minmax(180px,1fr))", gap:16, marginBottom:28 }}>
+        {statCards.map(s => (
+          <Card key={s.label} style={{ padding:"20px 20px" }}>
+            <div style={{ fontSize:28, marginBottom:8 }}>{s.icon}</div>
+            <div style={{ fontFamily:theme.fontDisplay, fontSize:36, fontWeight:800, color:s.color, lineHeight:1 }}>{loading && s.label.includes("Check") ? "..." : s.value}</div>
+            <div style={{ fontSize:12, color:theme.muted, marginTop:6 }}>{s.label}</div>
+          </Card>
+        ))}
+      </div>
+
+      <div style={{ display:"grid", gridTemplateColumns:"1fr 1fr", gap:20, marginBottom:20 }}>
+        {/* Check-in รายวัน 7 วันล่าสุด */}
+        <Card>
+          <h3 style={{ fontWeight:700, marginBottom:16, fontSize:15 }}>📈 Check-in 7 วันล่าสุด</h3>
+          {loading ? <p style={{ color:theme.muted }}>กำลังโหลด...</p> : (
+            <div style={{ display:"flex", alignItems:"flex-end", gap:8, height:120 }}>
+              {dateData.map(([date, count]) => (
+                <div key={date} style={{ flex:1, display:"flex", flexDirection:"column", alignItems:"center", gap:4 }}>
+                  <div style={{ fontSize:11, color:theme.muted }}>{count}</div>
+                  <div style={{ width:"100%", background:theme.primary, borderRadius:"4px 4px 0 0", height: `${(count/maxCount)*100}%`, minHeight: count>0?8:2, opacity:0.85, transition:"height 0.5s" }} />
+                  <div style={{ fontSize:9, color:theme.muted, transform:"rotate(-40deg)", transformOrigin:"top", whiteSpace:"nowrap" }}>{date.slice(5)}</div>
+                </div>
+              ))}
+            </div>
+          )}
+        </Card>
+
+        {/* Top courses */}
+        <Card>
+          <h3 style={{ fontWeight:700, marginBottom:16, fontSize:15 }}>🏆 Check-in แยกตามคอร์ส</h3>
+          {loading ? <p style={{ color:theme.muted }}>กำลังโหลด...</p> : courseStats.length === 0 ? (
+            <p style={{ color:theme.muted }}>ยังไม่มีข้อมูล</p>
+          ) : courseStats.map(([course, count]) => (
+            <div key={course} style={{ marginBottom:10 }}>
+              <div style={{ display:"flex", justifyContent:"space-between", fontSize:13, marginBottom:4 }}>
+                <span style={{ fontWeight:600 }}>{course}</span>
+                <span style={{ color:theme.muted }}>{count} คน</span>
+              </div>
+              <div style={{ height:8, background:"rgba(255,255,255,0.1)", borderRadius:4 }}>
+                <div style={{ height:"100%", width:`${(count/checkins.length)*100}%`, background:theme.primary, borderRadius:4, transition:"width 0.5s" }} />
+              </div>
+            </div>
+          ))}
+        </Card>
+      </div>
+
+      {/* สมาชิก รออนุมัติ */}
+      {pending.length > 0 && (
+        <Card style={{ border:`1px solid #F59E0B55` }}>
+          <h3 style={{ fontWeight:700, marginBottom:12, fontSize:15, color:"#F59E0B" }}>⏳ รออนุมัติ ({pending.length} คน)</h3>
+          <div style={{ display:"flex", flexWrap:"wrap", gap:8 }}>
+            {pending.map(m => (
+              <div key={m.id} style={{ background:"#F59E0B22", border:"1px solid #F59E0B55", borderRadius:8, padding:"6px 14px", fontSize:13 }}>
+                {m.name} <span style={{ color:theme.muted, fontSize:11 }}>({m.pkg})</span>
+              </div>
+            ))}
+          </div>
+        </Card>
+      )}
+    </>
+  );
+}
+
 // ─── CHECKINS REPORT (Admin) ─────────────────
 function CheckinsReport({ theme, gasUrl, schedules }) {
   const [checkins, setCheckins] = useState([]);
@@ -852,7 +1029,10 @@ function CheckinsReport({ theme, gasUrl, schedules }) {
 
   return (
     <>
-      <h1 style={{ fontFamily: theme.fontDisplay, fontSize: 40, letterSpacing: 2, marginBottom: 8 }}>รายงาน <span style={{ color: theme.primary }}>Check-in</span></h1>
+      <div style={{ display:"flex", justifyContent:"space-between", alignItems:"flex-start", marginBottom:8, flexWrap:"wrap", gap:12 }}>
+        <h1 style={{ fontFamily: theme.fontDisplay, fontSize: 40, letterSpacing: 2 }}>รายงาน <span style={{ color: theme.primary }}>Check-in</span></h1>
+        <Btn variant="ghost" size="sm" onClick={() => exportCSV(filtered.map(c => ({ ชื่อ:c.memberName, คอร์ส:c.course, วันที่:String(c.date).slice(0,10), ประเภท:c.type, ค่าปรับ:c.fine })), "checkins_report.csv")}>📥 Export CSV</Btn>
+      </div>
       <p style={{ color: theme.muted, marginBottom: 24 }}>ดูรายชื่อสมาชิกที่ check-in ทุกคอร์ส</p>
 
       {/* Filter */}
@@ -998,7 +1178,7 @@ function MembersPage({ theme, members, loadMembers, onApprove, onReject, gasUrl,
 }
 
 function AdminDashboard({ user, theme, setTheme, onLogout, onLanding }) {
-  const [page, setPage] = useState("approvals");
+  const [page, setPage] = useState("dashboard");
   const [members, setMembers] = useState([]);
   const [schedules, setSchedules] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -1132,6 +1312,7 @@ function AdminDashboard({ user, theme, setTheme, onLogout, onLanding }) {
   ];
 
   const navItems = [
+    { id: "dashboard", label: "Dashboard", icon: "M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6", roles: ["super_admin","helper"] },
     { id: "approvals", label: `อนุมัติสมาชิก${pending.length ? ` (${pending.length})` : ""}`, icon: ICONS.check, roles: ["super_admin","helper"] },
     { id: "members", label: "รายชื่อสมาชิก", icon: ICONS.users, roles: ["super_admin","helper"] },
     { id: "schedule", label: "จัดการตารางเรียน", icon: ICONS.calendar, roles: ["super_admin","helper"] },
@@ -1596,6 +1777,11 @@ function AdminDashboard({ user, theme, setTheme, onLogout, onLanding }) {
                 ))}
               </div>
             </>
+          )}
+
+        {/* DASHBOARD */}
+          {page === "dashboard" && (
+            <AdminDashboardPage theme={theme} members={members} schedules={schedules} gasUrl={GAS_URL} />
           )}
 
         {/* CHECKINS REPORT */}
