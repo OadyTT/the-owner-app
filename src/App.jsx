@@ -34,10 +34,22 @@ async function initLiff() {
 }
 
 const COURSES = [
-  { id: 1, name: "Product Growth 101", icon: "🚀", desc: "สร้างและพัฒนาผลิตภัณฑ์ที่ตลาดต้องการ", img: "" },
-  { id: 2, name: "Business Growth 101", icon: "📈", desc: "กลยุทธ์ขยายธุรกิจให้เติบโตอย่างยั่งยืน", img: "" },
-  { id: 3, name: "Health Buddy Growth 101", icon: "💪", desc: "สุขภาพดี พลังงานเต็ม เพื่อธุรกิจที่ดีกว่า", img: "" },
-  { id: 4, name: "Digital Growth 101", icon: "💻", desc: "Digital Marketing & Growth Hacking", img: "" },
+  { id: 1, name: "Product Growth 101", icon: "🚀",
+    desc: "สร้างและพัฒนาผลิตภัณฑ์ที่ตลาดต้องการ เรียนรู้กลยุทธ์จาก 0 ถึง Product-Market Fit",
+    img: "", gradient: "linear-gradient(135deg,#1A0533 0%,#4C1D95 40%,#7C3AED 100%)",
+    tags: ["Product", "Strategy"], badge: "ยอดนิยม", price: null, mode: "Online & Onsite" },
+  { id: 2, name: "Business Growth 101", icon: "📈",
+    desc: "กลยุทธ์ขยายธุรกิจให้เติบโตอย่างยั่งยืน Revenue Model & Sales Funnel",
+    img: "", gradient: "linear-gradient(135deg,#0C2340 0%,#1E40AF 50%,#3B82F6 100%)",
+    tags: ["Business", "Revenue"], badge: null, price: null, mode: "Online & Onsite" },
+  { id: 3, name: "Health Buddy Growth 101", icon: "💪",
+    desc: "สุขภาพดี พลังงานเต็ม เพื่อสร้างธุรกิจที่ดีกว่าด้วย Mindset & Energy Management",
+    img: "", gradient: "linear-gradient(135deg,#052E16 0%,#065F46 50%,#10B981 100%)",
+    tags: ["Health", "Mindset"], badge: null, price: null, mode: "Online & Onsite" },
+  { id: 4, name: "Digital Growth 101", icon: "💻",
+    desc: "Digital Marketing, Content Strategy & Growth Hacking สำหรับธุรกิจยุคใหม่",
+    img: "", gradient: "linear-gradient(135deg,#1C1005 0%,#78350F 50%,#F59E0B 100%)",
+    tags: ["Digital", "Marketing"], badge: "ใหม่", price: null, mode: "Online & Onsite" },
 ];
 
 const PACKAGES = [
@@ -57,9 +69,19 @@ const MOCK_MEMBERS = [
 ];
 
 const DEFAULT_THEME = {
-  primary: "#0A12FF", accent: "#10B981", bg: "#07091A", card: "#0D1330", surface: "#111827",
-  text: "#F9FAFB", muted: "rgba(249,250,251,0.5)", border: "rgba(255,255,255,0.08)",
-  fontSize: 15, fontBody: "'Sarabun', sans-serif", fontDisplay: "'Bebas Neue', cursive",
+  primary: "#00C9A7",    // teal accent (ai-autoprofit style)
+  accent: "#00E5C4",     // bright teal
+  teal: "#00C9A7",
+  tealDark: "#00997D",
+  bg: "#0B0F14",         // deep dark
+  card: "#141A22",       // dark card
+  surface: "#1A2232",    // slightly lighter surface
+  text: "#F0F4F8",
+  muted: "rgba(240,244,248,0.55)",
+  border: "rgba(255,255,255,0.07)",
+  fontSize: 15,
+  fontBody: "'Sarabun', sans-serif",
+  fontDisplay: "'Bebas Neue', cursive",
 };
 
 function Ic({ d, size = 20, stroke = 2 }) {
@@ -169,7 +191,7 @@ function GlobalStyles({ theme }) {
     <>
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" />
     <style>{`
-      @import url('https://fonts.googleapis.com/css2?family=Sarabun:wght@300;400;500;600;700;800&family=Bebas+Neue&display=swap');
+      @import url('https://fonts.googleapis.com/css2?family=Sarabun:wght@300;400;500;600;700;800&family=Bebas+Neue&family=Noto+Sans+Thai:wght@300;400;500;600;700;800;900&display=swap');
       *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
       html,body,#root{scroll-behavior:smooth;width:100%;max-width:100%;overflow-x:hidden}
       body{background:${theme.bg};color:${theme.text};font-family:${theme.fontBody};font-size:${theme.fontSize}px;line-height:1.6}
@@ -222,6 +244,38 @@ function GlobalStyles({ theme }) {
       /* Scrollable tables on mobile */
       .table-scroll{overflow-x:auto;-webkit-overflow-scrolling:touch}
       .table-scroll table{min-width:600px}
+      /* ── Course card hover ── */
+      .course-card{transition:all 0.3s ease;cursor:pointer}
+      .course-card:hover{transform:translateY(-6px);box-shadow:0 20px 60px rgba(0,201,167,0.18)!important}
+      .course-card:hover .course-img{transform:scale(1.04)}
+      .course-img{transition:transform 0.4s ease;width:100%;display:block}
+      /* ── Teal glow button ── */
+      .btn-teal{background:linear-gradient(135deg,#00C9A7,#00A88A)!important;color:#000!important;font-weight:800!important}
+      .btn-teal:hover{background:linear-gradient(135deg,#00DFB8,#00C9A7)!important;box-shadow:0 8px 32px rgba(0,201,167,0.45)!important;transform:translateY(-2px) scale(1.02)!important}
+      /* ── Teal header band ── */
+      .teal-band{background:linear-gradient(135deg,#00C9A7 0%,#009980 100%)}
+      /* ── Search input ── */
+      .search-input{background:#1A2232;border:1.5px solid rgba(0,201,167,0.2);border-radius:12px;color:#F0F4F8;padding:14px 18px;font-size:15px;width:100%;outline:none;transition:border-color 0.2s}
+      .search-input:focus{border-color:#00C9A7;box-shadow:0 0 0 3px rgba(0,201,167,0.12)}
+      .search-input::placeholder{color:rgba(240,244,248,0.4)}
+      /* ── Filter dropdown ── */
+      .filter-select{background:#1A2232!important;border:1.5px solid rgba(255,255,255,0.1)!important;border-radius:10px!important;color:#F0F4F8!important;padding:10px 16px!important;font-size:14px!important;cursor:pointer}
+      /* ── Skeleton shimmer ── */
+      .skeleton{background:linear-gradient(90deg,#1A2232 25%,#243040 50%,#1A2232 75%);background-size:200% 100%;animation:shimmer 1.5s infinite}
+      /* ── Package card ── */
+      .pkg-popular{position:relative;border:2px solid #00C9A7!important;box-shadow:0 0 40px rgba(0,201,167,0.15)}
+      /* ── Scroll reveal ── */
+      @keyframes revealUp{from{opacity:0;transform:translateY(30px)}to{opacity:1;transform:translateY(0)}}
+      .reveal{animation:revealUp 0.6s ease forwards}
+      .reveal-1{animation-delay:0.1s;opacity:0}
+      .reveal-2{animation-delay:0.2s;opacity:0}
+      .reveal-3{animation-delay:0.3s;opacity:0}
+      .reveal-4{animation-delay:0.4s;opacity:0}
+      /* ── Tag pill ── */
+      .tag-free{background:rgba(0,201,167,0.15);color:#00C9A7;border:1px solid rgba(0,201,167,0.3);border-radius:20px;padding:3px 12px;font-size:12px;font-weight:700}
+      .tag-paid{background:rgba(251,191,36,0.12);color:#FCD34D;border:1px solid rgba(251,191,36,0.3);border-radius:20px;padding:3px 12px;font-size:12px;font-weight:700}
+      /* ── Divider ── */
+      .teal-divider{height:3px;background:linear-gradient(90deg,#00C9A7,transparent);border:none;margin:20px 0}
     `}</style>
     </>
   );
@@ -231,8 +285,8 @@ function Btn({ children, onClick, variant = "primary", size = "md", fullWidth, s
   const theme = window.__theme || DEFAULT_THEME;
   const sizes = { sm: { padding: "8px 16px", fontSize: 13 }, md: { padding: "12px 24px", fontSize: 15 }, lg: { padding: "16px 36px", fontSize: 17 } };
   const variants = {
-    primary: { background: theme.primary, color: "#fff", borderBottom: `3px solid ${theme.primary}88` },
-    accent:  { background: theme.accent, color: "#000", borderBottom: `3px solid ${theme.accent}88` },
+    primary: { background: "linear-gradient(135deg,#00C9A7,#00A88A)", color: "#000", borderBottom: "3px solid #008870" },
+    accent:  { background: "linear-gradient(135deg,#00E5C4,#00C9A7)", color: "#000", borderBottom: "3px solid #00A88A" },
     ghost:   { background: "rgba(255,255,255,0.07)", color: theme.text, borderBottom: "3px solid rgba(255,255,255,0.05)" },
     danger:  { background: "#EF4444", color: "#fff", borderBottom: "3px solid #b91c1c" },
     success: { background: "#10B981", color: "#000", borderBottom: "3px solid #065f46" },
@@ -866,62 +920,114 @@ function LandingPage({ theme, onAdmin, autoCheckinId, autoCheckinType }) {
 
   return (
     <>
-      <nav className="navbar navbar-expand-lg fixed-top" style={{ background: "rgba(7,9,26,0.95)", backdropFilter: "blur(16px)", borderBottom: `1px solid ${theme.border}`, padding: 0 }}>
-        <div className="container-fluid px-3" style={{ maxWidth: 1280, margin: "0 auto" }}>
-          <button onClick={() => scrollTo("home")} className="navbar-brand d-flex align-items-center gap-2" style={{ background: "none", border: "none", cursor: "pointer", textDecoration: "none" }}>
-            <div style={{ width: 36, height: 36, borderRadius: "50%", overflow: "hidden", background: theme.primary, flexShrink: 0 }}>
-              <img src="/the_owner_logo.png" style={{ width: "100%", height: "100%", objectFit: "cover" }} onError={e => { e.target.style.display="none"; }} />
+      <nav style={{ position:"fixed", top:0, left:0, right:0, zIndex:1000, background:"rgba(11,15,20,0.96)", backdropFilter:"blur(20px)", borderBottom:"1px solid rgba(0,201,167,0.12)", padding:0 }}>
+        <div style={{ maxWidth:1280, margin:"0 auto", padding:"0 20px", height:64, display:"flex", alignItems:"center", justifyContent:"space-between" }}>
+          {/* Logo */}
+          <button onClick={() => scrollTo("home")} style={{ background:"none", border:"none", cursor:"pointer", display:"flex", alignItems:"center", gap:10 }}>
+            <div style={{ width:40, height:40, borderRadius:10, overflow:"hidden", flexShrink:0, background:"linear-gradient(135deg,#00C9A7,#0B8F76)", display:"flex", alignItems:"center", justifyContent:"center" }}>
+              <img src="/the_owner_logo.png" style={{ width:"100%", height:"100%", objectFit:"cover" }} onError={e=>{e.target.style.display="none";}} />
             </div>
-            <span style={{ fontFamily: theme.fontDisplay, fontSize: 20, letterSpacing: 3, color: theme.text }}>THE OWNER</span>
+            <div style={{ textAlign:"left" }}>
+              <div style={{ fontFamily:theme.fontDisplay, fontSize:18, letterSpacing:3, color:"#fff", lineHeight:1 }}>THE OWNER</div>
+              <div style={{ fontSize:10, color:theme.primary, fontWeight:600, letterSpacing:1 }}>i am because we are</div>
+            </div>
           </button>
-          <button className="navbar-toggler border-0" type="button" data-bs-toggle="collapse" data-bs-target="#mainNav"
-            style={{ color: theme.text, background: "rgba(255,255,255,0.08)", borderRadius: 8, padding: "6px 10px" }}>
-            <span style={{ fontSize: 20, color: theme.text }}>☰</span>
-          </button>
-          <div className="collapse navbar-collapse" id="mainNav">
-            <ul className="navbar-nav ms-auto align-items-lg-center gap-1 py-2 py-lg-0">
-              {navItems.map(([id, label]) => (
-                <li className="nav-item" key={id}>
-                  <button onClick={() => { scrollTo(id); const el = document.getElementById("mainNav"); if(el.classList.contains("show")){el.classList.remove("show");} }} className="nav-link btn btn-link nav-item"
-                    style={{ color: section === id ? theme.text : theme.muted, fontWeight: 600, fontSize: 13, fontFamily: theme.fontBody, textDecoration: "none", padding: "8px 12px", borderRadius: 8, background: section === id ? "rgba(255,255,255,0.08)" : "none", border: "none" }}>
-                    {label}
-                  </button>
-                </li>
-              ))}
-              <li className="nav-item d-flex align-items-center gap-2">
-                {memberInfo && (
-                  <span style={{ fontSize: 12, background: memberInfo.pkg === "trial" ? "#F59E0B22" : "#10B98122", color: memberInfo.pkg === "trial" ? "#F59E0B" : "#10B981", padding: "4px 10px", borderRadius: 20, fontWeight: 700 }}>
-                    {memberInfo.memberId || memberInfo["Owner Code"] || "สมาชิก"}
-                  </span>
-                )}
-                <Btn size="sm" variant="ghost" onClick={onAdmin}><Ic d={ICONS.shield} size={15} /> Admin</Btn>
-              </li>
-            </ul>
+
+          {/* Desktop Nav */}
+          <div className="mobile-hide" style={{ display:"flex", alignItems:"center", gap:4 }}>
+            {navItems.map(([id, label]) => (
+              <button key={id} onClick={() => scrollTo(id)} style={{ background:"none", border:"none", cursor:"pointer", color: section===id ? theme.primary : theme.muted, fontWeight:600, fontSize:14, fontFamily:theme.fontBody, padding:"8px 14px", borderRadius:8, transition:"all 0.2s", borderBottom: section===id ? `2px solid ${theme.primary}` : "2px solid transparent" }}>
+                {label}
+              </button>
+            ))}
           </div>
+
+          {/* Right side */}
+          <div style={{ display:"flex", alignItems:"center", gap:10 }}>
+            {memberInfo && (
+              <div className="mobile-hide" style={{ background:"rgba(0,201,167,0.12)", border:"1px solid rgba(0,201,167,0.3)", borderRadius:20, padding:"4px 12px", fontSize:12, color:theme.primary, fontWeight:700 }}>
+                {memberInfo.memberId || memberInfo["Owner Code"] || "สมาชิก"}
+              </div>
+            )}
+            <button onClick={() => scrollTo("register")} className="btn-3d btn-teal mobile-hide"
+              style={{ padding:"9px 20px", borderRadius:10, border:"none", cursor:"pointer", fontFamily:theme.fontBody, fontSize:13, fontWeight:800, letterSpacing:0.5 }}>
+              สมัครสมาชิก
+            </button>
+            <button onClick={onAdmin} style={{ background:"rgba(255,255,255,0.07)", border:"1px solid rgba(255,255,255,0.1)", borderRadius:8, padding:"8px 12px", color:theme.muted, cursor:"pointer", fontSize:13 }}>
+              <Ic d={ICONS.shield} size={15} />
+            </button>
+            {/* Mobile hamburger */}
+            <button className="d-lg-none" data-bs-toggle="collapse" data-bs-target="#mainNavMobile"
+              style={{ background:"rgba(255,255,255,0.07)", border:"1px solid rgba(255,255,255,0.1)", borderRadius:8, padding:"8px 10px", color:theme.text, cursor:"pointer", fontSize:18 }}>
+              ☰
+            </button>
+          </div>
+        </div>
+        {/* Mobile menu */}
+        <div className="collapse" id="mainNavMobile" style={{ background:"rgba(11,15,20,0.99)", borderTop:"1px solid rgba(0,201,167,0.1)", padding:"12px 20px 20px" }}>
+          {navItems.map(([id, label]) => (
+            <button key={id} onClick={() => { scrollTo(id); const el=document.getElementById("mainNavMobile"); el.classList.remove("show"); }}
+              style={{ display:"block", width:"100%", background:"none", border:"none", textAlign:"left", color: section===id ? theme.primary : theme.text, fontWeight:600, fontSize:15, fontFamily:theme.fontBody, padding:"12px 0", borderBottom:"1px solid rgba(255,255,255,0.05)", cursor:"pointer" }}>
+              {label}
+            </button>
+          ))}
+          <button onClick={() => scrollTo("register")} className="btn-3d btn-teal"
+            style={{ display:"block", width:"100%", marginTop:16, padding:"12px", borderRadius:12, border:"none", cursor:"pointer", fontFamily:theme.fontBody, fontSize:15, fontWeight:800 }}>
+            สมัครสมาชิก
+          </button>
         </div>
       </nav>
 
       {/* HERO */}
-      <section id="home" style={{ minHeight: "100vh", display: "flex", alignItems: "center", justifyContent: "center", padding: "clamp(80px,12vw,120px) clamp(16px,4vw,24px) 60px", position: "relative", overflow: "hidden" }}>
-        <div style={{ position: "absolute", top: "10%", left: "50%", transform: "translateX(-50%)", width: 700, height: 700, background: `radial-gradient(circle, ${theme.primary}22 0%, transparent 65%)`, pointerEvents: "none" }} />
-        <div style={{ textAlign: "center", maxWidth: 800, position: "relative", margin: "0 auto", padding: "0 16px" }}>
-          <div style={{ display: "inline-flex", alignItems: "center", gap: 8, background: theme.primary + "22", border: `1px solid ${theme.primary}44`, borderRadius: 30, padding: "8px 20px", fontSize: 14, color: theme.primary, fontWeight: 600, marginBottom: 32 }}>
-            <span className="pulse" style={{ width: 8, height: 8, borderRadius: "50%", background: theme.primary, display: "inline-block" }} /> เปิดรับสมาชิกแล้ววันนี้
+      <section id="home" style={{ minHeight:"100vh", display:"flex", alignItems:"center", justifyContent:"center", padding:"clamp(80px,12vw,120px) clamp(16px,4vw,24px) 60px", position:"relative", overflow:"hidden" }}>
+        {/* Background layers */}
+        <div style={{ position:"absolute", inset:0, background:"radial-gradient(ellipse 80% 60% at 50% 0%,rgba(0,201,167,0.12) 0%,transparent 70%)", pointerEvents:"none" }} />
+        <div style={{ position:"absolute", top:"20%", right:"5%", width:400, height:400, background:"radial-gradient(circle,rgba(0,201,167,0.06) 0%,transparent 70%)", pointerEvents:"none", borderRadius:"50%" }} />
+        <div style={{ position:"absolute", inset:0, backgroundImage:"radial-gradient(rgba(0,201,167,0.04) 1px,transparent 1px)", backgroundSize:"40px 40px", pointerEvents:"none" }} />
+
+        <div style={{ textAlign:"center", maxWidth:900, position:"relative", margin:"0 auto", padding:"0 16px" }}>
+          {/* Live badge */}
+          <div className="reveal reveal-1" style={{ display:"inline-flex", alignItems:"center", gap:8, background:"rgba(0,201,167,0.1)", border:"1px solid rgba(0,201,167,0.3)", borderRadius:30, padding:"8px 20px", fontSize:13, color:theme.primary, fontWeight:700, marginBottom:36, letterSpacing:0.5 }}>
+            <span style={{ width:8, height:8, borderRadius:"50%", background:theme.primary, display:"inline-block", animation:"pulse 1.5s infinite", boxShadow:"0 0 8px #00C9A7" }} />
+            เปิดรับสมาชิกใหม่แล้ววันนี้
           </div>
-          <div style={{ width: 120, height: 120, borderRadius: "50%", overflow: "hidden", margin: "0 auto 32px", boxShadow: `0 0 80px ${theme.primary}55`, background: theme.primary }}>
-            <img src="/the_owner_logo.png" style={{ width: "100%", height: "100%", objectFit: "cover" }} onError={e => { e.target.style.display="none"; }} />
+
+          {/* Logo circle */}
+          <div className="reveal reveal-2" style={{ width:110, height:110, borderRadius:"50%", overflow:"hidden", margin:"0 auto 36px", boxShadow:"0 0 60px rgba(0,201,167,0.35), 0 0 120px rgba(0,201,167,0.12)", border:"2px solid rgba(0,201,167,0.3)", background:"linear-gradient(135deg,#00C9A7,#0B8F76)" }}>
+            <img src="/the_owner_logo.png" style={{ width:"100%", height:"100%", objectFit:"cover" }} onError={e=>{e.target.style.display="none";}} />
           </div>
-          <h1 style={{ fontFamily: theme.fontDisplay, fontSize: "clamp(72px, 14vw, 160px)", lineHeight: 0.9, letterSpacing: 6, marginBottom: 24 }}>THE<br /><span style={{ color: theme.primary }}>OWNER</span></h1>
-          <p style={{ fontSize: "clamp(16px, 2.5vw, 22px)", color: theme.muted, marginBottom: 48, lineHeight: 1.8 }}>i am because we are<br />เรียนรู้ · เติบโต · สร้างธุรกิจที่ยั่งยืน</p>
-          <div style={{ display: "flex", gap: 16, justifyContent: "center", flexWrap: "wrap" }}>
-            <Btn size="lg" onClick={() => scrollTo("register")}><Ic d={ICONS.arrowRight} size={20} /> สมัครสมาชิก</Btn>
-            <Btn size="lg" variant="outline" onClick={() => scrollTo("courses")}>ดูคอร์สทั้งหมด</Btn>
+
+          {/* Heading */}
+          <h1 className="reveal reveal-2" style={{ fontFamily:theme.fontDisplay, fontSize:"clamp(80px,15vw,160px)", lineHeight:0.88, letterSpacing:4, marginBottom:20 }}>
+            THE<br /><span style={{ color:theme.primary, textShadow:"0 0 60px rgba(0,201,167,0.5)" }}>OWNER</span>
+          </h1>
+
+          {/* Subtitle */}
+          <p className="reveal reveal-3" style={{ fontSize:"clamp(15px,2.5vw,20px)", color:theme.muted, marginBottom:16, lineHeight:1.8, fontFamily:"'Noto Sans Thai', 'Sarabun', sans-serif" }}>
+            i am because we are
+          </p>
+          <p className="reveal reveal-3" style={{ fontSize:"clamp(18px,3vw,26px)", color:theme.text, marginBottom:52, lineHeight:1.6, fontFamily:"'Noto Sans Thai', 'Sarabun', sans-serif", fontWeight:600 }}>
+            เรียนรู้ · เติบโต · สร้างธุรกิจที่ยั่งยืน
+          </p>
+
+          {/* CTA Buttons */}
+          <div className="reveal reveal-4" style={{ display:"flex", gap:14, justifyContent:"center", flexWrap:"wrap", marginBottom:64 }}>
+            <button className="btn-3d btn-teal" onClick={() => scrollTo("register")}
+              style={{ padding:"16px 40px", borderRadius:12, border:"none", cursor:"pointer", fontFamily:"'Noto Sans Thai', 'Sarabun', sans-serif", fontSize:17, fontWeight:800, letterSpacing:0.5, display:"inline-flex", alignItems:"center", gap:8 }}>
+              สมัครสมาชิก →
+            </button>
+            <button onClick={() => scrollTo("courses")}
+              style={{ padding:"14px 36px", borderRadius:12, border:"1.5px solid rgba(0,201,167,0.35)", background:"rgba(0,201,167,0.05)", color:theme.text, cursor:"pointer", fontFamily:"'Noto Sans Thai', 'Sarabun', sans-serif", fontSize:16, fontWeight:700, transition:"all 0.2s", backdropFilter:"blur(8px)" }}>
+              ดูคอร์สทั้งหมด
+            </button>
           </div>
-          <div style={{ display: "flex", gap: 48, justifyContent: "center", marginTop: 72, flexWrap: "wrap" }}>
-            {[["4","คอร์สหลัก"],["6+","ครั้ง/เดือน"],["150฿","เริ่มต้นที่"],["Online","& Onsite"]].map(([n, l]) => (
-              <div key={l} style={{ textAlign: "center" }}>
-                <div style={{ fontFamily: theme.fontDisplay, fontSize: 40, color: theme.primary, lineHeight: 1 }}>{n}</div>
-                <div style={{ color: theme.muted, fontSize: 13, marginTop: 4 }}>{l}</div>
+
+          {/* Stats row */}
+          <div className="reveal reveal-4" style={{ display:"flex", gap:0, justifyContent:"center", flexWrap:"wrap", padding:"24px 32px", background:"rgba(255,255,255,0.03)", borderRadius:20, border:"1px solid rgba(255,255,255,0.06)", backdropFilter:"blur(10px)" }}>
+            {[["4","คอร์สหลัก"],["6+","ครั้ง / เดือน"],["150฿","เริ่มต้นที่"],["Online","& Onsite"]].map(([n, l], i, arr) => (
+              <div key={l} style={{ textAlign:"center", flex:1, minWidth:100, padding:"12px 0", borderRight: i < arr.length-1 ? "1px solid rgba(255,255,255,0.06)" : "none" }}>
+                <div style={{ fontFamily:theme.fontDisplay, fontSize:40, color:theme.primary, lineHeight:1, letterSpacing:2 }}>{n}</div>
+                <div style={{ color:theme.muted, fontSize:12, marginTop:6, fontWeight:600, letterSpacing:0.5 }}>{l}</div>
               </div>
             ))}
           </div>
@@ -929,22 +1035,76 @@ function LandingPage({ theme, onAdmin, autoCheckinId, autoCheckinType }) {
       </section>
 
       {/* COURSES */}
-      <section id="courses" style={{ padding: "100px 24px", maxWidth: 1280, margin: "0 auto" }}>
-        <div style={{ marginBottom: 48, textAlign: "center" }}>
-          <h2 style={{ fontFamily: theme.fontDisplay, fontSize: "clamp(40px,6vw,64px)", letterSpacing: 2, marginBottom: 12 }}>คอร์ส<span style={{ color: theme.primary }}>ทั้งหมด</span></h2>
-          <p style={{ color: theme.muted }}>เรียนได้ฟรีตามแพ็กเกจที่สมัคร ทั้ง Online และ Onsite</p>
+      <section id="courses" style={{ padding:"0 0 80px" }}>
+        {/* Teal header band - เหมือน ai-autoprofit */}
+        <div className="teal-band" style={{ padding:"40px 24px", textAlign:"center", marginBottom:0 }}>
+          <h2 style={{ fontFamily:"'Noto Sans Thai','Sarabun',sans-serif", fontSize:"clamp(26px,5vw,36px)", fontWeight:900, color:"#0B0F14", marginBottom:8, letterSpacing:0.5 }}>
+            คอร์สทั้งหมด
+          </h2>
+          <p style={{ color:"rgba(11,15,20,0.7)", fontSize:15, fontWeight:600 }}>เลือกคอร์สที่คุณสนใจเพื่อเริ่มต้นการเรียนรู้</p>
         </div>
-        <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(280px, 1fr))", gap: 20 }}>
-          {COURSES.map(c => (
-            <Card key={c.id}>
-              <div style={{ fontSize: 48, marginBottom: 16 }}>{c.icon}</div>
-              <h3 style={{ fontWeight: 700, fontSize: 18, marginBottom: 8 }}>{c.name}</h3>
-              <p style={{ color: theme.muted, fontSize: 14, lineHeight: 1.7 }}>{c.desc}</p>
-              <div style={{ marginTop: 20, display: "flex", gap: 8, flexWrap: "wrap" }}>
-                <Tag color={theme.primary}>Online</Tag><Tag color="#8B5CF6">Onsite</Tag><Tag color={theme.accent}>ฟรีตามแพ็กเกจ</Tag>
+
+        <div style={{ maxWidth:1100, margin:"0 auto", padding:"32px 20px 0" }}>
+          {/* Search + Filter bar */}
+          <div style={{ marginBottom:24 }}>
+            <input className="search-input" placeholder="🔍  ค้นหาคอร์สเรียน..." style={{ marginBottom:12 }} readOnly
+              onClick={() => scrollTo("register")} />
+            <div style={{ display:"flex", gap:10 }}>
+              <div style={{ flex:1, background:"#1A2232", border:"1.5px solid rgba(255,255,255,0.1)", borderRadius:10, padding:"10px 14px", fontSize:14, color:theme.muted, display:"flex", alignItems:"center", gap:8, cursor:"pointer" }}>
+                <span>⚡</span><span style={{ color:theme.text, fontWeight:600 }}>ทั้งหมด</span><span style={{ marginLeft:"auto" }}>▾</span>
               </div>
-            </Card>
-          ))}
+              <div style={{ flex:1, background:"#1A2232", border:"1.5px solid rgba(255,255,255,0.1)", borderRadius:10, padding:"10px 14px", fontSize:14, color:theme.muted, display:"flex", alignItems:"center", gap:8, cursor:"pointer" }}>
+                <span style={{ color:theme.text, fontWeight:600 }}>ใหม่ล่าสุด</span><span style={{ marginLeft:"auto" }}>▾</span>
+              </div>
+            </div>
+          </div>
+
+          {/* Course cards - แบบเดียวกับ ai-autoprofit */}
+          <div style={{ display:"flex", flexDirection:"column", gap:20 }}>
+            {COURSES.map((course, i) => (
+              <div key={course.id} className={`course-card reveal reveal-${Math.min(i+1,4)}`}
+                style={{ background:theme.card, borderRadius:20, overflow:"hidden", border:"1px solid rgba(255,255,255,0.07)", boxShadow:"0 4px 30px rgba(0,0,0,0.3)" }}>
+                {/* Thumbnail - gradient with icon */}
+                <div style={{ position:"relative", height:200, background:course.img ? `url(${course.img}) center/cover` : course.gradient, overflow:"hidden" }}>
+                  {/* Overlay text */}
+                  <div style={{ position:"absolute", inset:0, display:"flex", flexDirection:"column", alignItems:"flex-start", justifyContent:"flex-end", padding:"24px 28px", background:"linear-gradient(to top,rgba(0,0,0,0.6) 0%,transparent 60%)" }}>
+                    <div style={{ fontSize:48, marginBottom:8, filter:"drop-shadow(0 2px 8px rgba(0,0,0,0.5))" }}>{course.icon}</div>
+                  </div>
+                  {/* Badge */}
+                  {course.badge && (
+                    <div style={{ position:"absolute", top:16, right:16, background:course.badge==="ยอดนิยม"?"#EF4444":theme.primary, color:course.badge==="ยอดนิยม"?"#fff":"#000", padding:"4px 14px", borderRadius:20, fontSize:12, fontWeight:800, boxShadow:"0 2px 12px rgba(0,0,0,0.3)" }}>
+                      {course.badge==="ยอดนิยม"?"🔥":""} {course.badge}
+                    </div>
+                  )}
+                  {/* Shimmer effect on hover */}
+                  <div className="course-img" style={{ position:"absolute", inset:0 }} />
+                </div>
+
+                {/* Card body */}
+                <div style={{ padding:"20px 24px 24px" }}>
+                  <h3 style={{ fontFamily:"'Noto Sans Thai','Sarabun',sans-serif", fontWeight:800, fontSize:"clamp(16px,3vw,20px)", marginBottom:10, lineHeight:1.3 }}>{course.name}</h3>
+                  <p style={{ color:theme.muted, fontSize:14, lineHeight:1.7, marginBottom:16 }}>{course.desc}</p>
+
+                  <div style={{ display:"flex", gap:8, flexWrap:"wrap", marginBottom:20 }}>
+                    <span className="tag-free">ฟรีตามแพ็กเกจ</span>
+                    {course.tags.map(t => (
+                      <span key={t} style={{ background:"rgba(255,255,255,0.06)", color:theme.muted, border:"1px solid rgba(255,255,255,0.1)", borderRadius:20, padding:"3px 12px", fontSize:12, fontWeight:600 }}>{t}</span>
+                    ))}
+                  </div>
+
+                  <div style={{ display:"flex", alignItems:"center", justifyContent:"space-between", flexWrap:"wrap", gap:12 }}>
+                    <div style={{ display:"flex", alignItems:"center", gap:6, color:theme.muted, fontSize:13 }}>
+                      <span>🕐</span> <span>{course.mode}</span>
+                    </div>
+                    <button className="btn-3d btn-teal" onClick={() => scrollTo("register")}
+                      style={{ padding:"10px 28px", borderRadius:10, border:"none", cursor:"pointer", fontFamily:"'Noto Sans Thai','Sarabun',sans-serif", fontSize:14, fontWeight:800, display:"inline-flex", alignItems:"center", gap:6 }}>
+                      🔓 สมัครเรียนเลย
+                    </button>
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
         </div>
       </section>
 
@@ -998,74 +1158,102 @@ function LandingPage({ theme, onAdmin, autoCheckinId, autoCheckinType }) {
       </section>
 
       {/* PACKAGES */}
-      <section id="packages" style={{ padding: "100px 24px", maxWidth: 900, margin: "0 auto" }}>
-        <div style={{ marginBottom: 48, textAlign: "center" }}>
-          <h2 style={{ fontFamily: theme.fontDisplay, fontSize: "clamp(40px,6vw,64px)", letterSpacing: 2, marginBottom: 12 }}><span style={{ color: theme.primary }}>แพ็กเกจ</span>สมาชิก</h2>
+      <section id="packages" style={{ padding:"80px 20px", maxWidth:960, margin:"0 auto" }}>
+        {/* Section header */}
+        <div style={{ textAlign:"center", marginBottom:52 }}>
+          <div style={{ display:"inline-block", background:"rgba(0,201,167,0.1)", border:"1px solid rgba(0,201,167,0.2)", borderRadius:20, padding:"6px 18px", fontSize:13, color:theme.primary, fontWeight:700, marginBottom:16, letterSpacing:0.5 }}>
+            💎 เลือกแพ็กเกจ
+          </div>
+          <h2 style={{ fontFamily:theme.fontDisplay, fontSize:"clamp(36px,6vw,60px)", letterSpacing:2, marginBottom:12 }}>
+            <span style={{ color:theme.primary }}>แพ็กเกจ</span>สมาชิก
+          </h2>
+          <p style={{ color:theme.muted, fontSize:15, lineHeight:1.8 }}>เลือกแพ็กเกจที่เหมาะกับคุณ ยิ่งเรียนมาก ยิ่งคุ้มค่า</p>
         </div>
-        <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(300px, 1fr))", gap: 24 }}>
+
+        <div style={{ display:"grid", gridTemplateColumns:"repeat(auto-fit,minmax(300px,1fr))", gap:24 }}>
           {PACKAGES.map(pkg => (
-            <div key={pkg.id} style={{ background: theme.card, border: `2px solid ${pkg.id === "quarter" ? pkg.color : theme.border}`, borderRadius: 24, padding: 40, position: "relative", overflow: "hidden" }}>
-              <div style={{ position: "absolute", top: 0, left: 0, right: 0, height: 4, background: pkg.color }} />
-              {pkg.badge && <div style={{ position: "absolute", top: 20, right: 20, background: pkg.color, color: "#000", padding: "4px 14px", borderRadius: 20, fontSize: 12, fontWeight: 800 }}>⭐ {pkg.badge}</div>}
-              <Tag color={pkg.color}>{pkg.label}</Tag>
-              <div style={{ marginTop: 16, marginBottom: 8 }}>
-                <span style={{ fontFamily: theme.fontDisplay, fontSize: 72, color: pkg.color }}>{pkg.price}</span>
-                <span style={{ fontSize: 16, color: theme.muted }}>฿</span>
+            <div key={pkg.id}
+              className={pkg.id === "quarter" ? "pkg-popular" : ""}
+              style={{ background:theme.card, borderRadius:24, padding:"36px 32px", position:"relative", overflow:"hidden", border:`1px solid ${pkg.id === "quarter" ? "rgba(0,201,167,0.35)" : "rgba(255,255,255,0.07)"}`, transition:"all 0.3s ease" }}>
+              {/* Top accent line */}
+              <div style={{ position:"absolute", top:0, left:0, right:0, height:3, background: pkg.id==="quarter" ? "linear-gradient(90deg,#00C9A7,#00E5C4)" : `linear-gradient(90deg,${pkg.color},transparent)` }} />
+              {/* Glow bg for popular */}
+              {pkg.id === "quarter" && <div style={{ position:"absolute", top:-60, right:-60, width:200, height:200, background:"radial-gradient(circle,rgba(0,201,167,0.08),transparent)", borderRadius:"50%", pointerEvents:"none" }} />}
+
+              {pkg.badge && (
+                <div style={{ position:"absolute", top:18, right:18, background:"linear-gradient(135deg,#00C9A7,#00A88A)", color:"#000", padding:"5px 14px", borderRadius:20, fontSize:11, fontWeight:900, letterSpacing:0.5 }}>
+                  ⭐ {pkg.badge}
+                </div>
+              )}
+
+              {/* Package label */}
+              <div style={{ display:"inline-flex", alignItems:"center", gap:8, background:`${pkg.color}15`, border:`1px solid ${pkg.color}44`, borderRadius:20, padding:"6px 16px", marginBottom:20 }}>
+                <span style={{ width:8, height:8, borderRadius:"50%", background:pkg.color, display:"inline-block" }} />
+                <span style={{ color:pkg.color, fontWeight:800, fontSize:13 }}>{pkg.label}</span>
               </div>
-              <p style={{ color: theme.muted, fontSize: 14, marginBottom: 28 }}>{pkg.duration}</p>
-              <Divider />
-              <ul style={{ listStyle: "none", marginBottom: 32 }}>
-                {(pkg.id === "trial" ? ["เรียนได้ 1 คอร์ส หรือ 1 วัน","Online & Onsite","นับหลัง Check-in ครั้งแรก","เหมาะสำหรับทดลองเรียน"]
-                  : ["เรียนได้ไม่จำกัด 90 วัน","ทุกคอร์ส Online & Onsite","นับหลัง Check-in ครั้งแรก","ประหยัดกว่า Trial มากกว่า 70%"]
+
+              {/* Price */}
+              <div style={{ marginBottom:6 }}>
+                <span style={{ fontFamily:theme.fontDisplay, fontSize:76, color:pkg.id==="quarter"?theme.primary:theme.text, lineHeight:1, letterSpacing:2 }}>{pkg.price}</span>
+                <span style={{ fontSize:20, color:theme.muted, marginLeft:4 }}>฿</span>
+              </div>
+              <p style={{ color:theme.muted, fontSize:14, marginBottom:28 }}>{pkg.duration}</p>
+
+              <hr style={{ border:"none", borderTop:"1px solid rgba(255,255,255,0.07)", margin:"20px 0" }} />
+
+              <ul style={{ listStyle:"none", marginBottom:32, padding:0 }}>
+                {(pkg.id === "trial"
+                  ? ["เรียนได้ 1 คอร์ส หรือ 1 วัน","Online & Onsite ทุกคอร์ส","นับหลัง Check-in ครั้งแรก","เหมาะสำหรับทดลองเรียน"]
+                  : ["เรียนได้ไม่จำกัด 90 วัน","ทุกคอร์ส Online & Onsite","นับหลัง Check-in ครั้งแรก","ประหยัดกว่า Trial มากกว่า 70%","สิทธิ์พิเศษสำหรับสมาชิก"]
                 ).map(t => (
-                  <li key={t} style={{ display: "flex", alignItems: "flex-start", gap: 10, padding: "7px 0", fontSize: 14 }}>
-                    <span style={{ color: pkg.color, flexShrink: 0 }}><Ic d={ICONS.check} size={16} /></span> {t}
+                  <li key={t} style={{ display:"flex", alignItems:"flex-start", gap:10, padding:"7px 0", fontSize:14, borderBottom:"1px solid rgba(255,255,255,0.04)" }}>
+                    <span style={{ color:pkg.id==="quarter"?theme.primary:pkg.color, flexShrink:0, fontWeight:900, fontSize:16 }}>✓</span>
+                    <span style={{ color:theme.text, fontWeight:500 }}>{t}</span>
                   </li>
                 ))}
               </ul>
-              <Btn fullWidth style={{ background: pkg.color, color: pkg.id === "quarter" ? "#000" : "#fff" }} onClick={() => scrollTo("register")}>
-                เลือกแพ็กเกจนี้ <Ic d={ICONS.arrowRight} size={16} />
-              </Btn>
+
+              <button className={`btn-3d ${pkg.id==="quarter"?"btn-teal":""}`}
+                onClick={() => scrollTo("register")}
+                style={{ width:"100%", padding:"14px", borderRadius:12, border: pkg.id==="quarter"?"none":`1.5px solid rgba(255,255,255,0.15)`, cursor:"pointer", fontFamily:"'Noto Sans Thai','Sarabun',sans-serif", fontSize:15, fontWeight:800, background: pkg.id==="quarter"?"linear-gradient(135deg,#00C9A7,#00A88A)":"rgba(255,255,255,0.05)", color: pkg.id==="quarter"?"#000":theme.text, letterSpacing:0.5, display:"flex", alignItems:"center", justifyContent:"center", gap:8 }}>
+                {pkg.id==="quarter"?"⭐":""} เลือกแพ็กเกจนี้
+              </button>
             </div>
           ))}
         </div>
       </section>
 
       {/* HOW TO */}
-      <section id="how" style={{ padding: "100px 24px", background: "rgba(255,255,255,0.015)" }}>
-        <div style={{ maxWidth: 1100, margin: "0 auto" }}>
-          <div style={{ marginBottom: 48, textAlign: "center" }}>
-            <h2 style={{ fontFamily: theme.fontDisplay, fontSize: "clamp(40px,6vw,64px)", letterSpacing: 2, marginBottom: 12 }}>วิธี<span style={{ color: theme.primary }}>สมัคร</span></h2>
+      <section id="how" style={{ padding:"80px 20px", background:"rgba(0,201,167,0.02)", borderTop:"1px solid rgba(0,201,167,0.08)", borderBottom:"1px solid rgba(0,201,167,0.08)" }}>
+        <div style={{ maxWidth:1000, margin:"0 auto" }}>
+          <div style={{ textAlign:"center", marginBottom:52 }}>
+            <div style={{ display:"inline-block", background:"rgba(0,201,167,0.1)", border:"1px solid rgba(0,201,167,0.2)", borderRadius:20, padding:"6px 18px", fontSize:13, color:theme.primary, fontWeight:700, marginBottom:16 }}>📋 วิธีสมัคร</div>
+            <h2 style={{ fontFamily:theme.fontDisplay, fontSize:"clamp(36px,6vw,60px)", letterSpacing:2, marginBottom:12 }}>สมัครง่าย <span style={{ color:theme.primary }}>4 ขั้นตอน</span></h2>
           </div>
-          <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(220px, 1fr))", gap: 20 }}>
-            {[{num:"01",title:"เลือกแพ็กเกจ",desc:"Trial (150฿/ครั้ง) หรือ Quarter (600฿/3เดือน)",icon:"📦"},{num:"02",title:"โอนเงิน",desc:"โอนผ่าน PromptPay หรือ Bangkok Bank",icon:"💳"},{num:"03",title:"แนบสลิป",desc:"กรอกฟอร์มและแนบรูปสลิปการโอนเงิน",icon:"📎"},{num:"04",title:"รอการยืนยัน",desc:"Admin ตรวจสอบและส่งข้อมูลยืนยันผ่าน Line OA ภายใน 24 ชม.",icon:"✅"}].map(s => (
-              <Card key={s.num}>
-                <div style={{ fontSize: 40, marginBottom: 12 }}>{s.icon}</div>
-                <div style={{ fontFamily: theme.fontDisplay, fontSize: 48, color: theme.border, lineHeight: 1, marginBottom: 8 }}>{s.num}</div>
-                <h3 style={{ fontWeight: 700, fontSize: 18, marginBottom: 8 }}>{s.title}</h3>
-                <p style={{ color: theme.muted, fontSize: 14, lineHeight: 1.7 }}>{s.desc}</p>
-              </Card>
+          <div style={{ display:"grid", gridTemplateColumns:"repeat(auto-fit,minmax(220px,1fr))", gap:20 }}>
+            {[
+              { step:"01", title:"เลือกแพ็กเกจ", desc:"Trial 150฿ หรือ Quarter 600฿ ที่เหมาะกับคุณ", icon:"🎯", color:"#00C9A7" },
+              { step:"02", title:"โอนเงิน PromptPay", desc:"โอนเงินและบันทึกภาพสลิปไว้", icon:"💳", color:"#3B82F6" },
+              { step:"03", title:"กรอกฟอร์ม", desc:"กรอกข้อมูลและแนบสลิปใน 1 นาที", icon:"✍️", color:"#8B5CF6" },
+              { step:"04", title:"รอ Approve", desc:"Admin ยืนยัน และส่ง Member ID ให้ทาง LINE", icon:"✅", color:"#F59E0B" },
+            ].map((s, i) => (
+              <div key={i} style={{ background:theme.card, borderRadius:20, padding:"28px 24px", border:`1px solid ${s.color}22`, position:"relative", overflow:"hidden", transition:"all 0.3s" }}>
+                <div style={{ position:"absolute", top:-20, right:-20, fontFamily:theme.fontDisplay, fontSize:80, color:`${s.color}08`, lineHeight:1, pointerEvents:"none", userSelect:"none" }}>{s.step}</div>
+                <div style={{ width:52, height:52, borderRadius:14, background:`${s.color}15`, border:`1px solid ${s.color}33`, display:"flex", alignItems:"center", justifyContent:"center", fontSize:24, marginBottom:16 }}>{s.icon}</div>
+                <div style={{ fontSize:11, color:s.color, fontWeight:800, letterSpacing:1, marginBottom:8 }}>STEP {s.step}</div>
+                <h3 style={{ fontWeight:800, fontSize:16, marginBottom:8 }}>{s.title}</h3>
+                <p style={{ color:theme.muted, fontSize:13, lineHeight:1.7 }}>{s.desc}</p>
+              </div>
             ))}
           </div>
-          <Card style={{ marginTop: 40, background: `linear-gradient(135deg, ${theme.primary}15, ${theme.accent}10)`, border: `1px solid ${theme.primary}30` }}>
-            <h3 style={{ fontWeight: 700, fontSize: 18, marginBottom: 20 }}>🏦 ข้อมูลการชำระเงิน</h3>
-            <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(200px, 1fr))", gap: 20 }}>
-              {[["ธนาคาร","Bangkok Bank"],["PromptPay","089-xxx-2626"],["ชื่อบัญชี","นาง สุพัตรา หงษ์วิเศษ"],["หมายเหตุ","โอนแล้วแนบสลิปในฟอร์ม"]].map(([k,v]) => (
-                <div key={k}>
-                  <div style={{ fontSize: 12, color: theme.muted, marginBottom: 4, textTransform: "uppercase", letterSpacing: 1 }}>{k}</div>
-                  <div style={{ fontWeight: 700, fontSize: 16, color: k === "PromptPay" ? theme.accent : theme.text }}>{v}</div>
-                </div>
-              ))}
-            </div>
-          </Card>
         </div>
       </section>
 
       {/* MEMBER STATUS */}
       {memberInfo && (
-        <section id="member-status" style={{ padding: "80px 24px", maxWidth: 860, margin: "0 auto" }}>
+        <section id="member-status" style={{ padding:"70px 20px", maxWidth:860, margin:"0 auto" }}>
           <div style={{ marginBottom: 28, textAlign: "center" }}>
-            <h2 style={{ fontFamily: theme.fontDisplay, fontSize: "clamp(32px,5vw,56px)", letterSpacing: 2, marginBottom: 8 }}>
+            <h2 style={{ fontFamily: theme.fontDisplay, fontSize: "clamp(32px,5vw,56px)", letterSpacing: 2, marginBottom: 8, color: theme.text }}>
               สถานะ<span style={{ color: theme.primary }}>สมาชิก</span>
             </h2>
           </div>
@@ -1189,9 +1377,10 @@ function LandingPage({ theme, onAdmin, autoCheckinId, autoCheckinType }) {
       </section>
 
       {/* FAQ */}
-      <section id="faq" style={{ padding: "100px 24px", background: "rgba(255,255,255,0.015)" }}>
-        <div style={{ maxWidth: 740, margin: "0 auto" }}>
-          <div style={{ marginBottom: 48, textAlign: "center" }}>
+      <section id="faq" style={{ padding:"80px 20px", background:"rgba(0,0,0,0.2)", borderTop:"1px solid rgba(255,255,255,0.05)" }}>
+        <div style={{ maxWidth:740, margin:"0 auto" }}>
+          <div style={{ textAlign:"center", marginBottom:48 }}>
+            <div style={{ display:"inline-block", background:"rgba(0,201,167,0.1)", border:"1px solid rgba(0,201,167,0.2)", borderRadius:20, padding:"6px 18px", fontSize:13, color:theme.primary, fontWeight:700, marginBottom:16 }}>❓ FAQ</div>
             <h2 style={{ fontFamily: theme.fontDisplay, fontSize: "clamp(40px,6vw,64px)", letterSpacing: 2, marginBottom: 12 }}>FAQ <span style={{ color: theme.primary }}>คำถาม</span>ที่พบบ่อย</h2>
           </div>
           {faqs.map(([q, a], i) => (
@@ -1784,6 +1973,7 @@ function AdminDashboard({ user, theme, setTheme, onLogout, onLanding }) {
     { id: "courses", label: "จัดการคอร์ส", icon: ICONS.book||"M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.746 0 3.332.477 4.5 1.253v13C19.832 18.477 18.246 18 16.5 18c-1.746 0-3.332.477-4.5 1.253", roles: ["super_admin","helper"] },
     { id: "theme", label: "ปรับธีม", icon: ICONS.settings, roles: ["super_admin"] },
     { id: "admins", label: "จัดการ Admin", icon: ICONS.shield, roles: ["super_admin"] },
+    { id: "reports", label: "📊 รายงาน", icon: ICONS.chart||"M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z", roles: ["super_admin","helper"] },
   ].filter(n => n.roles.includes(user.role));
 
   const inputStyle = { width: "100%", background: "rgba(255,255,255,0.05)", border: `1px solid ${theme.border}`, borderRadius: 10, padding: "10px 14px", color: theme.text, fontSize: 14, outline: "none", fontFamily: theme.fontBody };
@@ -2300,9 +2490,680 @@ function AdminDashboard({ user, theme, setTheme, onLogout, onLanding }) {
             <CheckinsReport theme={theme} gasUrl={GAS_URL} schedules={schedules} />
           )}
 
+          {page === "reports" && (
+            <ReportsPage theme={theme} members={members} schedules={schedules} gasUrl={GAS_URL} />
+          )}
+
         </div>
       </main>
     </div>
+  );
+}
+
+
+// ─── REPORT UTILITIES ─────────────────────────────────────────────────────────
+async function loadLib(id, src) {
+  if (document.getElementById(id)) return;
+  return new Promise((res, rej) => {
+    const s = document.createElement("script");
+    s.id = id; s.src = src;
+    s.onload = res; s.onerror = rej;
+    document.head.appendChild(s);
+  });
+}
+
+async function exportToExcel(sheets, filename) {
+  await loadLib("sheetjs", "https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js");
+  const XLSX = window.XLSX;
+  const wb = XLSX.utils.book_new();
+  sheets.forEach(({ name, data, headers }) => {
+    const ws = XLSX.utils.json_to_sheet(data, { header: headers });
+    // Style header row
+    const range = XLSX.utils.decode_range(ws["!ref"] || "A1");
+    for (let C = range.s.c; C <= range.e.c; C++) {
+      const addr = XLSX.utils.encode_cell({ r: 0, c: C });
+      if (!ws[addr]) continue;
+      ws[addr].s = { font: { bold: true, color: { rgb: "FFFFFF" } }, fill: { fgColor: { rgb: "0A12FF" } }, alignment: { horizontal: "center" } };
+    }
+    // Column widths
+    ws["!cols"] = headers.map(h => ({ wch: Math.max(h.length + 4, 14) }));
+    XLSX.utils.book_append_sheet(wb, ws, name);
+  });
+  XLSX.writeFile(wb, filename);
+}
+
+async function captureAsImage(elementId, filename) {
+  await loadLib("html2canvas", "https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js");
+  const el = document.getElementById(elementId);
+  if (!el) return null;
+  const canvas = await window.html2canvas(el, {
+    backgroundColor: "#07091A",
+    scale: 2,
+    useCORS: true,
+    logging: false,
+  });
+  const dataUrl = canvas.toDataURL("image/jpeg", 0.92);
+  if (filename) {
+    const a = document.createElement("a");
+    a.href = dataUrl; a.download = filename; a.click();
+  }
+  return dataUrl;
+}
+
+async function shareToLine(text, imageDataUrl) {
+  if (imageDataUrl) {
+    // Convert to blob and use Web Share API if available
+    const blob = await (await fetch(imageDataUrl)).blob();
+    const file = new File([blob], "report.jpg", { type: "image/jpeg" });
+    if (navigator.share && navigator.canShare && navigator.canShare({ files: [file] })) {
+      await navigator.share({ files: [file], text });
+      return;
+    }
+  }
+  // Fallback: LINE share URL with text
+  const lineUrl = `https://line.me/R/msg/text/?${encodeURIComponent(text)}`;
+  window.open(lineUrl, "_blank");
+}
+
+// ─── REPORTS PAGE ─────────────────────────────────────────────────────────────
+function ReportsPage({ theme, members, schedules, gasUrl }) {
+  const [checkins, setCheckins] = useState([]);
+  const [activeReport, setActiveReport] = useState("summary");
+  const [loadingData, setLoadingData] = useState(true);
+  const [capturing, setCapturing] = useState(false);
+  const [dateFrom, setDateFrom] = useState(() => {
+    const d = new Date(); d.setDate(d.getDate() - 30);
+    return d.toISOString().slice(0,10);
+  });
+  const [dateTo, setDateTo] = useState(new Date().toISOString().slice(0,10));
+  const [shareMsg, setShareMsg] = useState("");
+
+  useEffect(() => {
+    fetch(gasUrl + "?action=getCheckins").then(r => r.json())
+      .then(res => { if (res.success) setCheckins(res.data); })
+      .finally(() => setLoadingData(false));
+  }, []);
+
+  // ── Computed stats ──
+  const approved  = members.filter(m => m.status === "approved");
+  const trial     = approved.filter(m => m.pkg === "trial" || m.package === "trial");
+  const quarter   = approved.filter(m => m.pkg === "quarter" || m.package === "quarter");
+  const pending   = members.filter(m => m.status === "pending");
+  const expired   = members.filter(m => m.status === "expired");
+  const revenue   = trial.length * 150 + quarter.length * 600;
+  const totalFine = checkins.reduce((s,c) => s + (Number(c.fine)||0), 0);
+
+  const filteredCheckins = checkins.filter(c => {
+    const d = String(c.date).slice(0,10);
+    return d >= dateFrom && d <= dateTo;
+  });
+
+  // checkins by course
+  const byCourse = {};
+  filteredCheckins.forEach(c => { byCourse[c.course] = (byCourse[c.course]||0) + 1; });
+  const courseStats = Object.entries(byCourse).sort((a,b) => b[1]-a[1]);
+  const maxCourse = Math.max(...courseStats.map(([,v])=>v), 1);
+
+  // checkins by day (last 30 days in range)
+  const byDay = {};
+  const days = [];
+  const start = new Date(dateFrom), end = new Date(dateTo);
+  for (let d = new Date(start); d <= end; d.setDate(d.getDate()+1)) {
+    const key = d.toISOString().slice(0,10);
+    byDay[key] = 0;
+    days.push(key);
+  }
+  filteredCheckins.forEach(c => { const d = String(c.date).slice(0,10); if (byDay[d] !== undefined) byDay[d]++; });
+  const dayData = days.map(d => [d.slice(5), byDay[d]]); // MM-DD
+  const maxDay = Math.max(...dayData.map(([,v])=>v), 1);
+
+  // members by package
+  const pkgData = [
+    { label: "Quarter", value: quarter.length, color: "#10B981", pct: approved.length ? Math.round(quarter.length/approved.length*100) : 0 },
+    { label: "Trial",   value: trial.length,   color: "#F59E0B", pct: approved.length ? Math.round(trial.length/approved.length*100) : 0 },
+  ];
+
+  // top members by checkin count
+  const memberCheckins = {};
+  checkins.forEach(c => {
+    const k = c.memberName || c.lineId;
+    memberCheckins[k] = (memberCheckins[k]||0) + 1;
+  });
+  const topMembers = Object.entries(memberCheckins).sort((a,b)=>b[1]-a[1]).slice(0,5);
+
+  // ── Export Handlers ──
+  const handleExcelSummary = async () => {
+    await exportToExcel([
+      {
+        name: "สรุปภาพรวม",
+        data: [
+          { หัวข้อ:"สมาชิกทั้งหมด", จำนวน:members.length },
+          { หัวข้อ:"สมาชิก Active", จำนวน:approved.length },
+          { หัวข้อ:"Trial", จำนวน:trial.length },
+          { หัวข้อ:"Quarter", จำนวน:quarter.length },
+          { หัวข้อ:"รอ Approve", จำนวน:pending.length },
+          { หัวข้อ:"หมดอายุ", จำนวน:expired.length },
+          { หัวข้อ:"Check-in ทั้งหมด", จำนวน:checkins.length },
+          { หัวข้อ:"รายได้โดยประมาณ (฿)", จำนวน:revenue },
+          { หัวข้อ:"ค่าปรับรวม (฿)", จำนวน:totalFine },
+        ],
+        headers: ["หัวข้อ","จำนวน"]
+      },
+      {
+        name: "รายชื่อสมาชิก",
+        data: approved.map(m => ({
+          รหัสสมาชิก: m.memberId || m["Owner Code"] || "-",
+          ชื่อ: m.name,
+          เบอร์โทร: m.phone,
+          แพ็กเกจ: m.pkg || m.package,
+          สถานะ: m.status,
+          สมัครเมื่อ: String(m.registeredAt).slice(0,10),
+          หมดอายุ: String(m.expiresAt).slice(0,10),
+        })),
+        headers: ["รหัสสมาชิก","ชื่อ","เบอร์โทร","แพ็กเกจ","สถานะ","สมัครเมื่อ","หมดอายุ"]
+      },
+      {
+        name: "Check-in (ช่วงที่เลือก)",
+        data: filteredCheckins.map(c => ({
+          รหัสสมาชิก: c.memberId || "-",
+          ชื่อ: c.memberName,
+          คอร์ส: c.course,
+          วันที่: String(c.date).slice(0,10),
+          ประเภท: c.type,
+          ค่าปรับ: c.fine || 0,
+        })),
+        headers: ["รหัสสมาชิก","ชื่อ","คอร์ส","วันที่","ประเภท","ค่าปรับ"]
+      },
+      {
+        name: "Check-in แยกตาม Course",
+        data: courseStats.map(([course,count]) => ({ คอร์ส:course, จำนวน:count })),
+        headers: ["คอร์ส","จำนวน"]
+      },
+    ], `TheOwner_Report_${new Date().toISOString().slice(0,10)}.xlsx`);
+  };
+
+  const handleExcelMembers = () => exportToExcel([{
+    name: "Members",
+    data: members.map(m => ({
+      รหัสสมาชิก: m.memberId || m["Owner Code"] || "-",
+      ชื่อ: m.name, เบอร์โทร: m.phone,
+      อีเมล: m.email || "-", แพ็กเกจ: m.pkg || m.package,
+      สถานะ: m.status,
+      สมัครเมื่อ: String(m.registeredAt||"").slice(0,10),
+      หมดอายุ: String(m.expiresAt||"").slice(0,10),
+    })),
+    headers: ["รหัสสมาชิก","ชื่อ","เบอร์โทร","อีเมล","แพ็กเกจ","สถานะ","สมัครเมื่อ","หมดอายุ"]
+  }], `TheOwner_Members_${new Date().toISOString().slice(0,10)}.xlsx`);
+
+  const handleExcelCheckins = () => exportToExcel([{
+    name: "Checkins",
+    data: filteredCheckins.map(c => ({
+      ชื่อ: c.memberName, คอร์ส: c.course,
+      วันที่: String(c.date).slice(0,10), ประเภท: c.type, ค่าปรับ: c.fine||0,
+    })),
+    headers: ["ชื่อ","คอร์ส","วันที่","ประเภท","ค่าปรับ"]
+  }], `TheOwner_Checkins_${new Date().toISOString().slice(0,10)}.xlsx`);
+
+  const handleCapture = async (elementId, filename, lineText) => {
+    setCapturing(true);
+    try {
+      const dataUrl = await captureAsImage(elementId, filename);
+      setShareMsg(lineText);
+    } catch(e) { alert("ไม่สามารถบันทึกภาพได้"); }
+    setCapturing(false);
+  };
+
+  const handleLineShare = async (text, elementId) => {
+    setCapturing(true);
+    try {
+      let imgDataUrl = null;
+      if (elementId) imgDataUrl = await captureAsImage(elementId, null);
+      await shareToLine(text, imgDataUrl);
+    } catch(e) {
+      const lineUrl = `https://line.me/R/msg/text/?${encodeURIComponent(text)}`;
+      window.open(lineUrl, "_blank");
+    }
+    setCapturing(false);
+  };
+
+  const c_ = theme.card;
+  const REPORT_TABS = [
+    { id:"summary",  label:"📊 ภาพรวม" },
+    { id:"members",  label:"👥 สมาชิก" },
+    { id:"checkins", label:"✅ Check-in" },
+    { id:"revenue",  label:"💰 รายได้" },
+  ];
+
+  const today = new Date().toLocaleDateString("th-TH", { year:"numeric", month:"long", day:"numeric" });
+
+  return (
+    <>
+      <div style={{ display:"flex", justifyContent:"space-between", alignItems:"flex-start", marginBottom:24, flexWrap:"wrap", gap:12 }}>
+        <div>
+          <h1 style={{ fontFamily:theme.fontDisplay, fontSize:40, letterSpacing:2 }}>
+            รายงาน <span style={{ color:theme.primary }}>& Analytics</span>
+          </h1>
+          <p style={{ color:theme.muted, fontSize:14 }}>ออกรายงาน Export Excel • บันทึกรูป • แชร์ผ่าน LINE</p>
+        </div>
+        <div style={{ display:"flex", gap:8, flexWrap:"wrap" }}>
+          <Btn variant="success" onClick={handleExcelSummary}>
+            📊 Export รายงานรวม (.xlsx)
+          </Btn>
+          <Btn variant="ghost" onClick={() => handleLineShare(`📊 The Owner Report\n📅 ${today}\n👥 สมาชิก Active: ${approved.length} คน\n💰 รายได้: ${revenue.toLocaleString()} ฿\n✅ Check-in: ${checkins.length} ครั้ง\n\n#TheOwner #Report`, "report-summary-card")}>
+            {capturing ? "⏳" : "📤 แชร์ LINE"}
+          </Btn>
+        </div>
+      </div>
+
+      {/* Date Filter */}
+      <Card style={{ marginBottom:20, padding:"16px 20px" }}>
+        <div className="d-flex align-items-center gap-3 flex-wrap">
+          <span style={{ fontWeight:700, fontSize:14 }}>📅 ช่วงวันที่:</span>
+          <input type="date" value={dateFrom} onChange={e => setDateFrom(e.target.value)}
+            style={{ background:theme.surface, border:`1px solid ${theme.border}`, color:theme.text, padding:"8px 12px", borderRadius:8, fontSize:14 }} />
+          <span style={{ color:theme.muted }}>ถึง</span>
+          <input type="date" value={dateTo} onChange={e => setDateTo(e.target.value)}
+            style={{ background:theme.surface, border:`1px solid ${theme.border}`, color:theme.text, padding:"8px 12px", borderRadius:8, fontSize:14 }} />
+          <span style={{ color:theme.muted, fontSize:13 }}>({filteredCheckins.length} check-ins ในช่วงนี้)</span>
+        </div>
+      </Card>
+
+      {/* Report Tabs */}
+      <div style={{ display:"flex", gap:8, marginBottom:20, flexWrap:"wrap" }}>
+        {REPORT_TABS.map(t => (
+          <button key={t.id} onClick={() => setActiveReport(t.id)}
+            className="btn-3d"
+            style={{ padding:"10px 20px", borderRadius:12, border:"none", cursor:"pointer", fontWeight:700, fontSize:13,
+              background: activeReport===t.id ? theme.primary : "rgba(255,255,255,0.07)",
+              color: activeReport===t.id ? "#fff" : theme.muted, transition:"all 0.2s", fontFamily:theme.fontBody }}>
+            {t.label}
+          </button>
+        ))}
+      </div>
+
+      {/* ══ SUMMARY REPORT ══ */}
+      {activeReport === "summary" && (
+        <div>
+          {/* Capture area */}
+          <div id="report-summary-card">
+            {/* Stat Cards */}
+            <div style={{ display:"grid", gridTemplateColumns:"repeat(auto-fit,minmax(150px,1fr))", gap:14, marginBottom:24 }}>
+              {[
+                { label:"สมาชิก Active", value:approved.length, icon:"👥", color:"#3B82F6" },
+                { label:"Trial", value:trial.length, icon:"🌱", color:"#F59E0B" },
+                { label:"Quarter", value:quarter.length, icon:"⭐", color:"#10B981" },
+                { label:"รอ Approve", value:pending.length, icon:"⏳", color:"#F59E0B" },
+                { label:"Check-in รวม", value:checkins.length, icon:"✅", color:"#10B981" },
+                { label:"ในช่วงที่เลือก", value:filteredCheckins.length, icon:"📅", color:"#8B5CF6" },
+              ].map(s => (
+                <div key={s.label} style={{ background:theme.card, borderRadius:16, padding:"18px 16px", border:`1px solid ${s.color}33`, textAlign:"center" }}>
+                  <div style={{ fontSize:28, marginBottom:6 }}>{s.icon}</div>
+                  <div style={{ fontSize:28, fontWeight:800, color:s.color }}>{s.value}</div>
+                  <div style={{ fontSize:12, color:theme.muted, marginTop:4 }}>{s.label}</div>
+                </div>
+              ))}
+            </div>
+
+            {/* Charts Row */}
+            <div className="row g-3 mb-3">
+              {/* Check-in by Day Bar Chart */}
+              <div className="col-12 col-lg-7">
+                <Card>
+                  <div style={{ display:"flex", justifyContent:"space-between", alignItems:"center", marginBottom:16 }}>
+                    <h3 style={{ fontWeight:700, fontSize:16 }}>📈 Check-in รายวัน</h3>
+                    <Btn size="sm" variant="ghost" onClick={() => handleLineShare(`📈 Check-in ช่วง ${dateFrom} ถึง ${dateTo}\nรวม ${filteredCheckins.length} ครั้ง\n\n#TheOwner`, "chart-daily")}>
+                      📤 LINE
+                    </Btn>
+                  </div>
+                  <div id="chart-daily" style={{ overflowX:"auto" }}>
+                    <div style={{ display:"flex", alignItems:"flex-end", gap:4, height:140, minWidth:Math.max(dayData.length*24, 300), padding:"0 4px" }}>
+                      {dayData.map(([d, v]) => (
+                        <div key={d} style={{ flex:1, display:"flex", flexDirection:"column", alignItems:"center", gap:3 }}>
+                          <div style={{ fontSize:9, color:theme.muted }}>{v>0?v:""}</div>
+                          <div style={{ width:"100%", minWidth:8, background:v>0?theme.primary:"rgba(255,255,255,0.06)", borderRadius:"4px 4px 0 0", height:`${Math.max((v/maxDay)*110,4)}px`, transition:"height 0.5s ease" }} />
+                          <div style={{ fontSize:8, color:theme.muted, transform:"rotate(-40deg)", transformOrigin:"center", whiteSpace:"nowrap" }}>{d}</div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                </Card>
+              </div>
+
+              {/* Package Pie-style */}
+              <div className="col-12 col-lg-5">
+                <Card>
+                  <h3 style={{ fontWeight:700, fontSize:16, marginBottom:16 }}>🥧 สัดส่วนแพ็กเกจ</h3>
+                  <div style={{ display:"flex", flexDirection:"column", gap:12 }}>
+                    {pkgData.map(pkg => (
+                      <div key={pkg.label}>
+                        <div style={{ display:"flex", justifyContent:"space-between", fontSize:14, marginBottom:4 }}>
+                          <span style={{ fontWeight:700, color:pkg.color }}>{pkg.label}</span>
+                          <span style={{ color:theme.muted }}>{pkg.value} คน ({pkg.pct}%)</span>
+                        </div>
+                        <div style={{ background:"rgba(255,255,255,0.07)", borderRadius:8, height:20, overflow:"hidden" }}>
+                          <div style={{ height:"100%", width:`${pkg.pct}%`, background:pkg.color, borderRadius:8, transition:"width 0.8s ease", display:"flex", alignItems:"center", paddingLeft:8 }}>
+                            {pkg.pct > 15 && <span style={{ fontSize:11, fontWeight:700, color:"#000" }}>{pkg.pct}%</span>}
+                          </div>
+                        </div>
+                      </div>
+                    ))}
+                    <div style={{ marginTop:8, padding:"10px 14px", background:"rgba(255,255,255,0.04)", borderRadius:10 }}>
+                      <div style={{ fontSize:12, color:theme.muted }}>รายได้โดยประมาณ</div>
+                      <div style={{ fontSize:22, fontWeight:800, color:"#10B981" }}>฿{revenue.toLocaleString()}</div>
+                    </div>
+                  </div>
+                </Card>
+              </div>
+
+              {/* Course stats */}
+              <div className="col-12">
+                <Card>
+                  <div style={{ display:"flex", justifyContent:"space-between", alignItems:"center", marginBottom:14 }}>
+                    <h3 style={{ fontWeight:700, fontSize:16 }}>📚 Check-in แยกตาม Course</h3>
+                    <Btn size="sm" variant="ghost" onClick={() => handleLineShare(
+                      `📚 The Owner - Check-in by Course\n${courseStats.map(([c,v])=>`${c}: ${v} ครั้ง`).join("\n")}\n\n#TheOwner`,
+                      "chart-courses")}>📤 LINE</Btn>
+                  </div>
+                  <div id="chart-courses" style={{ display:"flex", flexDirection:"column", gap:10 }}>
+                    {courseStats.length === 0
+                      ? <div style={{ color:theme.muted, textAlign:"center", padding:20 }}>ยังไม่มีข้อมูล Check-in ในช่วงนี้</div>
+                      : courseStats.map(([course, count]) => (
+                      <div key={course}>
+                        <div style={{ display:"flex", justifyContent:"space-between", fontSize:14, marginBottom:4 }}>
+                          <span style={{ fontWeight:600 }}>{course}</span>
+                          <span style={{ color:theme.primary, fontWeight:700 }}>{count} ครั้ง</span>
+                        </div>
+                        <div style={{ background:"rgba(255,255,255,0.06)", borderRadius:8, height:16 }}>
+                          <div style={{ height:"100%", width:`${(count/maxCourse)*100}%`, background:`linear-gradient(90deg,${theme.primary},${theme.accent})`, borderRadius:8, transition:"width 0.8s ease" }} />
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </Card>
+              </div>
+            </div>
+          </div>
+
+          {/* Export buttons */}
+          <div style={{ display:"flex", gap:10, flexWrap:"wrap", marginTop:8 }}>
+            <Btn variant="success" onClick={handleExcelSummary}>📊 Export .xlsx</Btn>
+            <Btn variant="outline" onClick={() => handleCapture("report-summary-card", `TheOwner_Summary_${dateFrom}_${dateTo}.jpg`,
+              `📊 The Owner Report ${today}`)}>
+              {capturing ? "⏳ กำลังบันทึก..." : "🖼 บันทึกเป็นรูป (.jpg)"}
+            </Btn>
+            <Btn variant="ghost" onClick={() => handleLineShare(
+              `📊 The Owner Report\n📅 ${today}\n\n👥 สมาชิก Active: ${approved.length} คน\n  🌱 Trial: ${trial.length} | ⭐ Quarter: ${quarter.length}\n  ⏳ รอ Approve: ${pending.length}\n\n✅ Check-in (${dateFrom}→${dateTo}): ${filteredCheckins.length} ครั้ง\n📚 Course ยอดนิยม: ${courseStats[0]?.[0] || "-"}\n\n💰 รายได้: ฿${revenue.toLocaleString()}\n⚠️ ค่าปรับ: ฿${totalFine.toLocaleString()}\n\n#TheOwner #MemberReport`,
+              "report-summary-card")}>
+              {capturing ? "⏳" : "📲 แชร์ LINE"}
+            </Btn>
+          </div>
+        </div>
+      )}
+
+      {/* ══ MEMBERS REPORT ══ */}
+      {activeReport === "members" && (
+        <div>
+          <div id="report-members-card">
+            <div style={{ display:"grid", gridTemplateColumns:"repeat(auto-fit,minmax(160px,1fr))", gap:14, marginBottom:20 }}>
+              {[
+                { label:"ทั้งหมด",    value:members.length,   color:theme.primary },
+                { label:"Active",     value:approved.length,  color:"#10B981" },
+                { label:"Trial",      value:trial.length,     color:"#F59E0B" },
+                { label:"Quarter",    value:quarter.length,   color:"#10B981" },
+                { label:"รอ Approve", value:pending.length,   color:"#F59E0B" },
+                { label:"หมดอายุ",   value:expired.length,   color:"#EF4444" },
+              ].map(s => (
+                <div key={s.label} style={{ background:theme.card, borderRadius:14, padding:"14px 16px", textAlign:"center", border:`1px solid ${s.color}33` }}>
+                  <div style={{ fontSize:26, fontWeight:800, color:s.color }}>{s.value}</div>
+                  <div style={{ fontSize:12, color:theme.muted, marginTop:3 }}>{s.label}</div>
+                </div>
+              ))}
+            </div>
+
+            {/* Members table */}
+            <Card>
+              <div style={{ display:"flex", justifyContent:"space-between", alignItems:"center", marginBottom:14 }}>
+                <h3 style={{ fontWeight:700, fontSize:16 }}>รายชื่อสมาชิก Active ({approved.length} คน)</h3>
+              </div>
+              <div className="table-scroll">
+                <table style={{ width:"100%", borderCollapse:"collapse", fontSize:13 }}>
+                  <thead>
+                    <tr style={{ background:theme.surface }}>
+                      {["รหัส","ชื่อ","แพ็กเกจ","สมัครเมื่อ","หมดอายุ","วันที่เหลือ"].map(h => (
+                        <th key={h} style={{ padding:"10px 12px", textAlign:"left", color:theme.muted, fontWeight:700, fontSize:12, borderBottom:`1px solid ${theme.border}` }}>{h}</th>
+                      ))}
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {approved.map((m,i) => {
+                      const exp = new Date(m.expiresAt || m.expiresAt);
+                      const days = Math.ceil((exp - new Date()) / 86400000);
+                      const pkg = m.pkg || m.package;
+                      return (
+                        <tr key={i} style={{ borderBottom:`1px solid ${theme.border}22` }}>
+                          <td style={{ padding:"10px 12px" }}>
+                            <span style={{ background:pkg==="trial"?"#F59E0B22":"#10B98122", color:pkg==="trial"?"#F59E0B":"#10B981", padding:"2px 8px", borderRadius:6, fontWeight:700, fontSize:11 }}>
+                              {m.memberId || m["Owner Code"] || "-"}
+                            </span>
+                          </td>
+                          <td style={{ padding:"10px 12px", fontWeight:600 }}>{m.name}</td>
+                          <td style={{ padding:"10px 12px" }}>
+                            <span style={{ color:pkg==="trial"?"#F59E0B":"#10B981", fontWeight:700 }}>{pkg}</span>
+                          </td>
+                          <td style={{ padding:"10px 12px", color:theme.muted, fontSize:12 }}>{String(m.registeredAt||"").slice(0,10)}</td>
+                          <td style={{ padding:"10px 12px", color:theme.muted, fontSize:12 }}>{String(m.expiresAt||"").slice(0,10)}</td>
+                          <td style={{ padding:"10px 12px" }}>
+                            <span style={{ color:days<=7?"#EF4444":days<=30?"#F59E0B":"#10B981", fontWeight:700 }}>
+                              {days>0?`${days} วัน`:"หมดอายุ"}
+                            </span>
+                          </td>
+                        </tr>
+                      );
+                    })}
+                  </tbody>
+                </table>
+              </div>
+            </Card>
+
+            {/* Top check-in members */}
+            <Card style={{ marginTop:16 }}>
+              <h3 style={{ fontWeight:700, fontSize:16, marginBottom:14 }}>🏆 Top 5 สมาชิก Check-in มากที่สุด</h3>
+              {topMembers.map(([name, count], i) => (
+                <div key={i} style={{ display:"flex", alignItems:"center", gap:12, marginBottom:10 }}>
+                  <div style={{ width:28, height:28, borderRadius:"50%", background:[theme.primary,"#F59E0B","#10B981","#8B5CF6","#EF4444"][i]+"33", display:"flex", alignItems:"center", justifyContent:"center", fontWeight:800, fontSize:14, color:[theme.primary,"#F59E0B","#10B981","#8B5CF6","#EF4444"][i] }}>{i+1}</div>
+                  <div style={{ flex:1 }}>
+                    <div style={{ fontWeight:600, fontSize:14 }}>{name}</div>
+                    <div style={{ height:6, background:"rgba(255,255,255,0.06)", borderRadius:3, marginTop:4 }}>
+                      <div style={{ height:"100%", width:`${(count/(topMembers[0]?.[1]||1))*100}%`, background:theme.primary, borderRadius:3 }} />
+                    </div>
+                  </div>
+                  <span style={{ fontWeight:800, color:theme.primary, minWidth:36, textAlign:"right" }}>{count}</span>
+                </div>
+              ))}
+            </Card>
+          </div>
+
+          <div style={{ display:"flex", gap:10, flexWrap:"wrap", marginTop:16 }}>
+            <Btn variant="success" onClick={handleExcelMembers}>📊 Export Members .xlsx</Btn>
+            <Btn variant="outline" onClick={() => handleCapture("report-members-card", `TheOwner_Members_${new Date().toISOString().slice(0,10)}.jpg`, "")}>
+              {capturing?"⏳":"🖼 บันทึกรูป"}
+            </Btn>
+            <Btn variant="ghost" onClick={() => handleLineShare(
+              `👥 The Owner - รายงานสมาชิก\n📅 ${today}\n\n✅ Active: ${approved.length} คน\n  🌱 Trial: ${trial.length} | ⭐ Quarter: ${quarter.length}\n⏳ รอ Approve: ${pending.length}\n❌ หมดอายุ: ${expired.length}\n\n🏆 Top Check-in: ${topMembers[0]?.[0]||"-"} (${topMembers[0]?.[1]||0} ครั้ง)\n\n#TheOwner #Members`,
+              "report-members-card")}>
+              {capturing?"⏳":"📲 แชร์ LINE"}
+            </Btn>
+          </div>
+        </div>
+      )}
+
+      {/* ══ CHECKINS REPORT ══ */}
+      {activeReport === "checkins" && (
+        <div>
+          <div id="report-checkins-card">
+            <div style={{ display:"grid", gridTemplateColumns:"repeat(auto-fit,minmax(150px,1fr))", gap:14, marginBottom:20 }}>
+              {[
+                { label:"Check-in ทั้งหมด", value:checkins.length, color:theme.primary },
+                { label:"ในช่วงที่เลือก", value:filteredCheckins.length, color:"#8B5CF6" },
+                { label:"ล่วงหน้า", value:filteredCheckins.filter(c=>c.type==="pre").length, color:"#10B981" },
+                { label:"ฉุกเฉิน", value:filteredCheckins.filter(c=>c.type==="emergency").length, color:"#EF4444" },
+                { label:"ค่าปรับรวม", value:`฿${totalFine.toLocaleString()}`, color:"#F59E0B" },
+              ].map(s => (
+                <div key={s.label} style={{ background:theme.card, borderRadius:14, padding:"14px 16px", textAlign:"center", border:`1px solid ${s.color}33` }}>
+                  <div style={{ fontSize:22, fontWeight:800, color:s.color }}>{s.value}</div>
+                  <div style={{ fontSize:12, color:theme.muted, marginTop:3 }}>{s.label}</div>
+                </div>
+              ))}
+            </div>
+
+            <Card>
+              <div style={{ display:"flex", justifyContent:"space-between", alignItems:"center", marginBottom:14 }}>
+                <h3 style={{ fontWeight:700, fontSize:16 }}>Check-in ({dateFrom} → {dateTo})</h3>
+                <span style={{ fontSize:13, color:theme.muted }}>{filteredCheckins.length} รายการ</span>
+              </div>
+              <div className="table-scroll">
+                <table style={{ width:"100%", borderCollapse:"collapse", fontSize:13 }}>
+                  <thead>
+                    <tr style={{ background:theme.surface }}>
+                      {["ชื่อ","คอร์ส","วันที่","ประเภท","ค่าปรับ"].map(h => (
+                        <th key={h} style={{ padding:"10px 12px", textAlign:"left", color:theme.muted, fontWeight:700, fontSize:12, borderBottom:`1px solid ${theme.border}` }}>{h}</th>
+                      ))}
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {filteredCheckins.slice(0,50).map((ci,i) => (
+                      <tr key={i} style={{ borderBottom:`1px solid ${theme.border}22` }}>
+                        <td style={{ padding:"9px 12px", fontWeight:600 }}>{ci.memberName}</td>
+                        <td style={{ padding:"9px 12px", color:theme.muted, fontSize:12 }}>{ci.course}</td>
+                        <td style={{ padding:"9px 12px", color:theme.muted, fontSize:12 }}>{String(ci.date).slice(0,10)}</td>
+                        <td style={{ padding:"9px 12px" }}><StatusBadge status={ci.type} /></td>
+                        <td style={{ padding:"9px 12px", color:Number(ci.fine)>0?"#EF4444":theme.muted }}>{Number(ci.fine)>0?`฿${ci.fine}`:"-"}</td>
+                      </tr>
+                    ))}
+                    {filteredCheckins.length > 50 && (
+                      <tr><td colSpan={5} style={{ padding:12, textAlign:"center", color:theme.muted, fontSize:12 }}>และอีก {filteredCheckins.length-50} รายการ — Export .xlsx เพื่อดูทั้งหมด</td></tr>
+                    )}
+                  </tbody>
+                </table>
+              </div>
+            </Card>
+          </div>
+
+          <div style={{ display:"flex", gap:10, flexWrap:"wrap", marginTop:16 }}>
+            <Btn variant="success" onClick={handleExcelCheckins}>📊 Export Checkins .xlsx</Btn>
+            <Btn variant="outline" onClick={() => handleCapture("report-checkins-card", `TheOwner_Checkins_${dateFrom}_${dateTo}.jpg`, "")}>
+              {capturing?"⏳":"🖼 บันทึกรูป"}
+            </Btn>
+            <Btn variant="ghost" onClick={() => handleLineShare(
+              `✅ The Owner - รายงาน Check-in\n📅 ${dateFrom} ถึง ${dateTo}\n\n📊 รวม ${filteredCheckins.length} ครั้ง\n🟢 ล่วงหน้า: ${filteredCheckins.filter(c=>c.type==="pre").length}\n🔴 ฉุกเฉิน: ${filteredCheckins.filter(c=>c.type==="emergency").length}\n💸 ค่าปรับ: ฿${totalFine.toLocaleString()}\n\n📚 Course:\n${courseStats.map(([c,v])=>`  ${c}: ${v} ครั้ง`).join("\n")}\n\n#TheOwner #Checkin`,
+              "report-checkins-card")}>
+              {capturing?"⏳":"📲 แชร์ LINE"}
+            </Btn>
+          </div>
+        </div>
+      )}
+
+      {/* ══ REVENUE REPORT ══ */}
+      {activeReport === "revenue" && (
+        <div>
+          <div id="report-revenue-card">
+            {/* Revenue overview */}
+            <div style={{ display:"grid", gridTemplateColumns:"repeat(auto-fit,minmax(180px,1fr))", gap:16, marginBottom:20 }}>
+              {[
+                { label:"รายได้รวม (Active)", value:`฿${revenue.toLocaleString()}`, icon:"💰", color:"#10B981", sub:`${approved.length} สมาชิก` },
+                { label:"Trial × 150฿", value:`฿${(trial.length*150).toLocaleString()}`, icon:"🌱", color:"#F59E0B", sub:`${trial.length} คน` },
+                { label:"Quarter × 600฿", value:`฿${(quarter.length*600).toLocaleString()}`, icon:"⭐", color:"#10B981", sub:`${quarter.length} คน` },
+                { label:"ค่าปรับสะสม", value:`฿${totalFine.toLocaleString()}`, icon:"⚠️", color:"#EF4444", sub:"รวมทุก check-in" },
+              ].map(s => (
+                <div key={s.label} style={{ background:theme.card, borderRadius:16, padding:"20px 18px", border:`1px solid ${s.color}44` }}>
+                  <div style={{ fontSize:28, marginBottom:8 }}>{s.icon}</div>
+                  <div style={{ fontSize:24, fontWeight:800, color:s.color }}>{s.value}</div>
+                  <div style={{ fontSize:13, fontWeight:600, marginTop:4 }}>{s.label}</div>
+                  <div style={{ fontSize:12, color:theme.muted, marginTop:2 }}>{s.sub}</div>
+                </div>
+              ))}
+            </div>
+
+            {/* Revenue breakdown chart */}
+            <Card style={{ marginBottom:16 }}>
+              <h3 style={{ fontWeight:700, fontSize:16, marginBottom:16 }}>💰 สัดส่วนรายได้</h3>
+              {[
+                { label:"Trial (150฿/ราย)", value:trial.length*150, total:revenue, color:"#F59E0B", count:trial.length },
+                { label:"Quarter (600฿/ราย)", value:quarter.length*600, total:revenue, color:"#10B981", count:quarter.length },
+              ].map(row => (
+                <div key={row.label} style={{ marginBottom:14 }}>
+                  <div style={{ display:"flex", justifyContent:"space-between", marginBottom:6 }}>
+                    <span style={{ fontWeight:600, fontSize:14 }}>{row.label}</span>
+                    <span style={{ fontWeight:700, color:row.color }}>฿{row.value.toLocaleString()} ({row.count} คน)</span>
+                  </div>
+                  <div style={{ background:"rgba(255,255,255,0.07)", borderRadius:10, height:24, overflow:"hidden" }}>
+                    <div style={{ height:"100%", width:revenue?`${(row.value/revenue)*100}%`:"0%", background:row.color, borderRadius:10, display:"flex", alignItems:"center", paddingLeft:10, transition:"width 0.8s" }}>
+                      {revenue && (row.value/revenue)*100 > 10 && <span style={{ fontSize:12, fontWeight:700, color:"#000" }}>{Math.round((row.value/revenue)*100)}%</span>}
+                    </div>
+                  </div>
+                </div>
+              ))}
+              <div style={{ marginTop:16, paddingTop:14, borderTop:`1px solid ${theme.border}`, display:"flex", justifyContent:"space-between", alignItems:"center" }}>
+                <span style={{ fontWeight:700 }}>รวมทั้งหมด</span>
+                <span style={{ fontSize:24, fontWeight:800, color:"#10B981" }}>฿{revenue.toLocaleString()}</span>
+              </div>
+            </Card>
+
+            {/* Expiry warning */}
+            {(() => {
+              const soon = approved.filter(m => {
+                const d = Math.ceil((new Date(m.expiresAt) - new Date()) / 86400000);
+                return d >= 0 && d <= 14;
+              });
+              return soon.length > 0 ? (
+                <Card style={{ border:"1px solid #F59E0B55" }}>
+                  <h3 style={{ fontWeight:700, fontSize:15, marginBottom:12, color:"#F59E0B" }}>⚠️ สมาชิกใกล้หมดอายุ ({soon.length} คน - ภายใน 14 วัน)</h3>
+                  <div style={{ display:"flex", flexDirection:"column", gap:8 }}>
+                    {soon.sort((a,b) => new Date(a.expiresAt)-new Date(b.expiresAt)).map((m,i) => {
+                      const days = Math.ceil((new Date(m.expiresAt) - new Date()) / 86400000);
+                      return (
+                        <div key={i} style={{ display:"flex", justifyContent:"space-between", alignItems:"center", padding:"10px 14px", background:"rgba(245,158,11,0.08)", borderRadius:10 }}>
+                          <div>
+                            <span style={{ fontWeight:700 }}>{m.name}</span>
+                            <span style={{ fontSize:12, color:theme.muted, marginLeft:8 }}>{m.memberId || "-"}</span>
+                          </div>
+                          <span style={{ color:days<=3?"#EF4444":"#F59E0B", fontWeight:800, fontSize:14 }}>{days} วัน</span>
+                        </div>
+                      );
+                    })}
+                  </div>
+                </Card>
+              ) : null;
+            })()}
+          </div>
+
+          <div style={{ display:"flex", gap:10, flexWrap:"wrap", marginTop:16 }}>
+            <Btn variant="success" onClick={() => exportToExcel([{
+              name:"Revenue",
+              data:[
+                { หัวข้อ:"รายได้รวม", จำนวน:revenue, หน่วย:"฿" },
+                { หัวข้อ:"Trial (150฿)", จำนวน:trial.length*150, หน่วย:"฿" },
+                { หัวข้อ:"Quarter (600฿)", จำนวน:quarter.length*600, หน่วย:"฿" },
+                { หัวข้อ:"ค่าปรับรวม", จำนวน:totalFine, หน่วย:"฿" },
+                { หัวข้อ:"สมาชิก Trial", จำนวน:trial.length, หน่วย:"คน" },
+                { หัวข้อ:"สมาชิก Quarter", จำนวน:quarter.length, หน่วย:"คน" },
+              ],
+              headers:["หัวข้อ","จำนวน","หน่วย"]
+            }], `TheOwner_Revenue_${new Date().toISOString().slice(0,10)}.xlsx`)}>
+              📊 Export Revenue .xlsx
+            </Btn>
+            <Btn variant="outline" onClick={() => handleCapture("report-revenue-card", `TheOwner_Revenue_${new Date().toISOString().slice(0,10)}.jpg`, "")}>
+              {capturing?"⏳":"🖼 บันทึกรูป"}
+            </Btn>
+            <Btn variant="ghost" onClick={() => handleLineShare(
+              `💰 The Owner - รายงานรายได้\n📅 ${today}\n\n💰 รายได้รวม: ฿${revenue.toLocaleString()}\n  🌱 Trial: ฿${(trial.length*150).toLocaleString()} (${trial.length} คน)\n  ⭐ Quarter: ฿${(quarter.length*600).toLocaleString()} (${quarter.length} คน)\n⚠️ ค่าปรับ: ฿${totalFine.toLocaleString()}\n\n#TheOwner #Revenue`,
+              "report-revenue-card")}>
+              {capturing?"⏳":"📲 แชร์ LINE"}
+            </Btn>
+          </div>
+        </div>
+      )}
+    </>
   );
 }
 
