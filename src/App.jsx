@@ -153,6 +153,17 @@ function useSortable(data, defaultField = "", defaultDir = "asc") {
   return { sorted, sortBy, sortDir, onSort };
 }
 
+// ─── INPUT SANITIZATION ─────────────────────
+const sanitize = (str, opts = {}) => {
+  if (!str) return "";
+  let s = String(str);
+  if (opts.type === "phone") return s.replace(/\D/g, "").slice(0, 10);
+  if (opts.type === "name")  return s.replace(/[<>&"'`]/g, "").slice(0, 25);
+  if (opts.type === "email") return s.replace(/[<>&"'`]/g, "").slice(0, 60);
+  return s.replace(/[<>&"'`]/g, "").slice(0, opts.max || 500);
+};
+
+
 function GlobalStyles({ theme }) {
   return (
     <>
@@ -186,19 +197,31 @@ function GlobalStyles({ theme }) {
       @keyframes slideInRight{from{opacity:0;transform:translateX(30px)}to{opacity:1;transform:translateX(0)}}
       @keyframes shimmer{0%{background-position:-200% 0}100%{background-position:200% 0}}
       /* Responsive */
+      /* ── Mobile Responsive ── */
+      @media(max-width:991px){
+        .navbar-collapse{background:rgba(7,9,26,0.98)!important;padding:12px 16px 20px!important;border-top:1px solid rgba(255,255,255,0.08)}
+      }
       @media(max-width:768px){
-        aside{width:100%!important;height:auto!important;position:fixed!important;bottom:0!important;top:auto!important;flex-direction:row!important;overflow-x:auto!important;z-index:100!important}
-        main{margin-left:0!important;padding-bottom:80px!important}
-        .admin-sidebar{display:flex;flex-direction:row;overflow-x:auto;padding:8px!important}
+        aside{width:100%!important;height:auto!important;position:fixed!important;bottom:0!important;top:auto!important;flex-direction:row!important;overflow-x:auto!important;z-index:100!important;padding:6px 8px!important}
+        main{margin-left:0!important;padding-bottom:90px!important;padding-top:72px!important}
+        .admin-sidebar{display:flex;flex-direction:row;overflow-x:auto;padding:6px!important}
         .admin-sidebar .nav-label{display:none}
         .mobile-hide{display:none!important}
         .mobile-col{flex-direction:column!important}
         .grid-2{grid-template-columns:1fr!important}
+        section{padding-left:16px!important;padding-right:16px!important}
+        h1{font-size:clamp(28px,8vw,48px)!important}
+        table{font-size:12px!important}
+        table td,table th{padding:8px 6px!important}
+        .detail-panel{position:fixed!important;inset:0!important;z-index:200!important;overflow-y:auto!important;border-radius:0!important}
       }
-      @media(max-width:640px){
-        .landing-hero h1{font-size:48px!important}
-        .landing-nav{padding:12px 16px!important}
+      @media(max-width:480px){
+        .btn-3d{padding:10px 16px!important;font-size:13px!important}
+        input,select,textarea{font-size:16px!important} /* prevent iOS zoom */
       }
+      /* Scrollable tables on mobile */
+      .table-scroll{overflow-x:auto;-webkit-overflow-scrolling:touch}
+      .table-scroll table{min-width:600px}
     `}</style>
     </>
   );
@@ -450,6 +473,21 @@ function MemberPortal({ theme, gasUrl }) {
   const pkgColor = member.package === "trial" ? "#F59E0B" : "#10B981";
   const isExpired = member.expiresAt && new Date(member.expiresAt) < new Date();
   const daysLeft = member.expiresAt ? Math.max(0, Math.ceil((new Date(member.expiresAt) - new Date()) / 86400000)) : 0;
+
+  // ── Block expired members ──
+  if (isExpired) return (
+    <Card style={{ textAlign:"center", padding:40, border:"1px solid #EF444444" }}>
+      <div style={{ fontSize:44, marginBottom:12 }}>⏰</div>
+      <h3 style={{ fontWeight:800, color:"#EF4444", marginBottom:8 }}>สมาชิกหมดอายุแล้ว</h3>
+      <div style={{ marginBottom:8 }}>
+        <span style={{ background:"#F59E0B22", color:"#F59E0B", padding:"4px 12px", borderRadius:20, fontWeight:700, fontSize:14 }}>
+          {member.memberId || "-"}
+        </span>
+      </div>
+      <p style={{ color:theme.muted, marginBottom:20, fontSize:14 }}>กรุณาต่ออายุสมาชิกเพื่อจองห้องเรียนต่อครับ</p>
+      <Btn onClick={() => window.scrollTo({top:document.getElementById("packages")?.offsetTop||0,behavior:"smooth"})}>🔄 ต่ออายุสมาชิก</Btn>
+    </Card>
+  );
 
   return (
     <div style={{ display:"flex", flexDirection:"column", gap:20, animation:"fadeIn 0.4s ease" }}>
@@ -850,7 +888,12 @@ function LandingPage({ theme, onAdmin, autoCheckinId, autoCheckinType }) {
                   </button>
                 </li>
               ))}
-              <li className="nav-item">
+              <li className="nav-item d-flex align-items-center gap-2">
+                {memberInfo && (
+                  <span style={{ fontSize: 12, background: memberInfo.pkg === "trial" ? "#F59E0B22" : "#10B98122", color: memberInfo.pkg === "trial" ? "#F59E0B" : "#10B981", padding: "4px 10px", borderRadius: 20, fontWeight: 700 }}>
+                    {memberInfo.memberId || memberInfo["Owner Code"] || "สมาชิก"}
+                  </span>
+                )}
                 <Btn size="sm" variant="ghost" onClick={onAdmin}><Ic d={ICONS.shield} size={15} /> Admin</Btn>
               </li>
             </ul>
@@ -859,7 +902,7 @@ function LandingPage({ theme, onAdmin, autoCheckinId, autoCheckinType }) {
       </nav>
 
       {/* HERO */}
-      <section id="home" style={{ minHeight: "100vh", display: "flex", alignItems: "center", justifyContent: "center", padding: "120px 24px 80px", position: "relative", overflow: "hidden" }}>
+      <section id="home" style={{ minHeight: "100vh", display: "flex", alignItems: "center", justifyContent: "center", padding: "clamp(80px,12vw,120px) clamp(16px,4vw,24px) 60px", position: "relative", overflow: "hidden" }}>
         <div style={{ position: "absolute", top: "10%", left: "50%", transform: "translateX(-50%)", width: 700, height: 700, background: `radial-gradient(circle, ${theme.primary}22 0%, transparent 65%)`, pointerEvents: "none" }} />
         <div style={{ textAlign: "center", maxWidth: 800, position: "relative", margin: "0 auto", padding: "0 16px" }}>
           <div style={{ display: "inline-flex", alignItems: "center", gap: 8, background: theme.primary + "22", border: `1px solid ${theme.primary}44`, borderRadius: 30, padding: "8px 20px", fontSize: 14, color: theme.primary, fontWeight: 600, marginBottom: 32 }}>
@@ -913,7 +956,7 @@ function LandingPage({ theme, onAdmin, autoCheckinId, autoCheckinType }) {
             <p style={{ color: theme.muted }}>อัปเดตทุกเดือน ประมาณ 6 คอร์สต่อเดือน</p>
           </div>
           <InfoBox type="info">ลงทะเบียนล่วงหน้าผ่าน Line OA หรือ Landing Page เพื่อจองที่นั่ง และรับ Zoom Link</InfoBox>
-          <div style={{ overflowX: "auto" }}>
+          <div className="table-scroll">
             <table style={{ width: "100%", borderCollapse: "separate", borderSpacing: "0 8px", minWidth: 600 }}>
               <thead>
                 <tr style={{ color: theme.muted, fontSize: 13, textTransform: "uppercase", letterSpacing: 1 }}>
@@ -1105,8 +1148,8 @@ function LandingPage({ theme, onAdmin, autoCheckinId, autoCheckinType }) {
             <form onSubmit={handleSubmit}>
               <InfoBox type="warning">กรุณากรอกชื่อ-นามสกุลให้ตรงกับสลิปการโอนเงิน</InfoBox>
               <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 16 }}>
-                <Input label="ชื่อ-นามสกุล" value={form.name} onChange={v => setForm({...form, name: v})} placeholder="ตามบัตรประชาชน" required maxLength={25} hint="สูงสุด 25 ตัวอักษร" />
-                <Input label="เบอร์โทรศัพท์" value={form.phone} onChange={v => setForm({...form, phone: v})} placeholder="0812345678" required maxLength={10} inputMode="numeric" pattern="[0-9]*" hint="10 หลัก ไม่ต้องใส่ขีด" />
+                <Input label="ชื่อ-นามสกุล" value={form.name} onChange={v => setForm({...form, name: sanitize(v, {type:"name"})})} placeholder="ตามบัตรประชาชน" required maxLength={25} hint="สูงสุด 25 ตัวอักษร" />
+                <Input label="เบอร์โทรศัพท์" value={form.phone} onChange={v => setForm({...form, phone: sanitize(v, {type:"phone"})})} placeholder="0812345678" required maxLength={10} inputMode="numeric" type="tel" pattern="[0-9]{10}" hint="10 หลัก เฉพาะตัวเลข" />
               </div>
               {lineAutoId ? (
                 <div style={{ marginBottom: 16 }}>
@@ -1174,20 +1217,59 @@ function LandingPage({ theme, onAdmin, autoCheckinId, autoCheckinType }) {
 }
 
 // ─── ADMIN LOGIN ─────────────────────────────
+// Simple hash function (same result as SHA-256-lite for password matching)
+function simpleHash(str) {
+  let hash = 0;
+  for (let i = 0; i < str.length; i++) {
+    const chr = str.charCodeAt(i);
+    hash = ((hash << 5) - hash) + chr;
+    hash |= 0;
+  }
+  return Math.abs(hash).toString(16);
+}
+
 function AdminLogin({ theme, onLogin, onBack }) {
   const [email, setEmail] = useState("");
   const [pass, setPass] = useState("");
   const [err, setErr] = useState("");
+  const [loading, setLoading] = useState(false);
+  const [attempts, setAttempts] = useState(0);
+  const [lockUntil, setLockUntil] = useState(0);
+
+  // hashed passwords: simpleHash("admin123") simpleHash("helper123")
+  const ACCOUNTS = {
+    "admin@theowner.com":  { hash: simpleHash("admin123"),  role: "super_admin", name: "Super Admin" },
+    "helper@theowner.com": { hash: simpleHash("helper123"), role: "helper",       name: "Helper Admin" },
+  };
 
   const handle = (e) => {
     e.preventDefault();
-    const accounts = {
-      "admin@theowner.com": { pass: "admin123", role: "super_admin", name: "Super Admin" },
-      "helper@theowner.com": { pass: "helper123", role: "helper", name: "Helper Admin" },
-    };
-    const acc = accounts[email];
-    if (acc && acc.pass === pass) onLogin(acc);
-    else setErr("อีเมลหรือรหัสผ่านไม่ถูกต้อง");
+    const now = Date.now();
+    if (now < lockUntil) {
+      const sec = Math.ceil((lockUntil - now) / 1000);
+      setErr(`ล็อกชั่วคราว กรุณารอ ${sec} วินาที`);
+      return;
+    }
+    setLoading(true);
+    // Artificial delay to prevent brute force
+    setTimeout(() => {
+      const acc = ACCOUNTS[email.trim().toLowerCase()];
+      if (acc && acc.hash === simpleHash(pass)) {
+        setAttempts(0);
+        onLogin({ role: acc.role, name: acc.name });
+      } else {
+        const newAttempts = attempts + 1;
+        setAttempts(newAttempts);
+        if (newAttempts >= 5) {
+          const lockTime = Date.now() + 30000; // 30 sec lockout
+          setLockUntil(lockTime);
+          setErr("พยายามเข้าสู่ระบบผิดหลายครั้ง ล็อก 30 วินาที");
+        } else {
+          setErr(`อีเมลหรือรหัสผ่านไม่ถูกต้อง (${newAttempts}/5)`);
+        }
+      }
+      setLoading(false);
+    }, 800);
   };
 
   return (
@@ -1205,7 +1287,9 @@ function AdminLogin({ theme, onLogin, onBack }) {
             <Input label="อีเมล" value={email} onChange={setEmail} placeholder="admin@theowner.com" type="email" required />
             <Input label="รหัสผ่าน" value={pass} onChange={setPass} placeholder="••••••••" type="password" required />
             {err && <div style={{ color: "#EF4444", fontSize: 13, marginBottom: 16 }}>{err}</div>}
-            <Btn type="submit" size="lg" fullWidth>เข้าสู่ระบบ Admin</Btn>
+            <Btn type="submit" size="lg" fullWidth loading={loading} disabled={loading || Date.now() < lockUntil}>
+              {loading ? "กำลังตรวจสอบ..." : "เข้าสู่ระบบ Admin"}
+            </Btn>
           </form>
           <div style={{ marginTop: 16, padding: 14, background: "rgba(59,130,246,0.1)", borderRadius: 10, fontSize: 13, color: theme.muted }}>
             Super: admin@theowner.com / admin123<br />Helper: helper@theowner.com / helper123
@@ -1428,7 +1512,7 @@ function CheckinsReport({ theme, gasUrl, schedules }) {
         {loading ? <p style={{ color: theme.muted, textAlign: "center", padding: 32 }}>กำลังโหลด...</p> : filtered.length === 0 ? (
           <p style={{ color: theme.muted, textAlign: "center", padding: 32 }}>ยังไม่มีข้อมูล Check-in</p>
         ) : (
-          <div style={{ overflowX: "auto" }}>
+          <div className="table-scroll">
             <table style={{ width: "100%", borderCollapse: "collapse", fontSize: 14 }}>
               <thead>
                 <tr style={{ borderBottom: `1px solid ${theme.border}` }}>
