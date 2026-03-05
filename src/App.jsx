@@ -166,41 +166,100 @@ function GlobalStyles({ theme }) {
       select option{background:${theme.card} !important;color:${theme.text} !important}
       select optgroup{background:${theme.card} !important;color:${theme.text} !important}
       .pulse{animation:pulse 2s infinite}@keyframes pulse{0%,100%{opacity:1}50%{opacity:0.6}}
+      /* 3D Button press */
+      .btn-3d{transform:translateY(0) scale(1);box-shadow:0 6px 0 rgba(0,0,0,0.35),0 8px 16px rgba(0,0,0,0.3);transition:all 0.08s ease}
+      .btn-3d:hover:not(:disabled){transform:translateY(-2px) scale(1.02);box-shadow:0 8px 0 rgba(0,0,0,0.35),0 12px 20px rgba(0,0,0,0.35)}
+      .btn-3d:active:not(:disabled){transform:translateY(4px) scale(0.97);box-shadow:0 2px 0 rgba(0,0,0,0.4),0 2px 8px rgba(0,0,0,0.3)}
+      /* Nav hover */
+      .nav-item{transition:all 0.15s ease;cursor:pointer}
+      .nav-item:hover{transform:translateX(4px)}
+      .nav-item:active{transform:translateX(2px) scale(0.98)}
+      /* Ripple */
+      @keyframes ripple{from{transform:scale(0);opacity:0.6}to{transform:scale(4);opacity:0}}
+      @keyframes fadeIn{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:translateY(0)}}
+      @keyframes slideInRight{from{opacity:0;transform:translateX(30px)}to{opacity:1;transform:translateX(0)}}
+      @keyframes shimmer{0%{background-position:-200% 0}100%{background-position:200% 0}}
+      /* Responsive */
+      @media(max-width:768px){
+        aside{width:100%!important;height:auto!important;position:fixed!important;bottom:0!important;top:auto!important;flex-direction:row!important;overflow-x:auto!important;z-index:100!important}
+        main{margin-left:0!important;padding-bottom:80px!important}
+        .admin-sidebar{display:flex;flex-direction:row;overflow-x:auto;padding:8px!important}
+        .admin-sidebar .nav-label{display:none}
+        .mobile-hide{display:none!important}
+        .mobile-col{flex-direction:column!important}
+        .grid-2{grid-template-columns:1fr!important}
+      }
+      @media(max-width:640px){
+        .landing-hero h1{font-size:48px!important}
+        .landing-nav{padding:12px 16px!important}
+      }
     `}</style>
   );
 }
 
-function Btn({ children, onClick, variant = "primary", size = "md", fullWidth, style: extraStyle, disabled, type = "button" }) {
+function Btn({ children, onClick, variant = "primary", size = "md", fullWidth, style: extraStyle, disabled, type = "button", loading }) {
   const theme = window.__theme || DEFAULT_THEME;
   const sizes = { sm: { padding: "8px 16px", fontSize: 13 }, md: { padding: "12px 24px", fontSize: 15 }, lg: { padding: "16px 36px", fontSize: 17 } };
-  const variants = { primary: { background: theme.primary, color: "#fff" }, accent: { background: theme.accent, color: "#000" }, ghost: { background: "rgba(255,255,255,0.07)", color: theme.text }, danger: { background: "#EF4444", color: "#fff" }, success: { background: "#10B981", color: "#000" }, outline: { background: "transparent", color: theme.primary, border: `2px solid ${theme.primary}` } };
+  const variants = {
+    primary: { background: theme.primary, color: "#fff", borderBottom: `3px solid ${theme.primary}88` },
+    accent:  { background: theme.accent, color: "#000", borderBottom: `3px solid ${theme.accent}88` },
+    ghost:   { background: "rgba(255,255,255,0.07)", color: theme.text, borderBottom: "3px solid rgba(255,255,255,0.05)" },
+    danger:  { background: "#EF4444", color: "#fff", borderBottom: "3px solid #b91c1c" },
+    success: { background: "#10B981", color: "#000", borderBottom: "3px solid #065f46" },
+    outline: { background: "transparent", color: theme.primary, border: `2px solid ${theme.primary}`, borderBottom: `4px solid ${theme.primary}` }
+  };
+
+  const handleClick = (e) => {
+    if (disabled || loading) return;
+    // Ripple effect
+    const btn = e.currentTarget;
+    const ripple = document.createElement("span");
+    const rect = btn.getBoundingClientRect();
+    const size = Math.max(rect.width, rect.height) * 2;
+    ripple.style.cssText = `position:absolute;width:${size}px;height:${size}px;border-radius:50%;background:rgba(255,255,255,0.25);transform:scale(0);animation:ripple 0.5s ease-out;left:${e.clientX-rect.left-size/2}px;top:${e.clientY-rect.top-size/2}px;pointer-events:none`;
+    btn.style.overflow = "hidden";
+    btn.appendChild(ripple);
+    setTimeout(() => ripple.remove(), 500);
+    onClick && onClick(e);
+  };
+
   return (
-    <button type={type} disabled={disabled} onClick={onClick}
-      style={{ display: "inline-flex", alignItems: "center", justifyContent: "center", gap: 8, border: "none", cursor: disabled ? "not-allowed" : "pointer", fontWeight: 700, fontFamily: theme.fontBody, borderRadius: 12, opacity: disabled ? 0.5 : 1, ...sizes[size], ...variants[variant], ...(fullWidth && { width: "100%" }), ...extraStyle }}
-      onMouseEnter={e => { if (!disabled) e.currentTarget.style.opacity = "0.85"; }}
-      onMouseLeave={e => { e.currentTarget.style.opacity = "1"; }}>
-      {children}
+    <button type={type} disabled={disabled || loading} onClick={handleClick}
+      className="btn-3d"
+      style={{ position:"relative", display: "inline-flex", alignItems: "center", justifyContent: "center", gap: 8, border: "none", cursor: (disabled || loading) ? "not-allowed" : "pointer", fontWeight: 700, fontFamily: theme.fontBody, borderRadius: 12, opacity: disabled ? 0.5 : 1, letterSpacing: 0.3, ...sizes[size], ...variants[variant], ...(fullWidth && { width: "100%" }), ...extraStyle }}>
+      {loading ? <span style={{ display:"flex", gap:4, alignItems:"center" }}><span style={{ width:6,height:6,borderRadius:"50%",background:"currentColor",animation:"pulse 0.8s ease infinite" }}/><span style={{ width:6,height:6,borderRadius:"50%",background:"currentColor",animation:"pulse 0.8s ease infinite 0.15s" }}/><span style={{ width:6,height:6,borderRadius:"50%",background:"currentColor",animation:"pulse 0.8s ease infinite 0.3s" }}/></span> : children}
     </button>
   );
 }
+
 
 function Card({ children, style: extra, glow }) {
   const theme = window.__theme || DEFAULT_THEME;
   return <div style={{ background: theme.card, border: `1px solid ${theme.border}`, borderRadius: 20, padding: 24, ...(glow && { boxShadow: `0 0 40px ${theme.primary}22` }), ...extra }}>{children}</div>;
 }
 
-function Input({ label, value, onChange, placeholder, type = "text", required }) {
+function Input({ label, value, onChange, placeholder, type = "text", required, maxLength, inputMode, pattern, hint }) {
   const theme = window.__theme || DEFAULT_THEME;
+  const [focused, setFocused] = useState(false);
+  const len = value ? String(value).length : 0;
   return (
     <div style={{ marginBottom: 16 }}>
-      {label && <label style={{ display: "block", marginBottom: 6, fontSize: 13, fontWeight: 600, color: theme.muted }}>{label}{required && <span style={{ color: "#EF4444" }}> *</span>}</label>}
-      <input type={type} value={value} onChange={e => onChange(e.target.value)} placeholder={placeholder} required={required}
-        style={{ width: "100%", background: "rgba(255,255,255,0.05)", border: `1px solid ${theme.border}`, borderRadius: 12, padding: "13px 16px", color: theme.text, fontSize: theme.fontSize, outline: "none" }}
-        onFocus={e => e.target.style.borderColor = theme.primary}
-        onBlur={e => e.target.style.borderColor = theme.border} />
+      {label && (
+        <div style={{ display:"flex", justifyContent:"space-between", marginBottom: 6 }}>
+          <label style={{ fontSize: 13, fontWeight: 600, color: focused ? theme.primary : theme.muted, transition:"color 0.2s" }}>{label}{required && <span style={{ color: "#EF4444" }}> *</span>}</label>
+          {maxLength && <span style={{ fontSize: 11, color: len > maxLength * 0.9 ? "#EF4444" : theme.muted }}>{len}/{maxLength}</span>}
+        </div>
+      )}
+      <input type={type} inputMode={inputMode} pattern={pattern} value={value}
+        onChange={e => onChange(maxLength ? e.target.value.slice(0, maxLength) : e.target.value)}
+        placeholder={placeholder} required={required} maxLength={maxLength}
+        onFocus={() => setFocused(true)} onBlur={() => setFocused(false)}
+        style={{ width: "100%", background: "rgba(255,255,255,0.05)", border: `1px solid ${focused ? theme.primary : theme.border}`, borderRadius: 10, padding: "10px 14px", color: theme.text, fontSize: 14, outline: "none", fontFamily: theme.fontBody, transition:"border-color 0.2s, box-shadow 0.2s", boxShadow: focused ? `0 0 0 3px ${theme.primary}22` : "none" }} />
+      {hint && <div style={{ fontSize: 11, color: theme.muted, marginTop: 4 }}>{hint}</div>}
     </div>
   );
 }
+
 
 function Select({ label, value, onChange, options, required }) {
   const theme = window.__theme || DEFAULT_THEME;
@@ -276,6 +335,174 @@ function CheckinList({ scheduleId, theme, gasUrl }) {
 }
 
 // ─── CHECKIN SECTION (Landing) ───────────────
+
+// ─── MEMBER PORTAL ────────────────────────────
+function MemberPortal({ theme, gasUrl }) {
+  const [member, setMember] = useState(null);
+  const [bookings, setBookings] = useState([]); // scheduleIds ที่จองแล้ว
+  const [schedules, setSchedules] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [myLineId] = useState(window.__liffUserId || "");
+
+  useEffect(() => {
+    if (!myLineId) { setLoading(false); return; }
+    Promise.all([
+      fetch(gasUrl + "?action=getMembers").then(r => r.json()),
+      fetch(gasUrl + "?action=getSchedules").then(r => r.json()),
+      fetch(gasUrl + "?action=getCheckins").then(r => r.json()),
+    ]).then(([mRes, sRes, cRes]) => {
+      if (mRes.success) {
+        const me = mRes.data.find(m => String(m.lineId).replace(/^'/,"") === myLineId);
+        setMember(me || null);
+      }
+      if (sRes.success) setSchedules(sRes.data);
+      if (cRes.success) {
+        setBookings(cRes.data.filter(c => String(c.lineId) === myLineId).map(c => String(c.scheduleId)));
+      }
+    }).catch(() => {}).finally(() => setLoading(false));
+  }, [myLineId]);
+
+  if (!myLineId) return (
+    <Card style={{ textAlign:"center", padding:48 }}>
+      <div style={{ fontSize:48, marginBottom:16 }}>🔒</div>
+      <h3 style={{ fontWeight:700, marginBottom:8 }}>กรุณาเปิดจาก Line OA</h3>
+      <p style={{ color:theme.muted }}>เพื่อเข้าสู่พื้นที่สมาชิก กรุณาเปิดผ่าน Line OA The Owner ครับ</p>
+      <div style={{ marginTop:20 }}>
+        <a href={`https://liff.line.me/2009199519-UViGDRf7`} style={{ display:"inline-block", background:"#06C755", color:"#fff", padding:"12px 32px", borderRadius:12, fontWeight:700, textDecoration:"none", fontSize:16 }}>เปิดผ่าน Line</a>
+      </div>
+    </Card>
+  );
+
+  if (loading) return <div style={{ textAlign:"center", padding:40, color:theme.muted }}>⏳ กำลังโหลดข้อมูล...</div>;
+
+  if (!member) return (
+    <Card style={{ textAlign:"center", padding:48 }}>
+      <div style={{ fontSize:48, marginBottom:16 }}>👤</div>
+      <h3 style={{ fontWeight:700, marginBottom:8 }}>ยังไม่พบข้อมูลสมาชิก</h3>
+      <p style={{ color:theme.muted, marginBottom:20 }}>กรุณาสมัครสมาชิกก่อนครับ</p>
+      <Btn onClick={() => window.scrollTo({top:document.getElementById("register")?.offsetTop||0,behavior:"smooth"})}>สมัครสมาชิก</Btn>
+    </Card>
+  );
+
+  const today = new Date().toISOString().slice(0,10);
+  const upcoming = schedules.filter(s => String(s.date).slice(0,10) >= today);
+  const pkgColor = member.package === "trial" ? "#F59E0B" : "#10B981";
+  const isExpired = member.expiresAt && new Date(member.expiresAt) < new Date();
+  const daysLeft = member.expiresAt ? Math.max(0, Math.ceil((new Date(member.expiresAt) - new Date()) / 86400000)) : 0;
+
+  return (
+    <div style={{ display:"flex", flexDirection:"column", gap:20, animation:"fadeIn 0.4s ease" }}>
+      {/* Member Card */}
+      <Card glow style={{ padding:28, position:"relative", overflow:"hidden" }}>
+        <div style={{ position:"absolute", top:-30, right:-30, width:150, height:150, borderRadius:"50%", background:pkgColor+"15", pointerEvents:"none" }} />
+        <div style={{ display:"flex", justifyContent:"space-between", alignItems:"flex-start", flexWrap:"wrap", gap:16 }}>
+          <div>
+            <div style={{ display:"flex", alignItems:"center", gap:12, marginBottom:8 }}>
+              <div style={{ width:48, height:48, borderRadius:"50%", background:pkgColor+"33", display:"flex", alignItems:"center", justifyContent:"center", fontSize:24 }}>
+                {member.package === "trial" ? "🌱" : "⭐"}
+              </div>
+              <div>
+                <div style={{ fontWeight:800, fontSize:20 }}>{member.name}</div>
+                <div style={{ fontSize:13, color:theme.muted }}>สมาชิก The Owner</div>
+              </div>
+            </div>
+            <div style={{ display:"flex", gap:10, flexWrap:"wrap" }}>
+              <span style={{ background:pkgColor+"22", color:pkgColor, padding:"4px 14px", borderRadius:20, fontSize:13, fontWeight:700 }}>
+                {member.memberId || "รอ Approve"}
+              </span>
+              <span style={{ background:isExpired?"#EF444422":"#10B98122", color:isExpired?"#EF4444":"#10B981", padding:"4px 14px", borderRadius:20, fontSize:13, fontWeight:700 }}>
+                {isExpired ? "❌ หมดอายุ" : `✅ ใช้งานได้อีก ${daysLeft} วัน`}
+              </span>
+            </div>
+          </div>
+          <div style={{ textAlign:"right" }}>
+            <div style={{ fontSize:11, color:theme.muted, marginBottom:4 }}>แพ็กเกจ</div>
+            <div style={{ fontWeight:800, fontSize:18, color:pkgColor }}>{member.package === "trial" ? "Trial" : "Quarter"}</div>
+            <div style={{ fontSize:12, color:theme.muted, marginTop:4 }}>หมดอายุ: {member.expiresAt ? String(member.expiresAt).slice(0,10) : "-"}</div>
+          </div>
+        </div>
+      </Card>
+
+      {/* ห้องเรียนที่จองแล้ว */}
+      {bookings.length > 0 && (
+        <div>
+          <h3 style={{ fontWeight:700, marginBottom:12, fontSize:16 }}>📚 ห้องเรียนที่จองแล้ว ({bookings.length})</h3>
+          <div style={{ display:"flex", flexDirection:"column", gap:10 }}>
+            {schedules.filter(s => bookings.includes(String(s.id))).map(s => (
+              <Card key={s.id} style={{ padding:"16px 20px", border:`1px solid #10B98155`, display:"flex", justifyContent:"space-between", alignItems:"center", flexWrap:"wrap", gap:12 }}>
+                <div>
+                  <div style={{ fontWeight:700 }}>{s.course}</div>
+                  <div style={{ fontSize:13, color:theme.muted }}>📅 {String(s.date).slice(0,10)} ⏰ {s.time}</div>
+                </div>
+                <div style={{ display:"flex", gap:8, alignItems:"center" }}>
+                  <StatusBadge status={s.mode} />
+                  <span style={{ background:"#10B98122", color:"#10B981", padding:"4px 10px", borderRadius:8, fontSize:12, fontWeight:700 }}>✓ จองแล้ว</span>
+                </div>
+              </Card>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {/* ห้องเรียนที่เปิด */}
+      <div>
+        <h3 style={{ fontWeight:700, marginBottom:12, fontSize:16 }}>📅 ห้องเรียนทั้งหมด</h3>
+        {upcoming.length === 0 ? (
+          <Card style={{ textAlign:"center", padding:32, color:theme.muted }}>ยังไม่มีตารางเรียนที่เปิดรับครับ</Card>
+        ) : (
+          <div style={{ display:"flex", flexDirection:"column", gap:12 }}>
+            {upcoming.map(s => {
+              const booked = bookings.includes(String(s.id));
+              const count = s.checkinCount || 0;
+              const full = count >= s.seats;
+              return (
+                <Card key={s.id} style={{ border: booked ? `1px solid #10B98155` : undefined, animation:"fadeIn 0.3s ease" }}>
+                  <div style={{ display:"flex", justifyContent:"space-between", alignItems:"flex-start", gap:16, flexWrap:"wrap" }}>
+                    <div style={{ flex:1 }}>
+                      <div style={{ display:"flex", gap:8, marginBottom:8, flexWrap:"wrap" }}>
+                        <StatusBadge status={s.mode} />
+                        {booked && <span style={{ background:"#10B98122", color:"#10B981", padding:"2px 10px", borderRadius:8, fontSize:12, fontWeight:700 }}>✓ จองแล้ว</span>}
+                        {full && !booked && <span style={{ background:"#EF444422", color:"#EF4444", padding:"2px 10px", borderRadius:8, fontSize:12, fontWeight:700 }}>เต็มแล้ว</span>}
+                      </div>
+                      <h4 style={{ fontWeight:700, fontSize:17, marginBottom:4 }}>{s.course}</h4>
+                      <div style={{ color:theme.muted, fontSize:13 }}>📅 {String(s.date).slice(0,10)} &nbsp;⏰ {s.time}</div>
+                      <div style={{ marginTop:8, display:"flex", alignItems:"center", gap:8 }}>
+                        <div style={{ flex:1, height:5, background:"rgba(255,255,255,0.1)", borderRadius:3 }}>
+                          <div style={{ height:"100%", width:`${Math.min(100,(count/s.seats)*100)}%`, background:full?"#EF4444":"#10B981", borderRadius:3, transition:"width 0.5s" }} />
+                        </div>
+                        <span style={{ fontSize:12, color:theme.muted }}>{count}/{s.seats}</span>
+                      </div>
+                    </div>
+                    {booked ? (
+                      <div style={{ textAlign:"center" }}>
+                        <div style={{ fontSize:32 }}>✅</div>
+                        <div style={{ fontSize:11, color:"#10B981", fontWeight:700 }}>จองแล้ว</div>
+                      </div>
+                    ) : (
+                      <Btn disabled={full || !member || isExpired || member.status !== "approved"} variant="primary" style={{ minWidth:120 }}
+                        onClick={async () => {
+                          if (!myLineId) return;
+                          try {
+                            const res = await fetch(gasUrl, { method:"POST", body:JSON.stringify({ action:"addCheckin", lineId:myLineId, scheduleId:s.id, type:"pre" }) });
+                            const r = await res.json();
+                            if (r.success) { setBookings(prev => [...prev, String(s.id)]); }
+                            else alert("❌ " + r.message);
+                          } catch { alert("เกิดข้อผิดพลาด"); }
+                        }}>
+                        {full ? "เต็มแล้ว" : isExpired ? "หมดอายุ" : "📅 จองเลย"}
+                      </Btn>
+                    )}
+                  </div>
+                </Card>
+              );
+            })}
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
+
 function CheckinSection({ theme, gasUrl, autoCheckinId, autoCheckinType }) {
   const [schedules, setSchedules] = useState([]);
   const [myLineId, setMyLineId] = useState(window.__liffUserId || "");
@@ -500,7 +727,7 @@ function LandingPage({ theme, onAdmin, autoCheckinId, autoCheckinType }) {
     } catch { alert("ไม่สามารถเชื่อมต่อได้ กรุณาลองใหม่อีกครั้ง"); }
   };
 
-  const navItems = [["home","หน้าหลัก"],["courses","คอร์ส"],["schedule","ตารางเรียน"],["packages","แพ็กเกจ"],["how","วิธีสมัคร"],["checkin","Check-in"],["register","สมัครสมาชิก"],["faq","FAQ"]];
+  const navItems = [["home","หน้าหลัก"],["courses","คอร์ส"],["booking","📅 จองห้องเรียน"],["packages","แพ็กเกจ"],["how","วิธีสมัคร"],["register","สมัครสมาชิก"],["faq","FAQ"]];
   const faqs = [
     ["สมัครสมาชิกได้อย่างไร?","กรอกฟอร์มด้านล่าง เลือกแพ็กเกจ โอนเงินผ่าน PromptPay แล้วแนบสลิป admin จะยืนยันผ่าน Line OA ภายใน 24 ชม."],
     ["Trial เรียนได้กี่คอร์ส?","เรียนได้ 1 คอร์ส หรือ 1 วัน เริ่มนับหลัง Check-in ครั้งแรก"],
@@ -685,15 +912,15 @@ function LandingPage({ theme, onAdmin, autoCheckinId, autoCheckinType }) {
         </div>
       </section>
 
-      {/* CHECK-IN */}
-      <section id="checkin" style={{ padding: "100px 24px", maxWidth: 860, margin: "0 auto" }}>
-        <div style={{ marginBottom: 48, textAlign: "center" }}>
-          <h2 style={{ fontFamily: theme.fontDisplay, fontSize: "clamp(40px,6vw,64px)", letterSpacing: 2, marginBottom: 12 }}>
-            <span style={{ color: theme.primary }}>Check-in</span> เข้าเรียน
+      {/* BOOKING */}
+      <section id="booking" style={{ padding: "80px 24px", maxWidth: 860, margin: "0 auto" }}>
+        <div style={{ marginBottom: 36, textAlign: "center" }}>
+          <h2 style={{ fontFamily: theme.fontDisplay, fontSize: "clamp(36px,5vw,60px)", letterSpacing: 2, marginBottom: 12 }}>
+            จอง<span style={{ color: theme.primary }}>ห้องเรียน</span>
           </h2>
-          <p style={{ color: theme.muted }}>เลือกคอร์สที่ต้องการเรียน ระบบจะส่ง Zoom Link ผ่าน Line ให้อัตโนมัติ</p>
+          <p style={{ color: theme.muted }}>ดูตารางและจองที่นั่ง • ระบบแจ้งเตือนก่อนวันเรียน</p>
         </div>
-        <CheckinSection theme={theme} gasUrl={GAS_URL} autoCheckinId={autoCheckinId} autoCheckinType={autoCheckinType} />
+        <MemberPortal theme={theme} gasUrl={GAS_URL} />
       </section>
 
       {/* REGISTER */}
@@ -760,8 +987,8 @@ function LandingPage({ theme, onAdmin, autoCheckinId, autoCheckinType }) {
             <form onSubmit={handleSubmit}>
               <InfoBox type="warning">กรุณากรอกชื่อ-นามสกุลให้ตรงกับสลิปการโอนเงิน</InfoBox>
               <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 16 }}>
-                <Input label="ชื่อ-นามสกุล" value={form.name} onChange={v => setForm({...form, name: v})} placeholder="ตามบัตรประชาชน" required />
-                <Input label="เบอร์โทรศัพท์" value={form.phone} onChange={v => setForm({...form, phone: v})} placeholder="08x-xxx-xxxx" required />
+                <Input label="ชื่อ-นามสกุล" value={form.name} onChange={v => setForm({...form, name: v})} placeholder="ตามบัตรประชาชน" required maxLength={25} hint="สูงสุด 25 ตัวอักษร" />
+                <Input label="เบอร์โทรศัพท์" value={form.phone} onChange={v => setForm({...form, phone: v})} placeholder="0812345678" required maxLength={10} inputMode="numeric" pattern="[0-9]*" hint="10 หลัก ไม่ต้องใส่ขีด" />
               </div>
               {lineAutoId ? (
                 <div style={{ marginBottom: 16 }}>
@@ -780,7 +1007,7 @@ function LandingPage({ theme, onAdmin, autoCheckinId, autoCheckinType }) {
               <Input label="อีเมล (ไม่บังคับ)" value={form.email} onChange={v => setForm({...form, email: v})} placeholder="example@email.com" type="email" />
               <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 16 }}>
                 <Select label="แพ็กเกจ" value={form.pkg} onChange={v => setForm({...form, pkg: v})} required options={PACKAGES.map(p => ({ value: p.id, label: `${p.label} – ${p.price} ฿` }))} />
-                <Select label="รูปแบบการเรียน" value={form.mode} onChange={v => setForm({...form, mode: v})} required options={[{value:"online",label:"Online (Zoom)"},{value:"onsite",label:"Onsite (มาเองที่สถานที่)"}]} />
+                
               </div>
               <div style={{ marginBottom: 16 }}>
                 <label style={{ display: "block", marginBottom: 6, fontSize: 13, fontWeight: 600, color: theme.muted }}>สลิปโอนเงิน <span style={{ color: "#EF4444" }}>*</span></label>
@@ -791,7 +1018,7 @@ function LandingPage({ theme, onAdmin, autoCheckinId, autoCheckinType }) {
                   ) : (
                     <><div style={{ color: theme.muted, marginBottom: 8 }}><Ic d={ICONS.upload} size={32} /></div><div style={{ fontWeight: 600, marginBottom: 4 }}>คลิกหรือลากไฟล์มาวางที่นี่</div><div style={{ color: theme.muted, fontSize: 13 }}>รองรับ JPG, PNG, PDF</div></>
                   )}
-                  <input id="slip-file" type="file" accept="image/*,.pdf" style={{ display: "none" }} onChange={e => setForm({...form, slip: e.target.files[0]})} />
+                  <input id="slip-file" type="file" accept="image/*" style={{ display: "none" }} onChange={e => { const file=e.target.files[0]; if(file&&file.size>2*1024*1024){alert("ขนาดไฟล์เกิน 2MB กรุณาบีบอัดรูปก่อนครับ");e.target.value="";return;} setForm({...form, slip: e.target.files[0]})} />
                 </div>
               </div>
               <Btn type="submit" size="lg" fullWidth style={{ marginTop: 8 }}>ส่งข้อมูลการสมัคร <Ic d={ICONS.arrowRight} size={18} /></Btn>
