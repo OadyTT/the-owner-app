@@ -1367,7 +1367,16 @@ function LandingPage({ theme, onAdmin, autoCheckinId, autoCheckinType }) {
                   ) : (
                     <><div style={{ color: theme.muted, marginBottom: 8 }}><Ic d={ICONS.upload} size={32} /></div><div style={{ fontWeight: 600, marginBottom: 4 }}>คลิกหรือลากไฟล์มาวางที่นี่</div><div style={{ color: theme.muted, fontSize: 13 }}>รองรับ JPG, PNG, PDF</div></>
                   )}
-                  <input id="slip-file" type="file" accept="image/jpeg,image/png,image/gif,image/webp" style={{ display: "none" }} onChange={e => { const file=e.target.files[0]; if(file&&file.size>2*1024*1024){alert("ขนาดไฟล์เกิน 2MB กรุณาบีบอัดรูปก่อนครับ");e.target.value="";return;} setForm({...form, slip: e.target.files[0]})} />
+                  <input id="slip-file" type="file" accept=".jpg,.jpeg,.png,.gif,.webp" style={{ display: "none" }} onChange={e => {
+                    const file = e.target.files[0];
+                    if (!file) return;
+                    if (file.size > 2 * 1024 * 1024) {
+                      alert("ขนาดไฟล์เกิน 2MB กรุณาบีบอัดรูปก่อนครับ");
+                      e.target.value = "";
+                      return;
+                    }
+                    setForm({...form, slip: file});
+                  }} />
                 </div>
               </div>
               <Btn type="submit" size="lg" fullWidth style={{ marginTop: 8 }}>ส่งข้อมูลการสมัคร <Ic d={ICONS.arrowRight} size={18} /></Btn>
@@ -2180,7 +2189,7 @@ function AdminDashboard({ user, theme, setTheme, onLogout, onLanding }) {
                     <div className="d-flex gap-2 align-items-center flex-wrap">
                       <label style={{ fontSize: 12, color: theme.primary, cursor: "pointer", background: theme.primary+"22", padding: "6px 14px", borderRadius: 8, fontWeight: 600 }}>
                         📁 เลือกรูป
-                        <input type="file" accept="image/jpeg,image/png" style={{ display: "none" }} onChange={e => {
+                        <input type="file" accept=".jpg,.jpeg,.png" style={{ display: "none" }} onChange={e => {
                           const file = e.target.files[0]; if (!file) return;
                           if (file.size > 2*1024*1024) { alert("ขนาดเกิน 2MB"); return; }
                           const r = new FileReader(); r.onload = ev => setNewSched(s => ({...s, courseImage: ev.target.result})); r.readAsDataURL(file);
