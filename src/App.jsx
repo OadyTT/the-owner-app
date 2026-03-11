@@ -244,6 +244,43 @@ function GlobalStyles({ theme }) {
       /* Scrollable tables on mobile */
       .table-scroll{overflow-x:auto;-webkit-overflow-scrolling:touch}
       .table-scroll table{min-width:600px}
+      /* ── Modern inputs ── */
+      .modern-input{width:100%;background:rgba(255,255,255,0.04);border:1.5px solid rgba(255,255,255,0.1);border-radius:12px;padding:13px 16px;color:#F0F4F8;font-size:15px;outline:none;transition:all 0.2s;font-family:inherit;box-sizing:border-box}
+      .modern-input:focus{border-color:#00C9A7;box-shadow:0 0 0 3px rgba(0,201,167,0.1);background:rgba(0,201,167,0.03)}
+      .modern-input::placeholder{color:rgba(240,244,248,0.3)}
+      /* ── Step progress ── */
+      .step-dot{width:36px;height:36px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:13px;transition:all 0.3s;flex-shrink:0;position:relative;z-index:1}
+      .step-dot.done{background:linear-gradient(135deg,#00C9A7,#009980);color:#000;box-shadow:0 4px 14px rgba(0,201,167,0.45)}
+      .step-dot.active{background:linear-gradient(135deg,#2563EB,#1D4ED8);color:#fff;box-shadow:0 4px 14px rgba(37,99,235,0.5)}
+      .step-dot.pending{background:rgba(255,255,255,0.07);color:rgba(240,244,248,0.35);border:1.5px solid rgba(255,255,255,0.1)}
+      .step-line{height:2px;flex:1;transition:background 0.4s}
+      .step-line.done{background:linear-gradient(90deg,#00C9A7,#009980)}
+      .step-line.pending{background:rgba(255,255,255,0.08)}
+      /* ── Split panel login ── */
+      .split-left{background:linear-gradient(160deg,#050D1A 0%,#0B1E38 55%,#071929 100%);display:flex;flex-direction:column;align-items:center;justify-content:center;padding:48px 44px;position:relative;overflow:hidden}
+      .split-right{background:#0B0F14;display:flex;align-items:center;justify-content:center;padding:48px 44px}
+      /* ── Section pill ── */
+      .section-pill{display:inline-block;background:rgba(0,201,167,0.1);border:1px solid rgba(0,201,167,0.25);border-radius:20px;padding:5px 16px;font-size:12px;color:#00C9A7;font-weight:700;letter-spacing:0.5px;margin-bottom:14px;text-transform:uppercase}
+      /* ── Upload zone ── */
+      .upload-zone{border:2px dashed rgba(255,255,255,0.12);border-radius:16px;padding:28px 20px;text-align:center;cursor:pointer;transition:all 0.25s;position:relative}
+      .upload-zone:hover,.upload-zone.has-file{border-color:#00C9A7;background:rgba(0,201,167,0.04)}
+      /* ── Info boxes ── */
+      .ibox-warn{background:rgba(245,158,11,0.08);border:1px solid rgba(245,158,11,0.2);color:#FCD34D;border-radius:12px;padding:12px 16px;font-size:13px;display:flex;align-items:flex-start;gap:10px;margin-bottom:18px}
+      .ibox-info{background:rgba(0,201,167,0.06);border:1px solid rgba(0,201,167,0.18);color:#5eead4;border-radius:12px;padding:12px 16px;font-size:13px;display:flex;align-items:flex-start;gap:10px;margin-bottom:18px}
+      .ibox-err{background:rgba(239,68,68,0.08);border:1px solid rgba(239,68,68,0.2);color:#FCA5A5;border-radius:12px;padding:12px 16px;font-size:13px;display:flex;align-items:flex-start;gap:10px;margin-bottom:18px}
+      /* ── Portal tabs ── */
+      .ptab{padding:9px 18px;border-radius:10px;border:none;cursor:pointer;font-weight:700;font-size:14px;transition:all 0.2s;font-family:inherit}
+      .ptab.on{background:linear-gradient(135deg,#00C9A7,#009980);color:#000;box-shadow:0 4px 16px rgba(0,201,167,0.35)}
+      .ptab.off{background:rgba(255,255,255,0.06);color:rgba(240,244,248,0.55)}
+      .ptab:hover:not(.on){background:rgba(255,255,255,0.1);color:#F0F4F8}
+      /* ── Package card ── */
+      .pkg-card{transition:transform 0.3s,box-shadow 0.3s;cursor:pointer}
+      .pkg-card:hover{transform:translateY(-6px)!important}
+      /* ── Label style ── */
+      .field-label{font-size:12px;font-weight:700;color:rgba(240,244,248,0.55);display:block;margin-bottom:8px;letter-spacing:0.6px;text-transform:uppercase}
+      /* ── Stat cards ── */
+      .stat-card{background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.07);border-radius:16px;padding:20px;transition:all 0.25s}
+      .stat-card:hover{border-color:rgba(0,201,167,0.25);background:rgba(0,201,167,0.04)}
       /* ── Course card hover ── */
       .course-card{transition:all 0.3s ease;cursor:pointer}
       .course-card:hover{transform:translateY(-6px);box-shadow:0 20px 60px rgba(0,201,167,0.18)!important}
@@ -423,49 +460,51 @@ function CheckinList({ scheduleId, theme, gasUrl }) {
 // ─── MEMBER STATUS CARD ─────────────────────────
 function MemberStatusCard({ member, theme }) {
   const pkg = member.package || member.pkg;
-  const pkgColor = pkg === "trial" ? "#F59E0B" : "#10B981";
+  const pkgColor = pkg === "trial" ? "#F59E0B" : "#00C9A7";
   const exp = member.expiresAt ? new Date(member.expiresAt) : null;
   const daysLeft = exp ? Math.max(0, Math.ceil((exp - new Date()) / 86400000)) : 0;
   const isExpired = exp && exp < new Date();
+  const isSoon = !isExpired && daysLeft <= 7;
 
   return (
-    <div className="card" style={{ background: theme.card, border: `1px solid ${pkgColor}44`, borderRadius: 20, overflow: "hidden" }}>
-      <div style={{ background: `linear-gradient(135deg,${pkgColor}22,transparent)`, padding: "28px 28px 20px" }}>
-        <div className="d-flex justify-content-between align-items-start flex-wrap gap-3">
-          <div>
-            <div className="d-flex align-items-center gap-2 mb-2">
-              <span style={{ fontSize: 32 }}>{pkg === "trial" ? "🌱" : "⭐"}</span>
-              <div>
-                <div style={{ fontWeight: 800, fontSize: 22, color: theme.text }}>{member.name}</div>
-                <div style={{ fontSize: 13, color: theme.muted }}>สมาชิก The Owner</div>
-              </div>
+    <div style={{ background:`linear-gradient(135deg,${pkgColor}0D 0%,rgba(20,26,34,0.9) 100%)`, border:`1px solid ${pkgColor}33`, borderRadius:20, overflow:"hidden", marginBottom:24, position:"relative" }}>
+      <div style={{ position:"absolute", top:-50, right:-50, width:180, height:180, background:`radial-gradient(circle,${pkgColor}10,transparent)`, borderRadius:"50%", pointerEvents:"none" }} />
+      {/* Header */}
+      <div style={{ padding:"24px 24px 18px", position:"relative" }}>
+        <div style={{ display:"flex", justifyContent:"space-between", alignItems:"flex-start", flexWrap:"wrap", gap:12 }}>
+          <div style={{ display:"flex", alignItems:"center", gap:14 }}>
+            <div style={{ width:52, height:52, borderRadius:14, background:`${pkgColor}18`, border:`1.5px solid ${pkgColor}44`, display:"flex", alignItems:"center", justifyContent:"center", fontSize:26 }}>
+              {pkg === "trial" ? "🌱" : "⭐"}
             </div>
-            <div className="d-flex gap-2 flex-wrap mt-2">
-              <span className="badge" style={{ background: pkgColor+"22", color: pkgColor, padding: "6px 14px", borderRadius: 20, fontSize: 14, fontWeight: 800, letterSpacing: 0.5 }}>
-                {member.memberId || "-"}
-              </span>
-              <span className="badge" style={{ background: isExpired ? "#EF444422" : "#10B98122", color: isExpired ? "#EF4444" : "#10B981", padding: "6px 14px", borderRadius: 20, fontSize: 13 }}>
-                {isExpired ? "❌ หมดอายุแล้ว" : `✅ ใช้งานได้อีก ${daysLeft} วัน`}
-              </span>
+            <div>
+              <div style={{ fontWeight:800, fontSize:20, color:theme.text, lineHeight:1.2 }}>{member.name}</div>
+              <div style={{ fontSize:13, color:theme.muted, marginTop:2 }}>สมาชิก The Owner</div>
             </div>
           </div>
-          <div className="text-end">
-            <div style={{ fontSize: 11, color: theme.muted }}>แพ็กเกจ</div>
-            <div style={{ fontWeight: 800, fontSize: 22, color: pkgColor }}>{pkg === "trial" ? "Trial" : "Quarter"}</div>
-            <div style={{ fontSize: 12, color: theme.muted }}>หมดอายุ: {member.expiresAt ? String(member.expiresAt).slice(0,10) : "-"}</div>
+          <div style={{ textAlign:"right" }}>
+            <div style={{ fontFamily:theme.fontDisplay, fontSize:22, color:pkgColor, letterSpacing:1 }}>{member.memberId || member["Owner Code"] || "–"}</div>
+            <span style={{ fontSize:11, padding:"3px 12px", borderRadius:20, fontWeight:800, background:`${pkgColor}15`, color:pkgColor, border:`1px solid ${pkgColor}35` }}>
+              {pkg === "trial" ? "Trial" : "Quarter"}
+            </span>
           </div>
         </div>
+        <div style={{ marginTop:14, display:"flex", gap:8, flexWrap:"wrap" }}>
+          <span style={{ fontSize:12, padding:"4px 14px", borderRadius:20, fontWeight:700, background: isExpired ? "rgba(239,68,68,0.12)" : "rgba(0,201,167,0.1)", color: isExpired ? "#EF4444" : "#00C9A7", border:`1px solid ${isExpired ? "rgba(239,68,68,0.3)" : "rgba(0,201,167,0.25)"}` }}>
+            {isExpired ? "❌ หมดอายุแล้ว" : isSoon ? `⚠️ เหลือ ${daysLeft} วัน` : `✅ ใช้งานได้อีก ${daysLeft} วัน`}
+          </span>
+        </div>
       </div>
-      <div className="row g-0" style={{ borderTop: `1px solid ${theme.border}` }}>
+      {/* Stats row */}
+      <div style={{ display:"grid", gridTemplateColumns:"repeat(4,1fr)", borderTop:`1px solid rgba(255,255,255,0.06)` }}>
         {[
-          ["📞 เบอร์โทร", member.phone || "-"],
-          ["🆔 Line ID", (member.lineId||"").slice(0,18)+"..."],
-          ["📅 สมัครเมื่อ", member.registeredAt ? String(member.registeredAt).slice(0,10) : "-"],
-          ["⏰ หมดอายุ", member.expiresAt ? String(member.expiresAt).slice(0,10) : "-"],
-        ].map(([label, val]) => (
-          <div key={label} className="col-6" style={{ padding: "14px 20px", borderRight: `1px solid ${theme.border}`, borderBottom: `1px solid ${theme.border}` }}>
-            <div style={{ fontSize: 11, color: theme.muted, marginBottom: 3 }}>{label}</div>
-            <div style={{ fontWeight: 700, fontSize: 14, wordBreak: "break-all" }}>{val}</div>
+          ["📞 เบอร์โทร", member.phone || "–"],
+          ["🆔 Line ID", (member.lineId||"").slice(0,14)+"..."],
+          ["📅 สมัครเมื่อ", member.registeredAt ? String(member.registeredAt).slice(0,10) : "–"],
+          ["⏰ หมดอายุ", member.expiresAt ? String(member.expiresAt).slice(0,10) : "–"],
+        ].map(([label,val],i,arr) => (
+          <div key={label} style={{ padding:"14px 16px", borderRight: i<arr.length-1 ? "1px solid rgba(255,255,255,0.05)" : "none" }}>
+            <div style={{ fontSize:10, color:theme.muted, marginBottom:4, fontWeight:700, letterSpacing:0.5 }}>{label}</div>
+            <div style={{ fontWeight:700, fontSize:13, wordBreak:"break-all", color:theme.text }}>{val}</div>
           </div>
         ))}
       </div>
@@ -474,7 +513,6 @@ function MemberStatusCard({ member, theme }) {
 }
 
 
-// ─── MEMBER PORTAL ────────────────────────────
 function MemberPortal({ theme, gasUrl }) {
   const [member, setMember] = useState(null);
   const [bookings, setBookings] = useState([]); // scheduleIds ที่จองแล้ว
@@ -936,7 +974,7 @@ function LandingPage({ theme, onAdmin, autoCheckinId, autoCheckinType }) {
           {/* Desktop Nav */}
           <div className="mobile-hide" style={{ display:"flex", alignItems:"center", gap:4 }}>
             {navItems.map(([id, label]) => (
-              <button key={id} onClick={() => scrollTo(id)} style={{ background:"none", border:"none", cursor:"pointer", color: section===id ? theme.primary : theme.muted, fontWeight:600, fontSize:14, fontFamily:theme.fontBody, padding:"8px 14px", borderRadius:8, transition:"all 0.2s", borderBottom: section===id ? `2px solid ${theme.primary}` : "2px solid transparent" }}>
+              <button key={id} onClick={() => scrollTo(id)} style={{ background:"none", border:"none", cursor:"pointer", color: section===id ? "#00C9A7" : "rgba(240,244,248,0.6)", fontWeight: section===id ? 700 : 500, fontSize:14, fontFamily:theme.fontBody, padding:"8px 14px", borderRadius:8, transition:"all 0.2s", borderBottom: section===id ? "2px solid #00C9A7" : "2px solid transparent" }}>
                 {label}
               </button>
             ))}
@@ -1273,9 +1311,26 @@ function LandingPage({ theme, onAdmin, autoCheckinId, autoCheckinType }) {
       </section>
 
       {/* REGISTER */}
-      <section id="register" style={{ padding: "100px 24px", maxWidth: 820, margin: "0 auto" }}>
-        <div style={{ marginBottom: 48, textAlign: "center" }}>
-          <h2 style={{ fontFamily: theme.fontDisplay, fontSize: "clamp(40px,6vw,64px)", letterSpacing: 2, marginBottom: 12 }}>สมัคร<span style={{ color: theme.primary }}>สมาชิก</span></h2>
+      <section id="register" style={{ padding:"80px 20px 100px", background:"linear-gradient(180deg,rgba(0,201,167,0.03) 0%,transparent 100%)", borderTop:"1px solid rgba(0,201,167,0.08)" }}>
+        <div style={{ maxWidth:680, margin:"0 auto" }}>
+        <div style={{ textAlign:"center", marginBottom:40 }}>
+          <div className="section-pill">📝 สมัครสมาชิก</div>
+          <h2 style={{ fontFamily:theme.fontDisplay, fontSize:"clamp(36px,6vw,58px)", letterSpacing:2, margin:"8px 0 10px" }}>
+            สมัคร<span style={{ color:"#00C9A7" }}>สมาชิก</span>
+          </h2>
+          <p style={{ color:theme.muted, fontSize:14 }}>กรอกข้อมูลและแนบสลิป ภายใน 2 นาที</p>
+        </div>
+        {/* Step bar */}
+        <div style={{ display:"flex", alignItems:"center", marginBottom:36, padding:"0 8px" }}>
+          {[["1","เลือกแพ็กเกจ"],["2","ข้อมูลส่วนตัว"],["3","แนบสลิป"],["4","ยืนยัน"]].map(([num,label],i,arr) => (
+            <div key={num} style={{ display:"flex", alignItems:"center", flex: i < arr.length-1 ? "1" : "none" }}>
+              <div style={{ display:"flex", flexDirection:"column", alignItems:"center", gap:6 }}>
+                <div className={`step-dot ${submitted ? "done" : "active"}`}>{submitted ? "✓" : num}</div>
+                <span style={{ fontSize:10, color: submitted ? "#00C9A7" : theme.muted, fontWeight:700, whiteSpace:"nowrap" }}>{label}</span>
+              </div>
+              {i < arr.length-1 && <div className="step-line done" style={{ marginBottom:20 }} />}
+            </div>
+          ))}
         </div>
         {submitted ? (
           <div style={{ display: "flex", alignItems: "center", justifyContent: "center", minHeight: 500 }}>
@@ -1332,12 +1387,22 @@ function LandingPage({ theme, onAdmin, autoCheckinId, autoCheckinType }) {
             </Card>
           </div>
         ) : (
-          <Card>
+          <div style={{ background:"rgba(255,255,255,0.03)", border:"1px solid rgba(255,255,255,0.08)", borderRadius:20, padding:"28px 24px" }}>
             <form onSubmit={handleSubmit}>
-              <InfoBox type="warning">กรุณากรอกชื่อ-นามสกุลให้ตรงกับสลิปการโอนเงิน</InfoBox>
-              <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 16 }}>
-                <Input label="ชื่อ-นามสกุล" value={form.name} onChange={v => setForm({...form, name: sanitize(v, {type:"name"})})} placeholder="ตามบัตรประชาชน" required maxLength={25} hint="สูงสุด 25 ตัวอักษร" />
-                <Input label="เบอร์โทรศัพท์" value={form.phone} onChange={v => setForm({...form, phone: sanitize(v, {type:"phone"})})} placeholder="0812345678" required maxLength={10} inputMode="numeric" type="tel" pattern="[0-9]{10}" hint="10 หลัก เฉพาะตัวเลข" />
+              <div className="ibox-warn"><span>⚠️</span><span>กรุณากรอกชื่อ-นามสกุลให้ตรงกับสลิปการโอนเงิน</span></div>
+              <div style={{ display:"grid", gridTemplateColumns:"1fr 1fr", gap:14, marginBottom:4 }}>
+                <div>
+                  <label className="field-label">ชื่อ-นามสกุล <span style={{ color:"#EF4444" }}>*</span></label>
+                  <input className="modern-input" placeholder="ตามบัตรประชาชน" value={form.name} maxLength={25} required
+                    onChange={e => setForm({...form, name: sanitize(e.target.value,{type:"name"})})} />
+                  <span style={{ fontSize:11, color:theme.muted, marginTop:4, display:"block" }}>สูงสุด 25 ตัวอักษร</span>
+                </div>
+                <div>
+                  <label className="field-label">เบอร์โทรศัพท์ <span style={{ color:"#EF4444" }}>*</span></label>
+                  <input className="modern-input" type="tel" inputMode="numeric" placeholder="0812345678" value={form.phone} maxLength={10} required
+                    onChange={e => setForm({...form, phone: sanitize(e.target.value,{type:"phone"})})} />
+                  <span style={{ fontSize:11, color:theme.muted, marginTop:4, display:"block" }}>10 หลัก เฉพาะตัวเลข</span>
+                </div>
               </div>
               {lineAutoId ? (
                 <div style={{ marginBottom: 16 }}>
@@ -1354,14 +1419,25 @@ function LandingPage({ theme, onAdmin, autoCheckinId, autoCheckinType }) {
                 <Input label="Line User ID" value={form.lineId} onChange={v => setForm({...form, lineId: v})} placeholder="กรุณาเปิดจาก Line OA เพื่อรับ ID อัตโนมัติ" required />
               )}
               <Input label="อีเมล (ไม่บังคับ)" value={form.email} onChange={v => setForm({...form, email: v})} placeholder="example@email.com" type="email" />
-              <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 16 }}>
-                <Select label="แพ็กเกจ" value={form.pkg} onChange={v => setForm({...form, pkg: v})} required options={PACKAGES.map(p => ({ value: p.id, label: `${p.label} – ${p.price} ฿` }))} />
-                
+                     <div style={{ marginBottom:20 }}>
+                <label className="field-label">เลือกแพ็กเกจ <span style={{ color:"#EF4444" }}>*</span></label>
+                <div style={{ display:"grid", gridTemplateColumns:"1fr 1fr", gap:12 }}>
+                  {PACKAGES.map(pkg => (
+                    <div key={pkg.id} className="pkg-card" onClick={() => setForm({...form, pkg: pkg.id})}
+                      style={{ border:`2px solid ${form.pkg===pkg.id ? "#00C9A7" : "rgba(255,255,255,0.08)"}`, borderRadius:16, padding:"18px 20px", cursor:"pointer", background: form.pkg===pkg.id ? "rgba(0,201,167,0.07)" : "rgba(255,255,255,0.02)", transition:"all 0.2s", position:"relative" }}>
+                      {form.pkg===pkg.id && (
+                        <div style={{ position:"absolute", top:10, right:12, width:22, height:22, borderRadius:"50%", background:"linear-gradient(135deg,#00C9A7,#009980)", display:"flex", alignItems:"center", justifyContent:"center", fontSize:12, color:"#000", fontWeight:900 }}>✓</div>
+                      )}
+                      <div style={{ fontFamily:theme.fontDisplay, fontSize:30, color: form.pkg===pkg.id ? "#00C9A7" : theme.text, lineHeight:1 }}>{pkg.price}<span style={{ fontSize:14 }}>฿</span></div>
+                      <div style={{ fontWeight:800, fontSize:14, marginTop:6 }}>{pkg.label}</div>
+                      <div style={{ color:theme.muted, fontSize:12, marginTop:3 }}>{pkg.duration}</div>
+                    </div>
+                  ))}
+                </div>
               </div>
               <div style={{ marginBottom: 16 }}>
                 <label style={{ display: "block", marginBottom: 6, fontSize: 13, fontWeight: 600, color: theme.muted }}>สลิปโอนเงิน <span style={{ color: "#EF4444" }}>*</span></label>
-                <div onClick={() => document.getElementById("slip-file").click()}
-                  style={{ border: `2px dashed ${form.slip ? theme.accent : theme.border}`, borderRadius: 16, padding: 40, textAlign: "center", cursor: "pointer", background: form.slip ? theme.accent + "10" : "transparent" }}>
+                <label htmlFor="slip-file" className={`upload-zone ${form.slip ? "has-file" : ""}`} style={{ display:"block" }}>
                   {form.slip ? (
                     <><div style={{ fontSize: 36, marginBottom: 8 }}>✅</div><div style={{ color: theme.accent, fontWeight: 700 }}>{form.slip.name}</div></>
                   ) : (
@@ -1377,11 +1453,11 @@ function LandingPage({ theme, onAdmin, autoCheckinId, autoCheckinType }) {
                     }
                     setForm({...form, slip: file});
                   }} />
-                </div>
+                </label>
               </div>
               <Btn type="submit" size="lg" fullWidth style={{ marginTop: 8 }}>ส่งข้อมูลการสมัคร <Ic d={ICONS.arrowRight} size={18} /></Btn>
             </form>
-          </Card>
+          </div>
         )}
       </section>
 
@@ -1434,75 +1510,109 @@ function AdminLogin({ theme, onLogin, onBack }) {
   const [attempts, setAttempts] = useState(0);
   const [lockUntil, setLockUntil] = useState(0);
 
-  // hashed passwords: simpleHash("admin123") simpleHash("helper123")
   const ACCOUNTS = {
     "admin@theowner.com":  { hash: simpleHash("admin123"),  role: "super_admin", name: "Super Admin" },
-    "helper@theowner.com": { hash: simpleHash("helper123"), role: "helper",       name: "Helper Admin" },
+    "helper@theowner.com": { hash: simpleHash("helper123"), role: "helper",      name: "Helper Admin" },
   };
 
   const handle = (e) => {
     e.preventDefault();
     const now = Date.now();
-    if (now < lockUntil) {
-      const sec = Math.ceil((lockUntil - now) / 1000);
-      setErr(`ล็อกชั่วคราว กรุณารอ ${sec} วินาที`);
-      return;
-    }
+    if (now < lockUntil) { setErr(`ล็อกชั่วคราว กรุณารอ ${Math.ceil((lockUntil-now)/1000)} วินาที`); return; }
     setLoading(true);
-    // Artificial delay to prevent brute force
     setTimeout(() => {
       const acc = ACCOUNTS[email.trim().toLowerCase()];
       if (acc && acc.hash === simpleHash(pass)) {
-        setAttempts(0);
-        onLogin({ role: acc.role, name: acc.name });
+        setAttempts(0); onLogin({ role: acc.role, name: acc.name });
       } else {
-        const newAttempts = attempts + 1;
-        setAttempts(newAttempts);
-        if (newAttempts >= 5) {
-          const lockTime = Date.now() + 30000; // 30 sec lockout
-          setLockUntil(lockTime);
-          setErr("พยายามเข้าสู่ระบบผิดหลายครั้ง ล็อก 30 วินาที");
-        } else {
-          setErr(`อีเมลหรือรหัสผ่านไม่ถูกต้อง (${newAttempts}/5)`);
-        }
+        const n = attempts + 1; setAttempts(n);
+        if (n >= 5) { setLockUntil(Date.now()+30000); setErr("พยายามผิดหลายครั้ง ล็อก 30 วินาที"); }
+        else { setErr(`อีเมลหรือรหัสผ่านไม่ถูกต้อง (${n}/5)`); }
       }
       setLoading(false);
     }, 800);
   };
 
+  const locked = Date.now() < lockUntil;
+
   return (
-    <div style={{ minHeight: "100vh", display: "flex", alignItems: "center", justifyContent: "center", padding: 24 }}>
-      <div style={{ width: "100%", maxWidth: 440 }}>
-        <div style={{ textAlign: "center", marginBottom: 40 }}>
-          <div style={{ width: 80, height: 80, borderRadius: "50%", overflow: "hidden", margin: "0 auto 20px", background: theme.primary }}>
-            <img src="/the_owner_logo.png" style={{ width: "100%", height: "100%", objectFit: "cover" }} onError={e => { e.target.style.display="none"; }} />
+    <div style={{ minHeight:"100vh", display:"grid", gridTemplateColumns:"1fr 1fr" }}>
+      <style>{`
+        @media(max-width:768px){
+          .adm-left{display:none!important}
+          .adm-right{padding:32px 24px!important;grid-column:1/-1}
+          div[style*="grid-template-columns: 1fr 1fr"]{grid-template-columns:1fr!important}
+        }
+      `}</style>
+
+      {/* ── Left: Brand panel ── */}
+      <div className="adm-left split-left">
+        <div style={{ position:"absolute", top:-100, right:-100, width:350, height:350, background:"radial-gradient(circle,rgba(0,201,167,0.1),transparent)", borderRadius:"50%", pointerEvents:"none" }} />
+        <div style={{ position:"absolute", bottom:-80, left:-80, width:280, height:280, background:"radial-gradient(circle,rgba(37,99,235,0.07),transparent)", borderRadius:"50%", pointerEvents:"none" }} />
+        <div style={{ position:"relative", zIndex:1, textAlign:"center", width:"100%" }}>
+          <div style={{ width:86, height:86, borderRadius:20, overflow:"hidden", margin:"0 auto 22px", boxShadow:"0 0 40px rgba(0,201,167,0.35)", border:"2px solid rgba(0,201,167,0.3)", background:"linear-gradient(135deg,#00C9A7,#0A8F76)" }}>
+            <img src="/the_owner_logo.png" style={{ width:"100%", height:"100%", objectFit:"cover" }} onError={e=>{e.target.style.display="none";}} />
           </div>
-          <h1 style={{ fontFamily: theme.fontDisplay, fontSize: 36, letterSpacing: 3 }}>ADMIN LOGIN</h1>
-          <p style={{ color: theme.muted, marginTop: 8, fontSize: 14 }}>The Owner Management System</p>
+          <div style={{ fontFamily:theme.fontDisplay, fontSize:56, letterSpacing:4, color:"#fff", lineHeight:0.85, marginBottom:10 }}>
+            THE<br /><span style={{ color:"#00C9A7", textShadow:"0 0 30px rgba(0,201,167,0.5)" }}>OWNER</span>
+          </div>
+          <p style={{ color:"rgba(240,244,248,0.4)", fontSize:11, letterSpacing:2, marginBottom:44, textTransform:"uppercase" }}>Management System</p>
+          <div style={{ display:"flex", flexDirection:"column", gap:10, width:"100%" }}>
+            {[["🛡️","ระบบปลอดภัย","Rate limit & hashed password"],
+              ["📱","รองรับทุกอุปกรณ์","Mobile & Desktop responsive"],
+              ["⚡","จัดการง่าย","Dashboard แบบครบครัน"]
+            ].map(([icon,title,sub]) => (
+              <div key={title} style={{ display:"flex", alignItems:"center", gap:12, padding:"12px 16px", background:"rgba(255,255,255,0.04)", borderRadius:12, border:"1px solid rgba(255,255,255,0.06)", textAlign:"left" }}>
+                <span style={{ fontSize:20, flexShrink:0 }}>{icon}</span>
+                <div>
+                  <div style={{ fontWeight:700, fontSize:13, color:"#fff" }}>{title}</div>
+                  <div style={{ fontSize:11, color:"rgba(240,244,248,0.38)", marginTop:2 }}>{sub}</div>
+                </div>
+              </div>
+            ))}
+          </div>
         </div>
-        <Card>
-          <form onSubmit={handle}>
-            <Input label="อีเมล" value={email} onChange={setEmail} placeholder="admin@theowner.com" type="email" required />
-            <Input label="รหัสผ่าน" value={pass} onChange={setPass} placeholder="••••••••" type="password" required />
-            {err && <div style={{ color: "#EF4444", fontSize: 13, marginBottom: 16 }}>{err}</div>}
-            <Btn type="submit" size="lg" fullWidth loading={loading} disabled={loading || Date.now() < lockUntil}>
-              {loading ? "กำลังตรวจสอบ..." : "เข้าสู่ระบบ Admin"}
-            </Btn>
-          </form>
-          <div style={{ marginTop: 16, padding: 14, background: "rgba(59,130,246,0.1)", borderRadius: 10, fontSize: 13, color: theme.muted }}>
-            Super: admin@theowner.com / admin123<br />Helper: helper@theowner.com / helper123
+      </div>
+
+      {/* ── Right: Form ── */}
+      <div className="adm-right split-right">
+        <div style={{ width:"100%", maxWidth:400 }}>
+          <div style={{ marginBottom:32 }}>
+            <div className="section-pill">🔐 Admin Portal</div>
+            <h2 style={{ fontFamily:theme.fontDisplay, fontSize:40, letterSpacing:2, margin:"8px 0 6px" }}>
+              ADMIN <span style={{ color:"#00C9A7" }}>LOGIN</span>
+            </h2>
+            <p style={{ color:theme.muted, fontSize:14 }}>เข้าสู่ระบบจัดการ The Owner</p>
           </div>
-          <Btn variant="ghost" fullWidth onClick={onBack} style={{ marginTop: 8 }}>← กลับหน้าหลัก</Btn>
-        </Card>
+
+          <form onSubmit={handle}>
+            <div style={{ marginBottom:18 }}>
+              <label className="field-label">อีเมล <span style={{ color:"#EF4444" }}>*</span></label>
+              <input className="modern-input" type="email" value={email}
+                onChange={e => setEmail(e.target.value)} placeholder="admin@theowner.com" required />
+            </div>
+            <div style={{ marginBottom:22 }}>
+              <label className="field-label">รหัสผ่าน <span style={{ color:"#EF4444" }}>*</span></label>
+              <input className="modern-input" type="password" value={pass}
+                onChange={e => setPass(e.target.value)} placeholder="••••••••" required />
+            </div>
+            {err && <div className="ibox-err"><span>⚠️</span><span>{err}</span></div>}
+            <button type="submit" className="btn-3d btn-teal" disabled={loading || locked}
+              style={{ width:"100%", padding:"14px", borderRadius:12, border:"none", cursor: locked?"not-allowed":"pointer", fontFamily:theme.fontBody, fontSize:15, fontWeight:800, marginBottom:18, opacity: locked?0.6:1, letterSpacing:0.5 }}>
+              {loading ? "⏳ กำลังตรวจสอบ..." : locked ? "🔒 ถูกล็อกชั่วคราว" : "→ เข้าสู่ระบบ Admin"}
+            </button>
+          </form>
+
+          <button onClick={onBack} style={{ background:"none", border:"none", color:theme.muted, cursor:"pointer", fontSize:13, display:"flex", alignItems:"center", gap:6, padding:0 }}>
+            ← กลับหน้าหลัก
+          </button>
+        </div>
       </div>
     </div>
   );
 }
 
-// ─── ADMIN DASHBOARD ─────────────────────────
 
-
-// ─── DASHBOARD ───────────────────────────────────
 function exportCSV(data, filename) {
   if (!data.length) return;
   const headers = Object.keys(data[0]);
