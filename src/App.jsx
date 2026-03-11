@@ -1459,6 +1459,7 @@ function LandingPage({ theme, onAdmin, autoCheckinId, autoCheckinType }) {
             </form>
           </div>
         )}
+        </div>
       </section>
 
       {/* FAQ */}
