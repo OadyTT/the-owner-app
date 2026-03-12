@@ -3,6 +3,48 @@ import { useState, useEffect } from "react";
 const LIFF_ID = "2009199519-UViGDRf7";
 const GAS_URL = "https://script.google.com/macros/s/AKfycbytwotuAasn9-ikmI7WOodPmQBXppN9AFAScdGZnJ0M_mNrBFnqFsxTKIpn5TCn4SRK/exec";
 
+// ─── FRONTEND CACHE LAYER ─────────────────────────────────────────────────────
+// In-memory cache ใช้ร่วมกันทั้ง app (ไม่หายตอน re-render แต่ reset เมื่อ reload)
+const _cache = {};
+
+// TTL (ms): members=60s, schedules=120s, checkins=30s
+const CACHE_TTL_MS = { members: 60_000, schedules: 120_000, checkins: 30_000 };
+
+function cacheRead(key) {
+  const entry = _cache[key];
+  if (!entry) return null;
+  if (Date.now() > entry.expiresAt) { delete _cache[key]; return null; }
+  return entry.data;
+}
+
+function cacheWrite(key, data, ttlMs) {
+  _cache[key] = { data, expiresAt: Date.now() + ttlMs };
+}
+
+function cacheClear(...keys) {
+  if (keys.length === 0) { Object.keys(_cache).forEach(k => delete _cache[k]); }
+  else { keys.forEach(k => delete _cache[k]); }
+}
+
+// Smart fetch — อ่าน cache ก่อน ถ้าหมดอายุค่อย fetch ใหม่
+async function cachedFetch(action, ttlMs, params = "") {
+  const key = `${action}${params}`;
+  const hit = cacheRead(key);
+  if (hit) return hit;
+  const res = await fetch(`${GAS_URL}?action=${action}${params}`);
+  const data = await res.json();
+  if (data.success) cacheWrite(key, data, ttlMs);
+  return data;
+}
+
+// หลัง write operation ให้ล้าง cache ที่เกี่ยวข้อง
+function invalidateAfterWrite(type = "all") {
+  if (type === "members" || type === "all") cacheClear("getMembers");
+  if (type === "schedules" || type === "all") cacheClear("getSchedules");
+  if (type === "checkins" || type === "all") cacheClear("getCheckins");
+}
+// ─────────────────────────────────────────────────────────────────────────────
+
 async function uploadSlipToDrive(file, lineId) {
   return new Promise((resolve) => {
     const reader = new FileReader();
@@ -249,20 +291,21 @@ function GlobalStyles({ theme }) {
       .modern-input:focus{border-color:#00C9A7;box-shadow:0 0 0 3px rgba(0,201,167,0.1);background:rgba(0,201,167,0.03)}
       .modern-input::placeholder{color:rgba(240,244,248,0.3)}
       /* ── Step progress ── */
-      .step-dot{width:36px;height:36px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:13px;transition:all 0.3s;flex-shrink:0;position:relative;z-index:1}
-      .step-dot.done{background:linear-gradient(135deg,#00C9A7,#009980);color:#000;box-shadow:0 4px 14px rgba(0,201,167,0.45)}
-      .step-dot.active{background:linear-gradient(135deg,#2563EB,#1D4ED8);color:#fff;box-shadow:0 4px 14px rgba(37,99,235,0.5)}
-      .step-dot.pending{background:rgba(255,255,255,0.07);color:rgba(240,244,248,0.35);border:1.5px solid rgba(255,255,255,0.1)}
+      /* ── Step dots — light style matching a1-a5 ── */
+      .step-dot{width:38px;height:38px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:14px;transition:all 0.3s;flex-shrink:0;position:relative;z-index:1;border:2px solid #e5e7eb}
+      .step-dot.done{background:linear-gradient(135deg,#10B981,#059669);color:#fff;box-shadow:0 4px 14px rgba(16,185,129,0.4);border-color:#10B981}
+      .step-dot.active{background:linear-gradient(135deg,#1E40AF,#2563EB);color:#fff;box-shadow:0 4px 14px rgba(37,99,235,0.45);border-color:#2563EB}
+      .step-dot.pending{background:#f9fafb;color:#9ca3af;border:2px solid #e5e7eb}
       .step-line{height:2px;flex:1;transition:background 0.4s}
-      .step-line.done{background:linear-gradient(90deg,#00C9A7,#009980)}
-      .step-line.pending{background:rgba(255,255,255,0.08)}
-      /* ── Split panel login ── */
-      .split-left{background:linear-gradient(160deg,#050D1A 0%,#0B1E38 55%,#071929 100%);display:flex;flex-direction:column;align-items:center;justify-content:center;padding:48px 44px;position:relative;overflow:hidden}
-      .split-right{background:#0B0F14;display:flex;align-items:center;justify-content:center;padding:48px 44px}
+      .step-line.done{background:linear-gradient(90deg,#10B981,#059669)}
+      .step-line.pending{background:#e5e7eb}
+      /* ── Split panel login — light style matching a1 ── */
+      .split-left{background:linear-gradient(160deg,#1E40AF 0%,#2563EB 55%,#3B82F6 100%);display:flex;flex-direction:column;align-items:center;justify-content:center;padding:48px 44px;position:relative;overflow:hidden}
+      .split-right{background:#f8fafc;display:flex;align-items:center;justify-content:center;padding:48px 44px}
       /* ── Section pill ── */
       .section-pill{display:inline-block;background:rgba(0,201,167,0.1);border:1px solid rgba(0,201,167,0.25);border-radius:20px;padding:5px 16px;font-size:12px;color:#00C9A7;font-weight:700;letter-spacing:0.5px;margin-bottom:14px;text-transform:uppercase}
       /* ── Upload zone ── */
-      .upload-zone{border:2px dashed rgba(255,255,255,0.12);border-radius:16px;padding:28px 20px;text-align:center;cursor:pointer;transition:all 0.25s;position:relative}
+      .upload-zone{border:2px dashed #d1d5db;border-radius:16px;padding:28px 20px;text-align:center;cursor:pointer;transition:all 0.25s;position:relative;background:#fff}
       .upload-zone:hover,.upload-zone.has-file{border-color:#00C9A7;background:rgba(0,201,167,0.04)}
       /* ── Info boxes ── */
       .ibox-warn{background:rgba(245,158,11,0.08);border:1px solid rgba(245,158,11,0.2);color:#FCD34D;border-radius:12px;padding:12px 16px;font-size:13px;display:flex;align-items:flex-start;gap:10px;margin-bottom:18px}
@@ -419,8 +462,7 @@ function CheckinList({ scheduleId, theme, gasUrl }) {
 
   const load = () => {
     setLoading(true);
-    fetch(gasUrl + "?action=getCheckins&scheduleId=" + scheduleId)
-      .then(r => r.json())
+    cachedFetch("getCheckins", CACHE_TTL_MS.checkins, "&scheduleId=" + scheduleId)
       .then(res => { if (res.success) setCheckins(res.data); })
       .finally(() => setLoading(false));
   };
@@ -523,9 +565,9 @@ function MemberPortal({ theme, gasUrl }) {
   useEffect(() => {
     if (!myLineId) { setLoading(false); return; }
     Promise.all([
-      fetch(gasUrl + "?action=getMembers").then(r => r.json()),
-      fetch(gasUrl + "?action=getSchedules").then(r => r.json()),
-      fetch(gasUrl + "?action=getCheckins").then(r => r.json()),
+      cachedFetch("getMembers", CACHE_TTL_MS.members),
+      cachedFetch("getSchedules", CACHE_TTL_MS.schedules),
+      cachedFetch("getCheckins", CACHE_TTL_MS.checkins),
     ]).then(([mRes, sRes, cRes]) => {
       if (mRes.success) {
         const me = mRes.data.find(m => String(m.lineId).replace(/^'/,"") === myLineId);
@@ -689,7 +731,7 @@ function MemberPortal({ theme, gasUrl }) {
                           try {
                             const res = await fetch(gasUrl, { method:"POST", body:JSON.stringify({ action:"addCheckin", lineId:myLineId, scheduleId:s.id, type:"pre" }) });
                             const r = await res.json();
-                            if (r.success) { setBookings(prev => [...prev, String(s.id)]); }
+                            if (r.success) { invalidateAfterWrite("checkins"); setBookings(prev => [...prev, String(s.id)]); }
                             else alert("❌ " + r.message);
                           } catch { alert("เกิดข้อผิดพลาด"); }
                         }}>
@@ -718,10 +760,10 @@ function CheckinSection({ theme, gasUrl, autoCheckinId, autoCheckinType }) {
 
   const loadData = async () => {
     try {
-      // โหลด schedules + checkins พร้อมกัน
+      // โหลด schedules + checkins พร้อมกันผ่าน cache
       const [schedsRes, checkinsRes] = await Promise.all([
-        fetch(gasUrl + "?action=getSchedules").then(r => r.json()),
-        fetch(gasUrl + "?action=getCheckins").then(r => r.json())
+        cachedFetch("getSchedules", CACHE_TTL_MS.schedules),
+        cachedFetch("getCheckins", CACHE_TTL_MS.checkins),
       ]);
       const checkins = checkinsRes.success ? checkinsRes.data : [];
       const countMap = {};
@@ -751,7 +793,7 @@ function CheckinSection({ theme, gasUrl, autoCheckinId, autoCheckinType }) {
   // อัปเดต myCheckins เมื่อได้ myLineId
   useEffect(() => {
     if (myLineId && schedules.length > 0) {
-      fetch(gasUrl + "?action=getCheckins").then(r => r.json()).then(res => {
+      cachedFetch("getCheckins", CACHE_TTL_MS.checkins).then(res => {
         if (res.success) {
           setMyCheckins(res.data.filter(c => String(c.lineId) === String(myLineId)).map(c => String(c.scheduleId)));
         }
@@ -772,6 +814,7 @@ function CheckinSection({ theme, gasUrl, autoCheckinId, autoCheckinType }) {
           const fine = result.fine > 0 ? `
 ⚠️ มีค่าปรับ ${result.fine} ฿` : "";
           setDoneMsg(`✅ Check-in สำเร็จ! Zoom Link ส่งผ่าน Line แล้วครับ 🎉${fine}`);
+          invalidateAfterWrite("checkins");
           setMyCheckins(prev => [...prev, String(autoCheckinId)]);
           setSchedules(prev => prev.map(s => String(s.id) === String(autoCheckinId) ? { ...s, checkinCount: (s.checkinCount || 0) + 1 } : s));
         } else { setDoneMsg("❌ " + result.message); }
@@ -792,6 +835,7 @@ function CheckinSection({ theme, gasUrl, autoCheckinId, autoCheckinType }) {
       const res = await fetch(gasUrl, { method: "POST", body: JSON.stringify({ action: "addCheckin", lineId: myLineId, scheduleId: schedule.id, type: "pre" }) });
       const result = await res.json();
       if (result.success) {
+        invalidateAfterWrite("checkins"); // ล้าง cache checkins
         setDoneMsg(schedule.mode === "online"
           ? `✅ Check-in สำเร็จ!
 📚 ${schedule.course}
@@ -914,7 +958,7 @@ function LandingPage({ theme, onAdmin, autoCheckinId, autoCheckinType }) {
     if (window.liff) {
       initLiff().then(userId => { if (userId) { setLineAutoId(userId); setForm(f => ({ ...f, lineId: userId })); } });
     }
-    fetch(GAS_URL + "?action=getSchedules").then(r => r.json()).then(res => { if (res.success && res.data.length > 0) setSchedules(res.data); }).catch(() => {});
+    cachedFetch("getSchedules", CACHE_TTL_MS.schedules).then(res => { if (res.success && res.data.length > 0) setSchedules(res.data); }).catch(() => {});
   }, []);
 
   const scrollTo = (id) => { setSection(id); document.getElementById(id)?.scrollIntoView({ behavior: "smooth" }); };
@@ -937,7 +981,7 @@ function LandingPage({ theme, onAdmin, autoCheckinId, autoCheckinType }) {
   // ตรวจสอบสมาชิก
   useEffect(() => {
     if (!lineId) return;
-    fetch(GAS_URL + "?action=getMembers").then(r => r.json()).then(res => {
+    cachedFetch("getMembers", CACHE_TTL_MS.members).then(res => {
       if (res.success) {
         const me = res.data.find(m => String(m.lineId||"").replace(/^'/,"") === lineId);
         if (me && me.status === "approved") setMemberInfo(me);
@@ -1311,29 +1355,43 @@ function LandingPage({ theme, onAdmin, autoCheckinId, autoCheckinType }) {
       </section>
 
       {/* REGISTER */}
-      <section id="register" style={{ padding:"80px 20px 100px", background:"linear-gradient(180deg,rgba(0,201,167,0.03) 0%,transparent 100%)", borderTop:"1px solid rgba(0,201,167,0.08)" }}>
-        <div style={{ maxWidth:680, margin:"0 auto" }}>
-        <div style={{ textAlign:"center", marginBottom:40 }}>
-          <div className="section-pill">📝 สมัครสมาชิก</div>
-          <h2 style={{ fontFamily:theme.fontDisplay, fontSize:"clamp(36px,6vw,58px)", letterSpacing:2, margin:"8px 0 10px" }}>
-            สมัคร<span style={{ color:"#00C9A7" }}>สมาชิก</span>
+      <section id="register" style={{ padding:"80px 20px 100px", background:"linear-gradient(135deg,#1E40AF 0%,#2563EB 35%,#3B82F6 70%,#00C9A7 100%)" }}>
+        {/* Top band for visual */}
+        <div style={{ maxWidth:760, margin:"0 auto" }}>
+        {/* Title on gradient bg */}
+        <div style={{ textAlign:"center", marginBottom:32 }}>
+          <div style={{ display:"inline-block", background:"rgba(255,255,255,0.15)", border:"1px solid rgba(255,255,255,0.25)", borderRadius:20, padding:"6px 18px", fontSize:13, color:"#fff", fontWeight:700, marginBottom:16, letterSpacing:0.5 }}>
+            📝 สมัครสมาชิก
+          </div>
+          <h2 style={{ fontFamily:theme.fontDisplay, fontSize:"clamp(36px,6vw,58px)", letterSpacing:2, margin:"8px 0 10px", color:"#fff" }}>
+            สมัคร<span style={{ color:"#b2f5ea" }}>สมาชิก</span>
           </h2>
-          <p style={{ color:theme.muted, fontSize:14 }}>กรอกข้อมูลและแนบสลิป ภายใน 2 นาที</p>
+          <p style={{ color:"rgba(255,255,255,0.75)", fontSize:14 }}>กรอกข้อมูลและแนบสลิป ภายใน 2 นาที</p>
         </div>
-        {/* Step bar */}
-        <div style={{ display:"flex", alignItems:"center", marginBottom:36, padding:"0 8px" }}>
-          {[["1","เลือกแพ็กเกจ"],["2","ข้อมูลส่วนตัว"],["3","แนบสลิป"],["4","ยืนยัน"]].map(([num,label],i,arr) => (
-            <div key={num} style={{ display:"flex", alignItems:"center", flex: i < arr.length-1 ? "1" : "none" }}>
-              <div style={{ display:"flex", flexDirection:"column", alignItems:"center", gap:6 }}>
-                <div className={`step-dot ${submitted ? "done" : "active"}`}>{submitted ? "✓" : num}</div>
-                <span style={{ fontSize:10, color: submitted ? "#00C9A7" : theme.muted, fontWeight:700, whiteSpace:"nowrap" }}>{label}</span>
-              </div>
-              {i < arr.length-1 && <div className="step-line done" style={{ marginBottom:20 }} />}
+
+        {/* Main card - light/white */}
+        <div style={{ background:"#fff", borderRadius:24, overflow:"hidden", boxShadow:"0 20px 60px rgba(0,0,0,0.15)" }}>
+          {/* Step bar - inside white card */}
+          <div style={{ background:"linear-gradient(135deg,#1E40AF,#2563EB)", padding:"20px 32px" }}>
+            <div style={{ display:"flex", alignItems:"center", justifyContent:"center", gap:0 }}>
+              {[["1","เลือกแพ็กเกจ"],["2","ข้อมูลส่วนตัว"],["3","แนบสลิป"],["4","ยืนยัน"]].map(([num,label],i,arr) => (
+                <div key={num} style={{ display:"flex", alignItems:"center", flex: i < arr.length-1 ? "1" : "none" }}>
+                  <div style={{ display:"flex", flexDirection:"column", alignItems:"center", gap:6 }}>
+                    <div className={`step-dot ${submitted ? "done" : i === 0 ? "active" : "pending"}`} style={{ border:"2px solid rgba(255,255,255,0.4)", background: submitted ? "linear-gradient(135deg,#10B981,#059669)" : i===0 ? "#fff" : "rgba(255,255,255,0.15)", color: i===0 ? "#1E40AF" : submitted ? "#fff" : "rgba(255,255,255,0.5)" }}>
+                      {submitted ? "✓" : num}
+                    </div>
+                    <span style={{ fontSize:10, color: i===0 ? "#fff" : "rgba(255,255,255,0.55)", fontWeight:700, whiteSpace:"nowrap" }}>{label}</span>
+                  </div>
+                  {i < arr.length-1 && <div className="step-line pending" style={{ marginBottom:20, background: submitted ? "rgba(255,255,255,0.6)" : "rgba(255,255,255,0.25)" }} />}
+                </div>
+              ))}
             </div>
-          ))}
-        </div>
+          </div>
+
+          {/* Form body */}
+          <div style={{ padding:"32px 36px 36px" }}>
         {submitted ? (
-          <div style={{ display: "flex", alignItems: "center", justifyContent: "center", minHeight: 500 }}>
+          <div style={{ display: "flex", alignItems: "center", justifyContent: "center", minHeight: 400 }}>
             <style>{`
               @keyframes popIn {
                 0% { transform: scale(0); opacity: 0; }
@@ -1358,10 +1416,9 @@ function LandingPage({ theme, onAdmin, autoCheckinId, autoCheckinType }) {
                 100% { transform: scale(1.5); opacity: 0; }
               }
             `}</style>
-            <Card glow style={{ textAlign: "center", padding: "60px 40px", maxWidth: 480, width: "100%", position: "relative", overflow: "visible" }}>
+            <div style={{ textAlign: "center", padding: "40px 20px", width: "100%" }}>
               {/* SVG checkmark animation */}
-              <div style={{ display: "flex", justifyContent: "center", marginBottom: 32, animation: "popIn 0.6s cubic-bezier(0.175,0.885,0.32,1.275) forwards", position: "relative" }}>
-                {/* pulse ring */}
+              <div style={{ display: "flex", justifyContent: "center", marginBottom: 24, animation: "popIn 0.6s cubic-bezier(0.175,0.885,0.32,1.275) forwards", position: "relative" }}>
                 <div style={{ position: "absolute", top: "50%", left: "50%", transform: "translate(-50%,-50%)", width: 130, height: 130, borderRadius: "50%", border: "3px solid #10B981", animation: "pulse-ring 1.5s ease-out 0.8s infinite", pointerEvents: "none" }} />
                 <svg width="120" height="120" viewBox="0 0 120 120">
                   <circle cx="60" cy="60" r="50" fill="none" stroke="#10B981" strokeWidth="6"
@@ -1372,76 +1429,94 @@ function LandingPage({ theme, onAdmin, autoCheckinId, autoCheckinType }) {
                     style={{ animation: "drawCheck 0.5s ease forwards 0.7s" }} />
                 </svg>
               </div>
-
               <h2 style={{ fontFamily: theme.fontDisplay, fontSize: 44, letterSpacing: 2, marginBottom: 12, color: "#10B981", animation: "fadeSlideUp 0.5s ease forwards 0.9s", opacity: 0 }}>
                 ส่งข้อมูลแล้ว!
               </h2>
-              <p style={{ color: theme.muted, lineHeight: 1.9, fontSize: 16, maxWidth: 380, margin: "0 auto 32px", animation: "fadeSlideUp 0.5s ease forwards 1.1s", opacity: 0 }}>
+              <p style={{ color: "#6b7280", lineHeight: 1.9, fontSize: 16, maxWidth: 380, margin: "0 auto 32px", animation: "fadeSlideUp 0.5s ease forwards 1.1s", opacity: 0 }}>
                 Admin จะตรวจสอบสลิปและส่งข้อมูลยืนยันกลับผ่าน{" "}
                 <strong style={{ color: "#06C755" }}>Line OA "The Owner"</strong>{" "}
                 ภายใน 1–24 ชั่วโมง
               </p>
               <div style={{ animation: "fadeSlideUp 0.5s ease forwards 1.3s", opacity: 0 }}>
-                <Btn variant="ghost" onClick={() => setSubmitted(false)}>สมัครอีกครั้ง</Btn>
+                <button onClick={() => setSubmitted(false)}
+                  style={{ background:"#f3f4f6", border:"none", borderRadius:10, padding:"10px 28px", fontSize:14, fontWeight:700, cursor:"pointer", color:"#374151" }}>
+                  สมัครอีกครั้ง
+                </button>
               </div>
-            </Card>
+            </div>
           </div>
         ) : (
-          <div style={{ background:"rgba(255,255,255,0.03)", border:"1px solid rgba(255,255,255,0.08)", borderRadius:20, padding:"28px 24px" }}>
+          <div>
+            <div style={{ background:"#FEF3C7", border:"1px solid #FDE68A", borderRadius:12, padding:"12px 16px", display:"flex", alignItems:"flex-start", gap:10, marginBottom:20, fontSize:13, color:"#92400E" }}>
+              <span>⚠️</span><span>กรุณากรอกชื่อ-นามสกุลให้ตรงกับสลิปการโอนเงิน</span>
+            </div>
             <form onSubmit={handleSubmit}>
-              <div className="ibox-warn"><span>⚠️</span><span>กรุณากรอกชื่อ-นามสกุลให้ตรงกับสลิปการโอนเงิน</span></div>
-              <div style={{ display:"grid", gridTemplateColumns:"1fr 1fr", gap:14, marginBottom:4 }}>
+              <div style={{ display:"grid", gridTemplateColumns:"1fr 1fr", gap:16, marginBottom:16 }}>
                 <div>
-                  <label className="field-label">ชื่อ-นามสกุล <span style={{ color:"#EF4444" }}>*</span></label>
-                  <input className="modern-input" placeholder="ตามบัตรประชาชน" value={form.name} maxLength={25} required
+                  <label style={{ display:"block", marginBottom:6, fontSize:13, fontWeight:600, color:"#374151" }}>ชื่อ-นามสกุล <span style={{ color:"#EF4444" }}>*</span></label>
+                  <input style={{ width:"100%", border:"1.5px solid #e5e7eb", borderRadius:10, padding:"11px 14px", fontSize:14, outline:"none", color:"#111827", fontFamily:"inherit", transition:"border-color 0.2s" }}
+                    onFocus={e=>e.target.style.borderColor="#2563EB"} onBlur={e=>e.target.style.borderColor="#e5e7eb"}
+                    placeholder="ตามบัตรประชาชน" value={form.name} maxLength={25} required
                     onChange={e => setForm({...form, name: sanitize(e.target.value,{type:"name"})})} />
-                  <span style={{ fontSize:11, color:theme.muted, marginTop:4, display:"block" }}>สูงสุด 25 ตัวอักษร</span>
+                  <span style={{ fontSize:11, color:"#9ca3af", marginTop:4, display:"block" }}>สูงสุด 25 ตัวอักษร</span>
                 </div>
                 <div>
-                  <label className="field-label">เบอร์โทรศัพท์ <span style={{ color:"#EF4444" }}>*</span></label>
-                  <input className="modern-input" type="tel" inputMode="numeric" placeholder="0812345678" value={form.phone} maxLength={10} required
+                  <label style={{ display:"block", marginBottom:6, fontSize:13, fontWeight:600, color:"#374151" }}>เบอร์โทรศัพท์ <span style={{ color:"#EF4444" }}>*</span></label>
+                  <input style={{ width:"100%", border:"1.5px solid #e5e7eb", borderRadius:10, padding:"11px 14px", fontSize:14, outline:"none", color:"#111827", fontFamily:"inherit", transition:"border-color 0.2s" }}
+                    onFocus={e=>e.target.style.borderColor="#2563EB"} onBlur={e=>e.target.style.borderColor="#e5e7eb"}
+                    type="tel" inputMode="numeric" placeholder="0812345678" value={form.phone} maxLength={10} required
                     onChange={e => setForm({...form, phone: sanitize(e.target.value,{type:"phone"})})} />
-                  <span style={{ fontSize:11, color:theme.muted, marginTop:4, display:"block" }}>10 หลัก เฉพาะตัวเลข</span>
+                  <span style={{ fontSize:11, color:"#9ca3af", marginTop:4, display:"block" }}>10 หลัก เฉพาะตัวเลข</span>
                 </div>
               </div>
               {lineAutoId ? (
                 <div style={{ marginBottom: 16 }}>
-                  <label style={{ display: "block", marginBottom: 6, fontSize: 13, fontWeight: 600, color: theme.muted }}>Line User ID</label>
-                  <div style={{ background: theme.accent + "15", border: `1px solid ${theme.accent}40`, borderRadius: 12, padding: "13px 16px", display: "flex", alignItems: "center", gap: 10 }}>
+                  <label style={{ display: "block", marginBottom: 6, fontSize: 13, fontWeight: 600, color: "#374151" }}>Line User ID</label>
+                  <div style={{ background: "#ECFDF5", border: "1px solid #6EE7B7", borderRadius: 12, padding: "13px 16px", display: "flex", alignItems: "center", gap: 10 }}>
                     <span style={{ fontSize: 20 }}>✅</span>
                     <div>
-                      <div style={{ fontWeight: 700, color: theme.accent, fontSize: 13 }}>เชื่อมต่อ LINE อัตโนมัติแล้ว</div>
-                      <div style={{ fontSize: 11, color: theme.muted, marginTop: 2 }}>{lineAutoId.slice(0,8)}...{lineAutoId.slice(-4)}</div>
+                      <div style={{ fontWeight: 700, color: "#059669", fontSize: 13 }}>เชื่อมต่อ LINE อัตโนมัติแล้ว</div>
+                      <div style={{ fontSize: 11, color: "#6b7280", marginTop: 2 }}>{lineAutoId.slice(0,8)}...{lineAutoId.slice(-4)}</div>
                     </div>
                   </div>
                 </div>
               ) : (
-                <Input label="Line User ID" value={form.lineId} onChange={v => setForm({...form, lineId: v})} placeholder="กรุณาเปิดจาก Line OA เพื่อรับ ID อัตโนมัติ" required />
+                <div style={{ marginBottom:16 }}>
+                  <label style={{ display:"block", marginBottom:6, fontSize:13, fontWeight:600, color:"#374151" }}>Line User ID <span style={{ color:"#EF4444" }}>*</span></label>
+                  <input style={{ width:"100%", border:"1.5px solid #e5e7eb", borderRadius:10, padding:"11px 14px", fontSize:14, outline:"none", color:"#111827", fontFamily:"inherit" }}
+                    value={form.lineId} onChange={v => setForm({...form, lineId: v.target.value})} placeholder="กรุณาเปิดจาก Line OA เพื่อรับ ID อัตโนมัติ" required />
+                </div>
               )}
-              <Input label="อีเมล (ไม่บังคับ)" value={form.email} onChange={v => setForm({...form, email: v})} placeholder="example@email.com" type="email" />
-                     <div style={{ marginBottom:20 }}>
-                <label className="field-label">เลือกแพ็กเกจ <span style={{ color:"#EF4444" }}>*</span></label>
+              <div style={{ marginBottom:16 }}>
+                <label style={{ display:"block", marginBottom:6, fontSize:13, fontWeight:600, color:"#374151" }}>อีเมล (ไม่บังคับ)</label>
+                <input style={{ width:"100%", border:"1.5px solid #e5e7eb", borderRadius:10, padding:"11px 14px", fontSize:14, outline:"none", color:"#111827", fontFamily:"inherit" }}
+                  value={form.email} onChange={e => setForm({...form, email: e.target.value})} placeholder="example@email.com" type="email" />
+              </div>
+
+              <div style={{ marginBottom:20 }}>
+                <label style={{ display:"block", marginBottom:10, fontSize:13, fontWeight:600, color:"#374151" }}>เลือกแพ็กเกจ <span style={{ color:"#EF4444" }}>*</span></label>
                 <div style={{ display:"grid", gridTemplateColumns:"1fr 1fr", gap:12 }}>
                   {PACKAGES.map(pkg => (
-                    <div key={pkg.id} className="pkg-card" onClick={() => setForm({...form, pkg: pkg.id})}
-                      style={{ border:`2px solid ${form.pkg===pkg.id ? "#00C9A7" : "rgba(255,255,255,0.08)"}`, borderRadius:16, padding:"18px 20px", cursor:"pointer", background: form.pkg===pkg.id ? "rgba(0,201,167,0.07)" : "rgba(255,255,255,0.02)", transition:"all 0.2s", position:"relative" }}>
+                    <div key={pkg.id} onClick={() => setForm({...form, pkg: pkg.id})}
+                      style={{ border:`2px solid ${form.pkg===pkg.id ? "#2563EB" : "#e5e7eb"}`, borderRadius:14, padding:"18px 20px", cursor:"pointer", background: form.pkg===pkg.id ? "#EFF6FF" : "#f9fafb", transition:"all 0.2s", position:"relative" }}>
                       {form.pkg===pkg.id && (
-                        <div style={{ position:"absolute", top:10, right:12, width:22, height:22, borderRadius:"50%", background:"linear-gradient(135deg,#00C9A7,#009980)", display:"flex", alignItems:"center", justifyContent:"center", fontSize:12, color:"#000", fontWeight:900 }}>✓</div>
+                        <div style={{ position:"absolute", top:10, right:12, width:22, height:22, borderRadius:"50%", background:"linear-gradient(135deg,#2563EB,#1D4ED8)", display:"flex", alignItems:"center", justifyContent:"center", fontSize:12, color:"#fff", fontWeight:900 }}>✓</div>
                       )}
-                      <div style={{ fontFamily:theme.fontDisplay, fontSize:30, color: form.pkg===pkg.id ? "#00C9A7" : theme.text, lineHeight:1 }}>{pkg.price}<span style={{ fontSize:14 }}>฿</span></div>
-                      <div style={{ fontWeight:800, fontSize:14, marginTop:6 }}>{pkg.label}</div>
-                      <div style={{ color:theme.muted, fontSize:12, marginTop:3 }}>{pkg.duration}</div>
+                      <div style={{ fontSize:30, fontWeight:900, color: form.pkg===pkg.id ? "#1D4ED8" : "#374151", lineHeight:1 }}>{pkg.price}<span style={{ fontSize:14 }}>฿</span></div>
+                      <div style={{ fontWeight:800, fontSize:14, marginTop:6, color:"#111827" }}>{pkg.label}</div>
+                      <div style={{ color:"#6b7280", fontSize:12, marginTop:3 }}>{pkg.duration}</div>
                     </div>
                   ))}
                 </div>
               </div>
-              <div style={{ marginBottom: 16 }}>
-                <label style={{ display: "block", marginBottom: 6, fontSize: 13, fontWeight: 600, color: theme.muted }}>สลิปโอนเงิน <span style={{ color: "#EF4444" }}>*</span></label>
+
+              <div style={{ marginBottom: 20 }}>
+                <label style={{ display:"block", marginBottom:8, fontSize:13, fontWeight:600, color:"#374151" }}>สลิปโอนเงิน <span style={{ color:"#EF4444" }}>*</span></label>
                 <label htmlFor="slip-file" className={`upload-zone ${form.slip ? "has-file" : ""}`} style={{ display:"block" }}>
                   {form.slip ? (
-                    <><div style={{ fontSize: 36, marginBottom: 8 }}>✅</div><div style={{ color: theme.accent, fontWeight: 700 }}>{form.slip.name}</div></>
+                    <><div style={{ fontSize: 36, marginBottom: 8 }}>✅</div><div style={{ color: "#059669", fontWeight: 700 }}>{form.slip.name}</div></>
                   ) : (
-                    <><div style={{ color: theme.muted, marginBottom: 8 }}><Ic d={ICONS.upload} size={32} /></div><div style={{ fontWeight: 600, marginBottom: 4 }}>คลิกหรือลากไฟล์มาวางที่นี่</div><div style={{ color: theme.muted, fontSize: 13 }}>รองรับ JPG, PNG, PDF</div></>
+                    <><div style={{ color:"#9ca3af", marginBottom: 8 }}><Ic d={ICONS.upload} size={32} /></div><div style={{ fontWeight: 600, marginBottom: 4, color:"#374151" }}>คลิกหรือลากไฟล์มาวางที่นี่</div><div style={{ color:"#9ca3af", fontSize: 13 }}>รองรับ JPG, PNG, PDF</div></>
                   )}
                   <input id="slip-file" type="file" accept=".jpg,.jpeg,.png,.gif,.webp" style={{ display: "none" }} onChange={e => {
                     const file = e.target.files[0];
@@ -1455,10 +1530,14 @@ function LandingPage({ theme, onAdmin, autoCheckinId, autoCheckinType }) {
                   }} />
                 </label>
               </div>
-              <Btn type="submit" size="lg" fullWidth style={{ marginTop: 8 }}>ส่งข้อมูลการสมัคร <Ic d={ICONS.arrowRight} size={18} /></Btn>
+              <button type="submit" style={{ width:"100%", padding:"14px", borderRadius:12, border:"none", cursor:"pointer", background:"linear-gradient(135deg,#1E40AF,#2563EB)", color:"#fff", fontSize:15, fontWeight:800, fontFamily:"inherit", display:"flex", alignItems:"center", justifyContent:"center", gap:8, boxShadow:"0 4px 14px rgba(37,99,235,0.35)" }}>
+                ส่งข้อมูลการสมัคร <Ic d={ICONS.arrowRight} size={18} />
+              </button>
             </form>
           </div>
         )}
+          </div>
+        </div>
         </div>
       </section>
 
@@ -1546,28 +1625,28 @@ function AdminLogin({ theme, onLogin, onBack }) {
         }
       `}</style>
 
-      {/* ── Left: Brand panel ── */}
+      {/* ── Left: Brand panel — blue gradient like a1 ── */}
       <div className="adm-left split-left">
-        <div style={{ position:"absolute", top:-100, right:-100, width:350, height:350, background:"radial-gradient(circle,rgba(0,201,167,0.1),transparent)", borderRadius:"50%", pointerEvents:"none" }} />
-        <div style={{ position:"absolute", bottom:-80, left:-80, width:280, height:280, background:"radial-gradient(circle,rgba(37,99,235,0.07),transparent)", borderRadius:"50%", pointerEvents:"none" }} />
+        <div style={{ position:"absolute", top:-100, right:-100, width:350, height:350, background:"radial-gradient(circle,rgba(255,255,255,0.12),transparent)", borderRadius:"50%", pointerEvents:"none" }} />
+        <div style={{ position:"absolute", bottom:-80, left:-80, width:280, height:280, background:"radial-gradient(circle,rgba(255,255,255,0.06),transparent)", borderRadius:"50%", pointerEvents:"none" }} />
         <div style={{ position:"relative", zIndex:1, textAlign:"center", width:"100%" }}>
-          <div style={{ width:86, height:86, borderRadius:20, overflow:"hidden", margin:"0 auto 22px", boxShadow:"0 0 40px rgba(0,201,167,0.35)", border:"2px solid rgba(0,201,167,0.3)", background:"linear-gradient(135deg,#00C9A7,#0A8F76)" }}>
+          <div style={{ width:86, height:86, borderRadius:"50%", overflow:"hidden", margin:"0 auto 22px", boxShadow:"0 0 40px rgba(255,255,255,0.2)", border:"3px solid rgba(255,255,255,0.3)", background:"rgba(255,255,255,0.15)", display:"flex", alignItems:"center", justifyContent:"center" }}>
             <img src="/the_owner_logo.png" style={{ width:"100%", height:"100%", objectFit:"cover" }} onError={e=>{e.target.style.display="none";}} />
           </div>
-          <div style={{ fontFamily:theme.fontDisplay, fontSize:56, letterSpacing:4, color:"#fff", lineHeight:0.85, marginBottom:10 }}>
-            THE<br /><span style={{ color:"#00C9A7", textShadow:"0 0 30px rgba(0,201,167,0.5)" }}>OWNER</span>
+          <div style={{ fontFamily:theme.fontDisplay, fontSize:52, letterSpacing:4, color:"#fff", lineHeight:0.85, marginBottom:10 }}>
+            THE<br /><span style={{ color:"#b2f5ea" }}>OWNER</span>
           </div>
-          <p style={{ color:"rgba(240,244,248,0.4)", fontSize:11, letterSpacing:2, marginBottom:44, textTransform:"uppercase" }}>Management System</p>
+          <p style={{ color:"rgba(255,255,255,0.55)", fontSize:11, letterSpacing:2, marginBottom:44, textTransform:"uppercase" }}>Management System</p>
           <div style={{ display:"flex", flexDirection:"column", gap:10, width:"100%" }}>
             {[["🛡️","ระบบปลอดภัย","Rate limit & hashed password"],
               ["📱","รองรับทุกอุปกรณ์","Mobile & Desktop responsive"],
               ["⚡","จัดการง่าย","Dashboard แบบครบครัน"]
             ].map(([icon,title,sub]) => (
-              <div key={title} style={{ display:"flex", alignItems:"center", gap:12, padding:"12px 16px", background:"rgba(255,255,255,0.04)", borderRadius:12, border:"1px solid rgba(255,255,255,0.06)", textAlign:"left" }}>
+              <div key={title} style={{ display:"flex", alignItems:"center", gap:12, padding:"12px 16px", background:"rgba(255,255,255,0.1)", borderRadius:12, border:"1px solid rgba(255,255,255,0.15)", textAlign:"left" }}>
                 <span style={{ fontSize:20, flexShrink:0 }}>{icon}</span>
                 <div>
                   <div style={{ fontWeight:700, fontSize:13, color:"#fff" }}>{title}</div>
-                  <div style={{ fontSize:11, color:"rgba(240,244,248,0.38)", marginTop:2 }}>{sub}</div>
+                  <div style={{ fontSize:11, color:"rgba(255,255,255,0.55)", marginTop:2 }}>{sub}</div>
                 </div>
               </div>
             ))}
@@ -1575,36 +1654,38 @@ function AdminLogin({ theme, onLogin, onBack }) {
         </div>
       </div>
 
-      {/* ── Right: Form ── */}
+      {/* ── Right: Form — light/white like a1 ── */}
       <div className="adm-right split-right">
         <div style={{ width:"100%", maxWidth:400 }}>
           <div style={{ marginBottom:32 }}>
-            <div className="section-pill">🔐 Admin Portal</div>
-            <h2 style={{ fontFamily:theme.fontDisplay, fontSize:40, letterSpacing:2, margin:"8px 0 6px" }}>
-              ADMIN <span style={{ color:"#00C9A7" }}>LOGIN</span>
+            <div style={{ display:"inline-block", background:"#EFF6FF", border:"1px solid #BFDBFE", borderRadius:20, padding:"5px 16px", fontSize:12, color:"#1D4ED8", fontWeight:700, marginBottom:12 }}>🔐 Admin Portal</div>
+            <h2 style={{ fontFamily:theme.fontDisplay, fontSize:40, letterSpacing:2, margin:"8px 0 6px", color:"#111827" }}>
+              ADMIN <span style={{ color:"#2563EB" }}>LOGIN</span>
             </h2>
-            <p style={{ color:theme.muted, fontSize:14 }}>เข้าสู่ระบบจัดการ The Owner</p>
+            <p style={{ color:"#6b7280", fontSize:14 }}>เข้าสู่ระบบจัดการ The Owner</p>
           </div>
 
           <form onSubmit={handle}>
             <div style={{ marginBottom:18 }}>
-              <label className="field-label">อีเมล <span style={{ color:"#EF4444" }}>*</span></label>
-              <input className="modern-input" type="email" value={email}
-                onChange={e => setEmail(e.target.value)} placeholder="admin@theowner.com" required />
+              <label style={{ display:"block", marginBottom:6, fontSize:13, fontWeight:600, color:"#374151" }}>อีเมล <span style={{ color:"#EF4444" }}>*</span></label>
+              <input style={{ width:"100%", border:"1.5px solid #e5e7eb", borderRadius:10, padding:"12px 14px", fontSize:14, outline:"none", color:"#111827", fontFamily:"inherit", transition:"border-color 0.2s", background:"#f9fafb" }}
+                onFocus={e=>e.target.style.borderColor="#2563EB"} onBlur={e=>e.target.style.borderColor="#e5e7eb"}
+                type="email" value={email} onChange={e => setEmail(e.target.value)} placeholder="admin@theowner.com" required />
             </div>
             <div style={{ marginBottom:22 }}>
-              <label className="field-label">รหัสผ่าน <span style={{ color:"#EF4444" }}>*</span></label>
-              <input className="modern-input" type="password" value={pass}
-                onChange={e => setPass(e.target.value)} placeholder="••••••••" required />
+              <label style={{ display:"block", marginBottom:6, fontSize:13, fontWeight:600, color:"#374151" }}>รหัสผ่าน <span style={{ color:"#EF4444" }}>*</span></label>
+              <input style={{ width:"100%", border:"1.5px solid #e5e7eb", borderRadius:10, padding:"12px 14px", fontSize:14, outline:"none", color:"#111827", fontFamily:"inherit", transition:"border-color 0.2s", background:"#f9fafb" }}
+                onFocus={e=>e.target.style.borderColor="#2563EB"} onBlur={e=>e.target.style.borderColor="#e5e7eb"}
+                type="password" value={pass} onChange={e => setPass(e.target.value)} placeholder="••••••••" required />
             </div>
-            {err && <div className="ibox-err"><span>⚠️</span><span>{err}</span></div>}
-            <button type="submit" className="btn-3d btn-teal" disabled={loading || locked}
-              style={{ width:"100%", padding:"14px", borderRadius:12, border:"none", cursor: locked?"not-allowed":"pointer", fontFamily:theme.fontBody, fontSize:15, fontWeight:800, marginBottom:18, opacity: locked?0.6:1, letterSpacing:0.5 }}>
+            {err && <div style={{ background:"#FEF2F2", border:"1px solid #FECACA", borderRadius:10, padding:"12px 16px", display:"flex", alignItems:"center", gap:10, marginBottom:16, color:"#B91C1C", fontSize:13 }}><span>⚠️</span><span>{err}</span></div>}
+            <button type="submit" disabled={loading || locked}
+              style={{ width:"100%", padding:"14px", borderRadius:12, border:"none", cursor: locked?"not-allowed":"pointer", fontFamily:"inherit", fontSize:15, fontWeight:800, marginBottom:18, opacity: locked?0.6:1, letterSpacing:0.5, background:"linear-gradient(135deg,#1E40AF,#2563EB)", color:"#fff", boxShadow:"0 4px 14px rgba(37,99,235,0.35)" }}>
               {loading ? "⏳ กำลังตรวจสอบ..." : locked ? "🔒 ถูกล็อกชั่วคราว" : "→ เข้าสู่ระบบ Admin"}
             </button>
           </form>
 
-          <button onClick={onBack} style={{ background:"none", border:"none", color:theme.muted, cursor:"pointer", fontSize:13, display:"flex", alignItems:"center", gap:6, padding:0 }}>
+          <button onClick={onBack} style={{ background:"none", border:"none", color:"#6b7280", cursor:"pointer", fontSize:13, display:"flex", alignItems:"center", gap:6, padding:0 }}>
             ← กลับหน้าหลัก
           </button>
         </div>
@@ -1628,7 +1709,7 @@ function AdminDashboardPage({ theme, members, schedules, gasUrl }) {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    fetch(gasUrl + "?action=getCheckins").then(r => r.json())
+    cachedFetch("getCheckins", CACHE_TTL_MS.checkins)
       .then(res => { if (res.success) setCheckins(res.data); })
       .finally(() => setLoading(false));
   }, []);
@@ -1760,8 +1841,8 @@ function CheckinsReport({ theme, gasUrl, schedules }) {
 
   useEffect(() => {
     Promise.all([
-      fetch(gasUrl + "?action=getCheckins").then(r => r.json()),
-      fetch(gasUrl + "?action=getMembers").then(r => r.json()),
+      cachedFetch("getCheckins", CACHE_TTL_MS.checkins),
+      cachedFetch("getMembers", CACHE_TTL_MS.members),
     ]).then(([cRes, mRes]) => {
       if (cRes.success) setCheckins(cRes.data);
       if (mRes.success) setMembers(mRes.data);
@@ -1978,12 +2059,12 @@ function AdminDashboard({ user, theme, setTheme, onLogout, onLanding }) {
     email: m.email || ""
   }));
 
-  const loadMembers = () => fetch(GAS_URL + "?action=getMembers").then(r => r.json()).then(res => { if (res.success) setMembers(mapMembers(res.data)); }).catch(() => {});
+  const loadMembers = () => cachedFetch("getMembers", CACHE_TTL_MS.members, "").then(res => { if (res.success) setMembers(mapMembers(res.data)); }).catch(() => {});
   const loadSchedules = async () => {
     try {
       const [schedsRes, checkinsRes] = await Promise.all([
-        fetch(GAS_URL + "?action=getSchedules").then(r => r.json()),
-        fetch(GAS_URL + "?action=getCheckins").then(r => r.json())
+        cachedFetch("getSchedules", CACHE_TTL_MS.schedules),
+        cachedFetch("getCheckins", CACHE_TTL_MS.checkins),
       ]);
       if (schedsRes.success) {
         const checkins = checkinsRes.success ? checkinsRes.data : [];
@@ -2006,9 +2087,9 @@ function AdminDashboard({ user, theme, setTheme, onLogout, onLanding }) {
       })});
       const result = await res.json();
       if (result.success) {
+        invalidateAfterWrite("schedules");
         await loadSchedules();
         setEditSched(null);
-        // update local state ทันที
         setSchedules(prev => prev.map(s => s.id === sched.id ? { ...s, ...sched } : s));
       } else { alert("❌ " + result.message); }
     } catch { alert("เกิดข้อผิดพลาด"); }
@@ -2019,8 +2100,7 @@ function AdminDashboard({ user, theme, setTheme, onLogout, onLanding }) {
     setSavingZoom(sched.id);
     try {
       // ดึงรายชื่อสมาชิกที่ check-in แล้วส่ง zoom
-      const res = await fetch(GAS_URL + "?action=getCheckins&scheduleId=" + sched.id);
-      const result = await res.json();
+      const result = await cachedFetch("getCheckins", CACHE_TTL_MS.checkins, "&scheduleId=" + sched.id);
       if (result.success && result.data.length > 0) {
         // ส่ง zoom ให้แต่ละคนผ่าน notifyMember ใน Apps Script
         await fetch(GAS_URL, { method: "POST", body: JSON.stringify({ action: "sendZoomToCheckins", scheduleId: sched.id, zoomId: sched.zoomId, zoomPw: sched.zoomPw }) });
@@ -2034,10 +2114,10 @@ function AdminDashboard({ user, theme, setTheme, onLogout, onLanding }) {
 
   useEffect(() => {
     Promise.all([
-      fetch(GAS_URL + "?action=getMembers").then(r => r.json()).then(res => { if (res.success) setMembers(mapMembers(res.data)); else setMembers(MOCK_MEMBERS); }).catch(() => setMembers(MOCK_MEMBERS)),
+      cachedFetch("getMembers", CACHE_TTL_MS.members).then(res => { if (res.success) setMembers(mapMembers(res.data)); else setMembers(MOCK_MEMBERS); }).catch(() => setMembers(MOCK_MEMBERS)),
       Promise.all([
-        fetch(GAS_URL + "?action=getSchedules").then(r => r.json()),
-        fetch(GAS_URL + "?action=getCheckins").then(r => r.json())
+        cachedFetch("getSchedules", CACHE_TTL_MS.schedules),
+        cachedFetch("getCheckins", CACHE_TTL_MS.checkins),
       ]).then(([schedsRes, checkinsRes]) => {
         const data = schedsRes.success && schedsRes.data.length > 0 ? schedsRes.data : MOCK_SCHEDULES;
         const checkins = checkinsRes.success ? checkinsRes.data : [];
@@ -2054,7 +2134,7 @@ function AdminDashboard({ user, theme, setTheme, onLogout, onLanding }) {
     try {
       const res = await fetch(GAS_URL, { method: "POST", body: JSON.stringify({ action: "updateStatus", lineId: member.lineId, status: "approved" }) });
       const result = await res.json();
-      if (result.success) { await loadMembers(); setSelected(null); alert("✅ อนุมัติสำเร็จ! แจ้งสมาชิกผ่าน Line แล้ว"); }
+      if (result.success) { invalidateAfterWrite("members"); await loadMembers(); setSelected(null); alert("✅ อนุมัติสำเร็จ! แจ้งสมาชิกผ่าน Line แล้ว"); }
       else alert("เกิดข้อผิดพลาด: " + result.message);
     } catch { alert("ไม่สามารถเชื่อมต่อได้"); }
   };
@@ -2065,7 +2145,7 @@ function AdminDashboard({ user, theme, setTheme, onLogout, onLanding }) {
     try {
       const res = await fetch(GAS_URL, { method: "POST", body: JSON.stringify({ action: "updateStatus", lineId: member.lineId, status: "rejected" }) });
       const result = await res.json();
-      if (result.success) { await loadMembers(); setSelected(null); alert("❌ ปฏิเสธแล้ว แจ้งสมาชิกผ่าน Line แล้ว"); }
+      if (result.success) { invalidateAfterWrite("members"); await loadMembers(); setSelected(null); alert("❌ ปฏิเสธแล้ว แจ้งสมาชิกผ่าน Line แล้ว"); }
       else alert("เกิดข้อผิดพลาด: " + result.message);
     } catch { alert("ไม่สามารถเชื่อมต่อได้"); }
   };
@@ -2100,24 +2180,24 @@ function AdminDashboard({ user, theme, setTheme, onLogout, onLanding }) {
 
   return (
     <div style={{ display: "flex", minHeight: "100vh" }}>
-      <aside style={{ width: 260, background: theme.card, borderRight: `1px solid ${theme.border}`, position: "fixed", top: 0, bottom: 0, left: 0, display: "flex", flexDirection: "column", zIndex: 50, overflowY: "auto" }}>
-        <div style={{ padding: "20px 20px 16px", borderBottom: `1px solid ${theme.border}` }}>
+      <aside style={{ width: 260, background: "linear-gradient(180deg,#1E3A5F 0%,#0D1F3C 100%)", borderRight: `1px solid rgba(255,255,255,0.08)`, position: "fixed", top: 0, bottom: 0, left: 0, display: "flex", flexDirection: "column", zIndex: 50, overflowY: "auto" }}>
+        <div style={{ padding: "20px 20px 16px", borderBottom: `1px solid rgba(255,255,255,0.1)` }}>
           <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
-            <div style={{ width: 38, height: 38, borderRadius: "50%", overflow: "hidden", flexShrink: 0, background: theme.primary }}>
+            <div style={{ width: 38, height: 38, borderRadius: "50%", overflow: "hidden", flexShrink: 0, background: "rgba(255,255,255,0.2)", border:"1px solid rgba(255,255,255,0.3)" }}>
               <img src="/the_owner_logo.png" style={{ width: "100%", height: "100%", objectFit: "cover" }} onError={e => { e.target.style.display="none"; }} />
             </div>
             <div>
-              <div style={{ fontFamily: theme.fontDisplay, fontSize: 16, letterSpacing: 2 }}>THE OWNER</div>
-              <div style={{ fontSize: 11, color: theme.muted }}>Admin Panel</div>
+              <div style={{ fontFamily: theme.fontDisplay, fontSize: 16, letterSpacing: 2, color:"#fff" }}>THE OWNER</div>
+              <div style={{ fontSize: 11, color: "rgba(255,255,255,0.5)" }}>Admin Panel</div>
             </div>
           </div>
         </div>
-        <div style={{ padding: "12px 16px", borderBottom: `1px solid ${theme.border}` }}>
+        <div style={{ padding: "12px 16px", borderBottom: `1px solid rgba(255,255,255,0.08)` }}>
           <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 8 }}>
             {stats.map(s => (
-              <div key={s.label} style={{ background: theme.bg, borderRadius: 10, padding: "10px 12px" }}>
+              <div key={s.label} style={{ background: "rgba(255,255,255,0.07)", borderRadius: 10, padding: "10px 12px" }}>
                 <div style={{ fontFamily: theme.fontDisplay, fontSize: 22, color: s.color, lineHeight: 1 }}>{s.value}</div>
-                <div style={{ fontSize: 10, color: theme.muted, marginTop: 2 }}>{s.label}</div>
+                <div style={{ fontSize: 10, color: "rgba(255,255,255,0.45)", marginTop: 2 }}>{s.label}</div>
               </div>
             ))}
           </div>
@@ -2125,16 +2205,16 @@ function AdminDashboard({ user, theme, setTheme, onLogout, onLanding }) {
         <nav style={{ flex: 1, padding: 12 }}>
           {navItems.map(n => (
             <button key={n.id} onClick={() => setPage(n.id)}
-              style={{ display: "flex", alignItems: "center", gap: 10, width: "100%", border: "none", cursor: "pointer", padding: "12px 14px", borderRadius: 12, marginBottom: 2, background: page === n.id ? theme.primary + "22" : "transparent", color: page === n.id ? theme.primary : theme.muted, fontWeight: page === n.id ? 700 : 400, fontSize: 13, fontFamily: theme.fontBody, textAlign: "left" }}>
+              style={{ display: "flex", alignItems: "center", gap: 10, width: "100%", border: "none", cursor: "pointer", padding: "12px 14px", borderRadius: 12, marginBottom: 2, background: page === n.id ? "rgba(255,255,255,0.15)" : "transparent", color: page === n.id ? "#fff" : "rgba(255,255,255,0.5)", fontWeight: page === n.id ? 700 : 400, fontSize: 13, fontFamily: theme.fontBody, textAlign: "left", borderLeft: page === n.id ? "3px solid #00C9A7" : "3px solid transparent" }}>
               <Ic d={n.icon} size={17} /> {n.label}
             </button>
           ))}
         </nav>
-        <div style={{ padding: 12, borderTop: `1px solid ${theme.border}` }}>
-          <div style={{ fontSize: 12, color: theme.muted, padding: "8px 14px", marginBottom: 4 }}>
-            {user.name} · <span style={{ color: user.role === "super_admin" ? theme.accent : "#F59E0B" }}>{user.role === "super_admin" ? "Super Admin" : "Helper"}</span>
+        <div style={{ padding: 12, borderTop: `1px solid rgba(255,255,255,0.08)` }}>
+          <div style={{ fontSize: 12, color: "rgba(255,255,255,0.45)", padding: "8px 14px", marginBottom: 4 }}>
+            {user.name} · <span style={{ color: user.role === "super_admin" ? "#00C9A7" : "#F59E0B" }}>{user.role === "super_admin" ? "Super Admin" : "Helper"}</span>
           </div>
-          <button onClick={onLanding} style={{ display: "flex", alignItems: "center", gap: 10, width: "100%", border: "none", cursor: "pointer", padding: "10px 14px", borderRadius: 10, background: "transparent", color: theme.muted, fontSize: 13, fontFamily: theme.fontBody, marginBottom: 4 }}>
+          <button onClick={onLanding} style={{ display: "flex", alignItems: "center", gap: 10, width: "100%", border: "none", cursor: "pointer", padding: "10px 14px", borderRadius: 10, background: "transparent", color: "rgba(255,255,255,0.45)", fontSize: 13, fontFamily: theme.fontBody, marginBottom: 4 }}>
             <Ic d={ICONS.link} size={15} /> Landing Page
           </button>
           <button onClick={onLogout} style={{ display: "flex", alignItems: "center", gap: 10, width: "100%", border: "none", cursor: "pointer", padding: "10px 14px", borderRadius: 10, background: "transparent", color: "#EF4444", fontSize: 13, fontFamily: theme.fontBody }}>
@@ -2333,7 +2413,8 @@ function AdminDashboard({ user, theme, setTheme, onLogout, onLanding }) {
                         const res = await fetch(GAS_URL, { method: "POST", body: JSON.stringify({ action: "addSchedule", ...newSched }) });
                         const result = await res.json();
                         if (result.success) {
-                          const refreshed = await fetch(GAS_URL + "?action=getSchedules").then(r => r.json());
+                          invalidateAfterWrite("schedules");
+                          const refreshed = await cachedFetch("getSchedules", CACHE_TTL_MS.schedules);
                           if (refreshed.success) setSchedules(refreshed.data);
                           setShowAddSched(false);
                           setNewSched({ date: "", time: "", course: COURSES[0].name, mode: "online", seats: 20, zoomId: DEFAULT_ZOOM.id, zoomPw: DEFAULT_ZOOM.pw, zoomUrl: DEFAULT_ZOOM.url, courseImage: "" });
@@ -2382,7 +2463,7 @@ function AdminDashboard({ user, theme, setTheme, onLogout, onLanding }) {
                         try {
                           const res = await fetch(GAS_URL, { method: "POST", body: JSON.stringify({ action: "deleteSchedule", scheduleId: s.id }) });
                           const result = await res.json();
-                          if (result.success) { setSchedules(schedules.filter(x => x.id !== s.id)); if (qrSchedule?.id === s.id) setQrSchedule(null); }
+                          if (result.success) { invalidateAfterWrite("schedules"); setSchedules(schedules.filter(x => x.id !== s.id)); if (qrSchedule?.id === s.id) setQrSchedule(null); }
                         } catch { alert("เกิดข้อผิดพลาด"); }
                       }} style={{ background: "rgba(239,68,68,0.15)", border: "none", color: "#EF4444", padding: "8px 10px", borderRadius: 8, cursor: "pointer" }}>
                         <Ic d={ICONS.trash} size={15} />
@@ -2699,7 +2780,7 @@ function ReportsPage({ theme, members, schedules, gasUrl }) {
   const [shareMsg, setShareMsg] = useState("");
 
   useEffect(() => {
-    fetch(gasUrl + "?action=getCheckins").then(r => r.json())
+    cachedFetch("getCheckins", CACHE_TTL_MS.checkins)
       .then(res => { if (res.success) setCheckins(res.data); })
       .finally(() => setLoadingData(false));
   }, []);
