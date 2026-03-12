@@ -2341,7 +2341,7 @@ function AdminDashboard({ user, theme, setTheme, onLogout, onLanding }) {
           )}
 
           {/* MEMBERS */}
-          {page === "members" && <MembersPage theme={theme} members={members} loadMembers={loadMembers} onApprove={approve} onReject={reject} gasUrl={GAS_URL} inputStyle={inputStyle} selected={selected} setSelected={setSelected} />
+          {page === "members" && <MembersPage theme={theme} members={members} loadMembers={loadMembers} onApprove={approve} onReject={reject} gasUrl={GAS_URL} inputStyle={inputStyle} selected={selected} setSelected={setSelected} />}
 
           {/* SCHEDULE */}
           {page === "schedule" && (
