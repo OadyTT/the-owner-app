@@ -237,7 +237,7 @@ function GlobalStyles({ theme }) {
       *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
       html,body,#root{scroll-behavior:smooth;width:100%;max-width:100%;overflow-x:hidden}
       body{background:${theme.bg};color:${theme.text};font-family:${theme.fontBody};font-size:${theme.fontSize}px;line-height:1.6}
-      .navbar-collapse{background:rgba(13,27,46,0.97);padding:8px 16px 16px}
+      .navbar-collapse{background:rgba(255,255,255,0.99);padding:8px 16px 16px}
       @media(min-width:992px){.navbar-collapse{background:transparent;padding:0}}
       .navbar-toggler:focus{box-shadow:none}
       .nav-link:hover{color:${theme.text}!important;background:rgba(255,255,255,0.06)!important}
@@ -263,7 +263,7 @@ function GlobalStyles({ theme }) {
       /* Responsive */
       /* ── Mobile Responsive ── */
       @media(max-width:991px){
-        .navbar-collapse{background:rgba(13,27,46,0.98)!important;padding:12px 16px 20px!important;border-top:1px solid rgba(255,255,255,0.08)}
+        .navbar-collapse{background:#fff!important;padding:12px 16px 20px!important;border-top:1px solid #e2e8f0}
       }
       @media(max-width:768px){
         aside{width:100%!important;height:auto!important;position:fixed!important;bottom:0!important;top:auto!important;flex-direction:row!important;overflow-x:auto!important;z-index:100!important;padding:6px 8px!important}
@@ -1002,7 +1002,7 @@ function LandingPage({ theme, onAdmin, autoCheckinId, autoCheckinType }) {
 
   return (
     <>
-      <nav style={{ position:"fixed", top:0, left:0, right:0, zIndex:1000, background:"rgba(13,27,46,0.96)", backdropFilter:"blur(20px)", borderBottom:"1px solid rgba(37,99,235,0.12)", padding:0 }}>
+      <nav style={{ position:"fixed", top:0, left:0, right:0, zIndex:1000, background:"rgba(255,255,255,0.97)", backdropFilter:"blur(20px)", borderBottom:"1px solid #e2e8f0", padding:0 }}>
         <div style={{ maxWidth:1280, margin:"0 auto", padding:"0 20px", height:64, display:"flex", alignItems:"center", justifyContent:"space-between" }}>
           {/* Logo */}
           <button onClick={() => scrollTo("home")} style={{ background:"none", border:"none", cursor:"pointer", display:"flex", alignItems:"center", gap:10 }}>
@@ -1010,15 +1010,15 @@ function LandingPage({ theme, onAdmin, autoCheckinId, autoCheckinType }) {
               <img src="/the_owner_logo.png" style={{ width:"100%", height:"100%", objectFit:"cover" }} onError={e=>{e.target.style.display="none";}} />
             </div>
             <div style={{ textAlign:"left" }}>
-              <div style={{ fontFamily:theme.fontDisplay, fontSize:18, letterSpacing:3, color:"#fff", lineHeight:1 }}>THE OWNER</div>
-              <div style={{ fontSize:10, color:theme.primary, fontWeight:600, letterSpacing:1 }}>i am because we are</div>
+              <div style={{ fontFamily:theme.fontDisplay, fontSize:18, letterSpacing:3, color:"#0f172a", lineHeight:1 }}>THE OWNER</div>
+              <div style={{ fontSize:10, color:"#2563EB", fontWeight:600, letterSpacing:1 }}>i am because we are</div>
             </div>
           </button>
 
           {/* Desktop Nav */}
           <div className="mobile-hide" style={{ display:"flex", alignItems:"center", gap:4 }}>
             {navItems.map(([id, label]) => (
-              <button key={id} onClick={() => scrollTo(id)} style={{ background:"none", border:"none", cursor:"pointer", color: section===id ? "#2563EB" : "rgba(240,244,248,0.6)", fontWeight: section===id ? 700 : 500, fontSize:14, fontFamily:theme.fontBody, padding:"8px 14px", borderRadius:8, transition:"all 0.2s", borderBottom: section===id ? "2px solid #2563EB" : "2px solid transparent" }}>
+              <button key={id} onClick={() => scrollTo(id)} style={{ background:"none", border:"none", cursor:"pointer", color: section===id ? "#2563EB" : "#64748b", fontWeight: section===id ? 700 : 500, fontSize:14, fontFamily:theme.fontBody, padding:"8px 14px", borderRadius:8, transition:"all 0.2s", borderBottom: section===id ? "2px solid #2563EB" : "2px solid transparent" }}>
                 {label}
               </button>
             ))}
@@ -1027,7 +1027,7 @@ function LandingPage({ theme, onAdmin, autoCheckinId, autoCheckinType }) {
           {/* Right side */}
           <div style={{ display:"flex", alignItems:"center", gap:10 }}>
             {memberInfo && (
-              <div className="mobile-hide" style={{ background:"rgba(37,99,235,0.12)", border:"1px solid rgba(37,99,235,0.3)", borderRadius:20, padding:"4px 12px", fontSize:12, color:theme.primary, fontWeight:700 }}>
+              <div className="mobile-hide" style={{ background:"#dbeafe", border:"1px solid #bfdbfe", borderRadius:20, padding:"4px 12px", fontSize:12, color:"#2563EB", fontWeight:700 }}>
                 {memberInfo.memberId || memberInfo["Owner Code"] || "สมาชิก"}
               </div>
             )}
@@ -1035,21 +1035,21 @@ function LandingPage({ theme, onAdmin, autoCheckinId, autoCheckinType }) {
               style={{ padding:"9px 20px", borderRadius:10, border:"none", cursor:"pointer", fontFamily:theme.fontBody, fontSize:13, fontWeight:800, letterSpacing:0.5 }}>
               สมัครสมาชิก
             </button>
-            <button onClick={onAdmin} style={{ background:"rgba(255,255,255,0.07)", border:"1px solid rgba(255,255,255,0.1)", borderRadius:8, padding:"8px 12px", color:theme.muted, cursor:"pointer", fontSize:13 }}>
-              <Ic d={ICONS.shield} size={15} />
+            <button onClick={onAdmin} style={{ background:"#f1f5f9", border:"1px solid #e2e8f0", borderRadius:8, padding:"8px 12px", color:"#64748b", cursor:"pointer", fontSize:13 }}>
+              <Ic d={ICONS.shield} size={16} />
             </button>
             {/* Mobile hamburger */}
             <button className="d-lg-none" data-bs-toggle="collapse" data-bs-target="#mainNavMobile"
-              style={{ background:"rgba(255,255,255,0.07)", border:"1px solid rgba(255,255,255,0.1)", borderRadius:8, padding:"8px 10px", color:theme.text, cursor:"pointer", fontSize:18 }}>
+              style={{ background:"#f1f5f9", border:"1px solid #e2e8f0", borderRadius:8, padding:"8px 10px", color:"#0f172a", cursor:"pointer", fontSize:18 }}>
               ☰
             </button>
           </div>
         </div>
         {/* Mobile menu */}
-        <div className="collapse" id="mainNavMobile" style={{ background:"rgba(13,27,46,0.99)", borderTop:"1px solid rgba(37,99,235,0.1)", padding:"12px 20px 20px" }}>
+        <div className="collapse" id="mainNavMobile" style={{ background:"#fff", borderTop:"1px solid #e2e8f0", padding:"12px 20px 20px" }}>
           {navItems.map(([id, label]) => (
             <button key={id} onClick={() => { scrollTo(id); const el=document.getElementById("mainNavMobile"); el.classList.remove("show"); }}
-              style={{ display:"block", width:"100%", background:"none", border:"none", textAlign:"left", color: section===id ? theme.primary : theme.text, fontWeight:600, fontSize:15, fontFamily:theme.fontBody, padding:"12px 0", borderBottom:"1px solid rgba(255,255,255,0.05)", cursor:"pointer" }}>
+              style={{ display:"block", width:"100%", background:"none", border:"none", textAlign:"left", color: section===id ? "#2563EB" : "#0f172a", fontWeight:600, fontSize:15, fontFamily:theme.fontBody, padding:"12px 0", borderBottom:"1px solid rgba(255,255,255,0.05)", cursor:"pointer" }}>
               {label}
             </button>
           ))}
@@ -1060,35 +1060,39 @@ function LandingPage({ theme, onAdmin, autoCheckinId, autoCheckinType }) {
         </div>
       </nav>
 
-      {/* HERO */}
-      <section id="home" style={{ minHeight:"100vh", display:"flex", alignItems:"center", justifyContent:"center", padding:"clamp(80px,12vw,120px) clamp(16px,4vw,24px) 60px", position:"relative", overflow:"hidden" }}>
+      {/* HERO - light white style */}
+      <section id="home" style={{ minHeight:"100vh", display:"flex", alignItems:"center", justifyContent:"center", padding:"clamp(80px,12vw,120px) clamp(16px,4vw,24px) 60px", position:"relative", overflow:"hidden", background:"#f8fafc" }}>
         {/* Background layers */}
-        <div style={{ position:"absolute", inset:0, background:"radial-gradient(ellipse 80% 60% at 50% 0%,rgba(37,99,235,0.12) 0%,transparent 70%)", pointerEvents:"none" }} />
-        <div style={{ position:"absolute", top:"20%", right:"5%", width:400, height:400, background:"radial-gradient(circle,rgba(37,99,235,0.06) 0%,transparent 70%)", pointerEvents:"none", borderRadius:"50%" }} />
-        <div style={{ position:"absolute", inset:0, backgroundImage:"radial-gradient(rgba(37,99,235,0.04) 1px,transparent 1px)", backgroundSize:"40px 40px", pointerEvents:"none" }} />
+        <div style={{ position:"absolute", inset:0, background:"radial-gradient(ellipse 80% 60% at 50% 0%,rgba(37,99,235,0.08) 0%,transparent 70%)", pointerEvents:"none" }} />
+        <div style={{ position:"absolute", top:"20%", right:"5%", width:400, height:400, background:"radial-gradient(circle,rgba(37,99,235,0.05) 0%,transparent 70%)", pointerEvents:"none", borderRadius:"50%" }} />
+        <div style={{ position:"absolute", inset:0, backgroundImage:"radial-gradient(rgba(37,99,235,0.06) 1px,transparent 1px)", backgroundSize:"40px 40px", pointerEvents:"none" }} />
 
-        <div style={{ textAlign:"center", maxWidth:900, position:"relative", margin:"0 auto", padding:"0 16px" }}>
+        <div style={{ textAlign:"center", maxWidth:900, position:"relative", margin:"0 auto", padding:"0 16px", width:"100%" }}>
           {/* Live badge */}
-          <div className="reveal reveal-1" style={{ display:"inline-flex", alignItems:"center", gap:8, background:"rgba(37,99,235,0.1)", border:"1px solid rgba(37,99,235,0.3)", borderRadius:30, padding:"8px 20px", fontSize:13, color:theme.primary, fontWeight:700, marginBottom:36, letterSpacing:0.5 }}>
-            <span style={{ width:8, height:8, borderRadius:"50%", background:theme.primary, display:"inline-block", animation:"pulse 1.5s infinite", boxShadow:"0 0 8px #3B82F6" }} />
+          <div className="reveal reveal-1" style={{ display:"inline-flex", alignItems:"center", gap:8, background:"rgba(37,99,235,0.08)", border:"1px solid rgba(37,99,235,0.2)", borderRadius:30, padding:"8px 20px", fontSize:13, color:"#2563EB", fontWeight:700, marginBottom:36, letterSpacing:0.5 }}>
+            <span style={{ width:8, height:8, borderRadius:"50%", background:"#2563EB", display:"inline-block", animation:"pulse 1.5s infinite", boxShadow:"0 0 8px rgba(37,99,235,0.5)" }} />
             เปิดรับสมาชิกใหม่แล้ววันนี้
           </div>
 
           {/* Logo circle */}
-          <div className="reveal reveal-2" style={{ width:110, height:110, borderRadius:"50%", overflow:"hidden", margin:"0 auto 36px", boxShadow:"0 0 60px rgba(37,99,235,0.35), 0 0 120px rgba(37,99,235,0.12)", border:"2px solid rgba(37,99,235,0.3)", background:"linear-gradient(135deg,#1E40AF,#2563EB)" }}>
-            <img src="/the_owner_logo.png" style={{ width:"100%", height:"100%", objectFit:"cover" }} onError={e=>{e.target.style.display="none";}} />
+          <div className="reveal reveal-2" style={{ width:110, height:110, borderRadius:"50%", overflow:"hidden", margin:"0 auto 36px", boxShadow:"0 8px 40px rgba(37,99,235,0.25), 0 0 0 4px rgba(37,99,235,0.1)", border:"3px solid rgba(37,99,235,0.2)", background:"linear-gradient(135deg,#1E40AF,#2563EB)", display:"flex", alignItems:"center", justifyContent:"center" }}>
+            <img src="/the_owner_logo.png" style={{ width:"100%", height:"100%", objectFit:"cover" }}
+              onError={e => {
+                e.target.style.display = "none";
+                e.target.parentElement.innerHTML = `<div style="font-family:'Bebas Neue',cursive;font-size:28px;color:#fff;letter-spacing:2px;text-align:center;line-height:1.1">THE<br/>OWNER</div>`;
+              }} />
           </div>
 
           {/* Heading */}
-          <h1 className="reveal reveal-2" style={{ fontFamily:theme.fontDisplay, fontSize:"clamp(80px,15vw,160px)", lineHeight:0.88, letterSpacing:4, marginBottom:20 }}>
-            THE<br /><span style={{ color:theme.primary, textShadow:"0 0 60px rgba(37,99,235,0.5)" }}>OWNER</span>
+          <h1 className="reveal reveal-2" style={{ fontFamily:theme.fontDisplay, fontSize:"clamp(72px,14vw,150px)", lineHeight:0.88, letterSpacing:4, marginBottom:20, color:"#0D1B2E" }}>
+            THE<br /><span style={{ color:"#2563EB", textShadow:"0 0 40px rgba(37,99,235,0.2)" }}>OWNER</span>
           </h1>
 
           {/* Subtitle */}
-          <p className="reveal reveal-3" style={{ fontSize:"clamp(15px,2.5vw,20px)", color:theme.muted, marginBottom:16, lineHeight:1.8, fontFamily:"'Noto Sans Thai', 'Sarabun', sans-serif" }}>
+          <p className="reveal reveal-3" style={{ fontSize:"clamp(15px,2.5vw,20px)", color:"#64748b", marginBottom:16, lineHeight:1.8, fontFamily:"'Noto Sans Thai', 'Sarabun', sans-serif" }}>
             i am because we are
           </p>
-          <p className="reveal reveal-3" style={{ fontSize:"clamp(18px,3vw,26px)", color:theme.text, marginBottom:52, lineHeight:1.6, fontFamily:"'Noto Sans Thai', 'Sarabun', sans-serif", fontWeight:600 }}>
+          <p className="reveal reveal-3" style={{ fontSize:"clamp(18px,3vw,26px)", color:"#1e293b", marginBottom:52, lineHeight:1.6, fontFamily:"'Noto Sans Thai', 'Sarabun', sans-serif", fontWeight:600 }}>
             เรียนรู้ · เติบโต · สร้างธุรกิจที่ยั่งยืน
           </p>
 
@@ -1099,17 +1103,17 @@ function LandingPage({ theme, onAdmin, autoCheckinId, autoCheckinType }) {
               สมัครสมาชิก →
             </button>
             <button onClick={() => scrollTo("courses")}
-              style={{ padding:"14px 36px", borderRadius:12, border:"1.5px solid rgba(37,99,235,0.35)", background:"rgba(37,99,235,0.05)", color:theme.text, cursor:"pointer", fontFamily:"'Noto Sans Thai', 'Sarabun', sans-serif", fontSize:16, fontWeight:700, transition:"all 0.2s", backdropFilter:"blur(8px)" }}>
+              style={{ padding:"14px 36px", borderRadius:12, border:"1.5px solid rgba(37,99,235,0.3)", background:"#fff", color:"#1e293b", cursor:"pointer", fontFamily:"'Noto Sans Thai', 'Sarabun', sans-serif", fontSize:16, fontWeight:700, transition:"all 0.2s", boxShadow:"0 2px 8px rgba(37,99,235,0.1)" }}>
               ดูคอร์สทั้งหมด
             </button>
           </div>
 
           {/* Stats row */}
-          <div className="reveal reveal-4" style={{ display:"flex", gap:0, justifyContent:"center", flexWrap:"wrap", padding:"24px 32px", background:"rgba(255,255,255,0.03)", borderRadius:20, border:"1px solid rgba(255,255,255,0.06)", backdropFilter:"blur(10px)" }}>
+          <div className="reveal reveal-4" style={{ display:"flex", gap:0, justifyContent:"center", flexWrap:"wrap", padding:"24px 32px", background:"#fff", borderRadius:20, border:"1px solid #e2e8f0", boxShadow:"0 4px 24px rgba(37,99,235,0.08)" }}>
             {[["4","คอร์สหลัก"],["6+","ครั้ง / เดือน"],["150฿","เริ่มต้นที่"],["Online","& Onsite"]].map(([n, l], i, arr) => (
-              <div key={l} style={{ textAlign:"center", flex:1, minWidth:100, padding:"12px 0", borderRight: i < arr.length-1 ? "1px solid rgba(255,255,255,0.06)" : "none" }}>
-                <div style={{ fontFamily:theme.fontDisplay, fontSize:40, color:theme.primary, lineHeight:1, letterSpacing:2 }}>{n}</div>
-                <div style={{ color:theme.muted, fontSize:12, marginTop:6, fontWeight:600, letterSpacing:0.5 }}>{l}</div>
+              <div key={l} style={{ textAlign:"center", flex:1, minWidth:90, padding:"12px 0", borderRight: i < arr.length-1 ? "1px solid #e2e8f0" : "none" }}>
+                <div style={{ fontFamily:theme.fontDisplay, fontSize:"clamp(28px,5vw,40px)", color:"#2563EB", lineHeight:1, letterSpacing:2 }}>{n}</div>
+                <div style={{ color:"#64748b", fontSize:12, marginTop:6, fontWeight:600, letterSpacing:0.5 }}>{l}</div>
               </div>
             ))}
           </div>
@@ -1117,70 +1121,67 @@ function LandingPage({ theme, onAdmin, autoCheckinId, autoCheckinType }) {
       </section>
 
       {/* COURSES */}
-      <section id="courses" style={{ padding:"0 0 80px" }}>
-        {/* Teal header band - เหมือน ai-autoprofit */}
+      <section id="courses" style={{ padding:"0 0 80px", background:"#f1f5f9" }}>
+        {/* Blue header band */}
         <div className="teal-band" style={{ padding:"40px 24px", textAlign:"center", marginBottom:0 }}>
-          <h2 style={{ fontFamily:"'Noto Sans Thai','Sarabun',sans-serif", fontSize:"clamp(26px,5vw,36px)", fontWeight:900, color:"#0D1B2E", marginBottom:8, letterSpacing:0.5 }}>
+          <h2 style={{ fontFamily:"'Noto Sans Thai','Sarabun',sans-serif", fontSize:"clamp(26px,5vw,36px)", fontWeight:900, color:"#fff", marginBottom:8, letterSpacing:0.5 }}>
             คอร์สทั้งหมด
           </h2>
-          <p style={{ color:"rgba(13,27,46,0.7)", fontSize:15, fontWeight:600 }}>เลือกคอร์สที่คุณสนใจเพื่อเริ่มต้นการเรียนรู้</p>
+          <p style={{ color:"rgba(255,255,255,0.8)", fontSize:15, fontWeight:600 }}>เลือกคอร์สที่คุณสนใจเพื่อเริ่มต้นการเรียนรู้</p>
         </div>
 
         <div style={{ maxWidth:1100, margin:"0 auto", padding:"32px 20px 0" }}>
           {/* Search + Filter bar */}
           <div style={{ marginBottom:24 }}>
-            <input className="search-input" placeholder="🔍  ค้นหาคอร์สเรียน..." style={{ marginBottom:12 }} readOnly
+            <input placeholder="🔍  ค้นหาคอร์สเรียน..." style={{ width:"100%", marginBottom:12, padding:"12px 16px", borderRadius:12, border:"1.5px solid #e2e8f0", background:"#fff", fontSize:15, outline:"none", fontFamily:"inherit", color:"#1e293b" }} readOnly
               onClick={() => scrollTo("register")} />
-            <div style={{ display:"flex", gap:10 }}>
-              <div style={{ flex:1, background:"#1A3A5C", border:"1.5px solid rgba(255,255,255,0.1)", borderRadius:10, padding:"10px 14px", fontSize:14, color:theme.muted, display:"flex", alignItems:"center", gap:8, cursor:"pointer" }}>
-                <span>⚡</span><span style={{ color:theme.text, fontWeight:600 }}>ทั้งหมด</span><span style={{ marginLeft:"auto" }}>▾</span>
+            <div style={{ display:"flex", gap:10, flexWrap:"wrap" }}>
+              <div style={{ flex:1, minWidth:120, background:"#fff", border:"1.5px solid #e2e8f0", borderRadius:10, padding:"10px 14px", fontSize:14, color:"#64748b", display:"flex", alignItems:"center", gap:8, cursor:"pointer" }}>
+                <span>⚡</span><span style={{ color:"#1e293b", fontWeight:600 }}>ทั้งหมด</span><span style={{ marginLeft:"auto" }}>▾</span>
               </div>
-              <div style={{ flex:1, background:"#1A3A5C", border:"1.5px solid rgba(255,255,255,0.1)", borderRadius:10, padding:"10px 14px", fontSize:14, color:theme.muted, display:"flex", alignItems:"center", gap:8, cursor:"pointer" }}>
-                <span style={{ color:theme.text, fontWeight:600 }}>ใหม่ล่าสุด</span><span style={{ marginLeft:"auto" }}>▾</span>
+              <div style={{ flex:1, minWidth:120, background:"#fff", border:"1.5px solid #e2e8f0", borderRadius:10, padding:"10px 14px", fontSize:14, color:"#64748b", display:"flex", alignItems:"center", gap:8, cursor:"pointer" }}>
+                <span style={{ color:"#1e293b", fontWeight:600 }}>ใหม่ล่าสุด</span><span style={{ marginLeft:"auto" }}>▾</span>
               </div>
             </div>
           </div>
 
-          {/* Course cards - แบบเดียวกับ ai-autoprofit */}
+          {/* Course cards - light style */}
           <div style={{ display:"flex", flexDirection:"column", gap:20 }}>
             {COURSES.map((course, i) => (
               <div key={course.id} className={`course-card reveal reveal-${Math.min(i+1,4)}`}
-                style={{ background:theme.card, borderRadius:20, overflow:"hidden", border:"1px solid rgba(255,255,255,0.07)", boxShadow:"0 4px 30px rgba(0,0,0,0.3)" }}>
-                {/* Thumbnail - gradient with icon */}
+                style={{ background:"#fff", borderRadius:20, overflow:"hidden", border:"1px solid #e2e8f0", boxShadow:"0 4px 20px rgba(37,99,235,0.08)" }}>
+                {/* Thumbnail */}
                 <div style={{ position:"relative", height:200, background:course.img ? `url(${course.img}) center/cover` : course.gradient, overflow:"hidden" }}>
-                  {/* Overlay text */}
                   <div style={{ position:"absolute", inset:0, display:"flex", flexDirection:"column", alignItems:"flex-start", justifyContent:"flex-end", padding:"24px 28px", background:"linear-gradient(to top,rgba(0,0,0,0.6) 0%,transparent 60%)" }}>
-                    <div style={{ fontSize:48, marginBottom:8, filter:"drop-shadow(0 2px 8px rgba(0,0,0,0.5))" }}>{course.icon}</div>
+                    <div style={{ fontSize:"clamp(32px,6vw,48px)", marginBottom:8, filter:"drop-shadow(0 2px 8px rgba(0,0,0,0.5))", lineHeight:1 }}>{course.icon}</div>
                   </div>
                   {/* Badge */}
                   {course.badge && (
-                    <div style={{ position:"absolute", top:16, right:16, background:course.badge==="ยอดนิยม"?"#EF4444":theme.primary, color:course.badge==="ยอดนิยม"?"#fff":"#000", padding:"4px 14px", borderRadius:20, fontSize:12, fontWeight:800, boxShadow:"0 2px 12px rgba(0,0,0,0.3)" }}>
-                      {course.badge==="ยอดนิยม"?"🔥":""} {course.badge}
+                    <div style={{ position:"absolute", top:16, right:16, background:course.badge==="ยอดนิยม"?"#EF4444":"#2563EB", color:"#fff", padding:"4px 14px", borderRadius:20, fontSize:12, fontWeight:800, boxShadow:"0 2px 12px rgba(0,0,0,0.3)" }}>
+                      {course.badge==="ยอดนิยม"?"🔥 ":""}{course.badge}
                     </div>
                   )}
-                  {/* Shimmer effect on hover */}
-                  <div className="course-img" style={{ position:"absolute", inset:0 }} />
                 </div>
 
                 {/* Card body */}
                 <div style={{ padding:"20px 24px 24px" }}>
-                  <h3 style={{ fontFamily:"'Noto Sans Thai','Sarabun',sans-serif", fontWeight:800, fontSize:"clamp(16px,3vw,20px)", marginBottom:10, lineHeight:1.3 }}>{course.name}</h3>
-                  <p style={{ color:theme.muted, fontSize:14, lineHeight:1.7, marginBottom:16 }}>{course.desc}</p>
+                  <h3 style={{ fontFamily:"'Noto Sans Thai','Sarabun',sans-serif", fontWeight:800, fontSize:"clamp(16px,3vw,20px)", marginBottom:10, lineHeight:1.3, color:"#0f172a" }}>{course.name}</h3>
+                  <p style={{ color:"#64748b", fontSize:14, lineHeight:1.7, marginBottom:16 }}>{course.desc}</p>
 
                   <div style={{ display:"flex", gap:8, flexWrap:"wrap", marginBottom:20 }}>
-                    <span className="tag-free">ฟรีตามแพ็กเกจ</span>
+                    <span style={{ background:"rgba(37,99,235,0.08)", color:"#2563EB", border:"1px solid rgba(37,99,235,0.2)", borderRadius:20, padding:"3px 12px", fontSize:12, fontWeight:700 }}>ฟรีตามแพ็กเกจ</span>
                     {course.tags.map(t => (
-                      <span key={t} style={{ background:"rgba(255,255,255,0.06)", color:theme.muted, border:"1px solid rgba(255,255,255,0.1)", borderRadius:20, padding:"3px 12px", fontSize:12, fontWeight:600 }}>{t}</span>
+                      <span key={t} style={{ background:"#f1f5f9", color:"#64748b", border:"1px solid #e2e8f0", borderRadius:20, padding:"3px 12px", fontSize:12, fontWeight:600 }}>{t}</span>
                     ))}
                   </div>
 
                   <div style={{ display:"flex", alignItems:"center", justifyContent:"space-between", flexWrap:"wrap", gap:12 }}>
-                    <div style={{ display:"flex", alignItems:"center", gap:6, color:theme.muted, fontSize:13 }}>
-                      <span>🕐</span> <span>{course.mode}</span>
+                    <div style={{ display:"flex", alignItems:"center", gap:6, color:"#64748b", fontSize:13 }}>
+                      <span style={{ fontSize:16 }}>🕐</span> <span>{course.mode}</span>
                     </div>
                     <button className="btn-3d btn-teal" onClick={() => scrollTo("register")}
                       style={{ padding:"10px 28px", borderRadius:10, border:"none", cursor:"pointer", fontFamily:"'Noto Sans Thai','Sarabun',sans-serif", fontSize:14, fontWeight:800, display:"inline-flex", alignItems:"center", gap:6 }}>
-                      🔓 สมัครเรียนเลย
+                      <span style={{ fontSize:14 }}>🔓</span> สมัครเรียนเลย
                     </button>
                   </div>
                 </div>
@@ -1191,11 +1192,11 @@ function LandingPage({ theme, onAdmin, autoCheckinId, autoCheckinType }) {
       </section>
 
       {/* SCHEDULE */}
-      <section id="schedule" style={{ padding: "100px 24px", background: "rgba(255,255,255,0.015)" }}>
+      <section id="schedule" style={{ padding:"100px 24px", background:"#fff" }}>
         <div style={{ maxWidth: 1280, margin: "0 auto" }}>
           <div style={{ marginBottom: 48, textAlign: "center" }}>
-            <h2 style={{ fontFamily: theme.fontDisplay, fontSize: "clamp(40px,6vw,64px)", letterSpacing: 2, marginBottom: 12 }}>ตาราง<span style={{ color: theme.primary }}>เรียน</span></h2>
-            <p style={{ color: theme.muted }}>อัปเดตทุกเดือน ประมาณ 6 คอร์สต่อเดือน</p>
+            <h2 style={{ fontFamily: theme.fontDisplay, fontSize: "clamp(40px,6vw,64px)", letterSpacing: 2, marginBottom: 12, color:"#0f172a" }}>ตาราง<span style={{ color:"#2563EB" }}>เรียน</span></h2>
+            <p style={{ color:"#64748b" }}>อัปเดตทุกเดือน ประมาณ 6 คอร์สต่อเดือน</p>
           </div>
           <InfoBox type="info">ลงทะเบียนล่วงหน้าผ่าน Line OA หรือ Landing Page เพื่อจองที่นั่ง และรับ Zoom Link</InfoBox>
           <div className="table-scroll">
@@ -1210,22 +1211,22 @@ function LandingPage({ theme, onAdmin, autoCheckinId, autoCheckinType }) {
                   const pct = (s.taken || 0) / s.seats;
                   return (
                     <tr key={s.id}>
-                      <td style={{ padding: 12, background: theme.card, borderRadius: "12px 0 0 12px" }}>
+                      <td style={{ padding: 12, background: "#fff", borderRadius: "12px 0 0 12px", border:"1px solid #e2e8f0", borderRight:"none" }}>
                         {s.courseImage && <img src={s.courseImage} style={{ width: 60, height: 40, objectFit: "cover", borderRadius: 6, marginBottom: 4, display: "block" }} alt="" onError={e=>e.target.style.display="none"} />}
-                        <span style={{ fontWeight: 600, fontSize: 13 }}>{String(s.date).slice(0,10)}</span>
+                        <span style={{ fontWeight: 600, fontSize: 13, color:"#0f172a" }}>{String(s.date).slice(0,10)}</span>
                       </td>
-                      <td style={{ padding: 16, background: theme.card, color: theme.muted, fontSize: 14 }}>{s.time}</td>
-                      <td style={{ padding: 16, background: theme.card, fontWeight: 600 }}>{s.course}</td>
-                      <td style={{ padding: 16, background: theme.card }}><StatusBadge status={s.mode} /></td>
-                      <td style={{ padding: 16, background: theme.card }}>
+                      <td style={{ padding: 16, background: "#fff", color: "#64748b", fontSize: 14, border:"1px solid #e2e8f0", borderLeft:"none", borderRight:"none" }}>{s.time}</td>
+                      <td style={{ padding: 16, background: "#fff", fontWeight: 600, color:"#0f172a", border:"1px solid #e2e8f0", borderLeft:"none", borderRight:"none" }}>{s.course}</td>
+                      <td style={{ padding: 16, background: "#fff", border:"1px solid #e2e8f0", borderLeft:"none", borderRight:"none" }}><StatusBadge status={s.mode} /></td>
+                      <td style={{ padding: 16, background: "#fff", border:"1px solid #e2e8f0", borderLeft:"none", borderRight:"none" }}>
                         <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
-                          <div style={{ width: 80, height: 5, background: "rgba(255,255,255,0.1)", borderRadius: 3, overflow: "hidden" }}>
-                            <div style={{ width: `${pct * 100}%`, height: "100%", background: pct > 0.8 ? "#EF4444" : theme.accent }} />
+                          <div style={{ width: 80, height: 5, background: "#e2e8f0", borderRadius: 3, overflow: "hidden" }}>
+                            <div style={{ width: `${pct * 100}%`, height: "100%", background: pct > 0.8 ? "#EF4444" : "#2563EB" }} />
                           </div>
-                          <span style={{ fontSize: 13, color: theme.muted }}>{s.taken || 0}/{s.seats}</span>
+                          <span style={{ fontSize: 13, color: "#64748b" }}>{s.taken || 0}/{s.seats}</span>
                         </div>
                       </td>
-                      <td style={{ padding: 16, background: theme.card, borderRadius: "0 12px 12px 0" }}>
+                      <td style={{ padding: 16, background: "#fff", borderRadius: "0 12px 12px 0", border:"1px solid #e2e8f0", borderLeft:"none" }}>
                         <Btn size="sm" variant={pct >= 1 ? "ghost" : "primary"} disabled={pct >= 1} onClick={() => scrollTo("checkin")}>
                           {pct >= 1 ? "เต็ม" : "Check-in"}
                         </Btn>
@@ -1240,7 +1241,8 @@ function LandingPage({ theme, onAdmin, autoCheckinId, autoCheckinType }) {
       </section>
 
       {/* PACKAGES */}
-      <section id="packages" style={{ padding:"80px 20px", maxWidth:960, margin:"0 auto" }}>
+      <section id="packages" style={{ padding:"80px 20px", background:"#f8fafc" }}>
+        <div style={{ maxWidth:960, margin:"0 auto", paddingLeft:"clamp(12px,4vw,20px)", paddingRight:"clamp(12px,4vw,20px)" }}>
         {/* Section header */}
         <div style={{ textAlign:"center", marginBottom:52 }}>
           <div style={{ display:"inline-block", background:"rgba(37,99,235,0.1)", border:"1px solid rgba(37,99,235,0.2)", borderRadius:20, padding:"6px 18px", fontSize:13, color:theme.primary, fontWeight:700, marginBottom:16, letterSpacing:0.5 }}>
@@ -1252,11 +1254,11 @@ function LandingPage({ theme, onAdmin, autoCheckinId, autoCheckinType }) {
           <p style={{ color:theme.muted, fontSize:15, lineHeight:1.8 }}>เลือกแพ็กเกจที่เหมาะกับคุณ ยิ่งเรียนมาก ยิ่งคุ้มค่า</p>
         </div>
 
-        <div style={{ display:"grid", gridTemplateColumns:"repeat(auto-fit,minmax(300px,1fr))", gap:24 }}>
+        <div style={{ display:"grid", gridTemplateColumns:"repeat(auto-fit,minmax(min(300px,100%),1fr))", gap:24 }}>
           {PACKAGES.map(pkg => (
             <div key={pkg.id}
               className={pkg.id === "quarter" ? "pkg-popular" : ""}
-              style={{ background:theme.card, borderRadius:24, padding:"36px 32px", position:"relative", overflow:"hidden", border:`1px solid ${pkg.id === "quarter" ? "rgba(37,99,235,0.35)" : "rgba(255,255,255,0.07)"}`, transition:"all 0.3s ease" }}>
+              style={{ background:"#fff", borderRadius:24, padding:"36px 32px", position:"relative", overflow:"hidden", border:`1px solid ${pkg.id === "quarter" ? "rgba(37,99,235,0.4)" : "#e2e8f0"}`, transition:"all 0.3s ease", boxShadow: pkg.id === "quarter" ? "0 8px 32px rgba(37,99,235,0.12)" : "0 2px 12px rgba(0,0,0,0.05)" }}>
               {/* Top accent line */}
               <div style={{ position:"absolute", top:0, left:0, right:0, height:3, background: pkg.id==="quarter" ? "linear-gradient(90deg,#2563EB,#3B82F6)" : `linear-gradient(90deg,${pkg.color},transparent)` }} />
               {/* Glow bg for popular */}
@@ -1276,10 +1278,10 @@ function LandingPage({ theme, onAdmin, autoCheckinId, autoCheckinType }) {
 
               {/* Price */}
               <div style={{ marginBottom:6 }}>
-                <span style={{ fontFamily:theme.fontDisplay, fontSize:76, color:pkg.id==="quarter"?theme.primary:theme.text, lineHeight:1, letterSpacing:2 }}>{pkg.price}</span>
+                <span style={{ fontFamily:theme.fontDisplay, fontSize:76, color:pkg.id==="quarter"?"#2563EB":"#0f172a", lineHeight:1, letterSpacing:2 }}>{pkg.price}</span>
                 <span style={{ fontSize:20, color:theme.muted, marginLeft:4 }}>฿</span>
               </div>
-              <p style={{ color:theme.muted, fontSize:14, marginBottom:28 }}>{pkg.duration}</p>
+              <p style={{ color:"#64748b", fontSize:14, marginBottom:28 }}>{pkg.duration}</p>
 
               <hr style={{ border:"none", borderTop:"1px solid rgba(255,255,255,0.07)", margin:"20px 0" }} />
 
@@ -1290,7 +1292,7 @@ function LandingPage({ theme, onAdmin, autoCheckinId, autoCheckinType }) {
                 ).map(t => (
                   <li key={t} style={{ display:"flex", alignItems:"flex-start", gap:10, padding:"7px 0", fontSize:14, borderBottom:"1px solid rgba(255,255,255,0.04)" }}>
                     <span style={{ color:pkg.id==="quarter"?theme.primary:pkg.color, flexShrink:0, fontWeight:900, fontSize:16 }}>✓</span>
-                    <span style={{ color:theme.text, fontWeight:500 }}>{t}</span>
+                    <span style={{ color:"#1e293b", fontWeight:500 }}>{t}</span>
                   </li>
                 ))}
               </ul>
@@ -1303,14 +1305,15 @@ function LandingPage({ theme, onAdmin, autoCheckinId, autoCheckinType }) {
             </div>
           ))}
         </div>
+        </div>
       </section>
 
       {/* HOW TO */}
-      <section id="how" style={{ padding:"80px 20px", background:"rgba(37,99,235,0.02)", borderTop:"1px solid rgba(37,99,235,0.08)", borderBottom:"1px solid rgba(37,99,235,0.08)" }}>
+      <section id="how" style={{ padding:"80px 20px", background:"#eff6ff", borderTop:"1px solid #dbeafe", borderBottom:"1px solid #dbeafe" }}>
         <div style={{ maxWidth:1000, margin:"0 auto" }}>
           <div style={{ textAlign:"center", marginBottom:52 }}>
             <div style={{ display:"inline-block", background:"rgba(37,99,235,0.1)", border:"1px solid rgba(37,99,235,0.2)", borderRadius:20, padding:"6px 18px", fontSize:13, color:theme.primary, fontWeight:700, marginBottom:16 }}>📋 วิธีสมัคร</div>
-            <h2 style={{ fontFamily:theme.fontDisplay, fontSize:"clamp(36px,6vw,60px)", letterSpacing:2, marginBottom:12 }}>สมัครง่าย <span style={{ color:theme.primary }}>4 ขั้นตอน</span></h2>
+            <h2 style={{ fontFamily:theme.fontDisplay, fontSize:"clamp(36px,6vw,60px)", letterSpacing:2, marginBottom:12, color:"#0f172a" }}>สมัครง่าย <span style={{ color:"#2563EB" }}>4 ขั้นตอน</span></h2>
           </div>
           <div style={{ display:"grid", gridTemplateColumns:"repeat(auto-fit,minmax(220px,1fr))", gap:20 }}>
             {[
@@ -1319,12 +1322,12 @@ function LandingPage({ theme, onAdmin, autoCheckinId, autoCheckinType }) {
               { step:"03", title:"กรอกฟอร์ม", desc:"กรอกข้อมูลและแนบสลิปใน 1 นาที", icon:"✍️", color:"#8B5CF6" },
               { step:"04", title:"รอ Approve", desc:"Admin ยืนยัน และส่ง Member ID ให้ทาง LINE", icon:"✅", color:"#F59E0B" },
             ].map((s, i) => (
-              <div key={i} style={{ background:theme.card, borderRadius:20, padding:"28px 24px", border:`1px solid ${s.color}22`, position:"relative", overflow:"hidden", transition:"all 0.3s" }}>
+              <div key={i} style={{ background:"#fff", borderRadius:20, padding:"28px 24px", border:`1px solid ${s.color}33`, position:"relative", overflow:"hidden", transition:"all 0.3s", boxShadow:"0 2px 16px rgba(37,99,235,0.06)" }}>
                 <div style={{ position:"absolute", top:-20, right:-20, fontFamily:theme.fontDisplay, fontSize:80, color:`${s.color}08`, lineHeight:1, pointerEvents:"none", userSelect:"none" }}>{s.step}</div>
-                <div style={{ width:52, height:52, borderRadius:14, background:`${s.color}15`, border:`1px solid ${s.color}33`, display:"flex", alignItems:"center", justifyContent:"center", fontSize:24, marginBottom:16 }}>{s.icon}</div>
+                <div style={{ width:52, height:52, borderRadius:14, background:`${s.color}15`, border:`1px solid ${s.color}33`, display:"flex", alignItems:"center", justifyContent:"center", fontSize:"clamp(20px,4vw,24px)", marginBottom:16, lineHeight:1 }}>{s.icon}</div>
                 <div style={{ fontSize:11, color:s.color, fontWeight:800, letterSpacing:1, marginBottom:8 }}>STEP {s.step}</div>
-                <h3 style={{ fontWeight:800, fontSize:16, marginBottom:8 }}>{s.title}</h3>
-                <p style={{ color:theme.muted, fontSize:13, lineHeight:1.7 }}>{s.desc}</p>
+                <h3 style={{ fontWeight:800, fontSize:16, marginBottom:8, color:"#0f172a" }}>{s.title}</h3>
+                <p style={{ color:"#64748b", fontSize:13, lineHeight:1.7 }}>{s.desc}</p>
               </div>
             ))}
           </div>
@@ -1542,29 +1545,29 @@ function LandingPage({ theme, onAdmin, autoCheckinId, autoCheckinType }) {
       </section>
 
       {/* FAQ */}
-      <section id="faq" style={{ padding:"80px 20px", background:"rgba(0,0,0,0.2)", borderTop:"1px solid rgba(255,255,255,0.05)" }}>
+      <section id="faq" style={{ padding:"80px 20px", background:"#fff", borderTop:"1px solid #e2e8f0" }}>
         <div style={{ maxWidth:740, margin:"0 auto" }}>
           <div style={{ textAlign:"center", marginBottom:48 }}>
             <div style={{ display:"inline-block", background:"rgba(37,99,235,0.1)", border:"1px solid rgba(37,99,235,0.2)", borderRadius:20, padding:"6px 18px", fontSize:13, color:theme.primary, fontWeight:700, marginBottom:16 }}>❓ FAQ</div>
-            <h2 style={{ fontFamily: theme.fontDisplay, fontSize: "clamp(40px,6vw,64px)", letterSpacing: 2, marginBottom: 12 }}>FAQ <span style={{ color: theme.primary }}>คำถาม</span>ที่พบบ่อย</h2>
+            <h2 style={{ fontFamily: theme.fontDisplay, fontSize: "clamp(40px,6vw,64px)", letterSpacing: 2, marginBottom: 12, color:"#0f172a" }}>FAQ <span style={{ color:"#2563EB" }}>คำถาม</span>ที่พบบ่อย</h2>
           </div>
           {faqs.map(([q, a], i) => (
             <div key={i} onClick={() => setOpenFaq(openFaq === i ? null : i)}
-              style={{ background: theme.card, border: `1px solid ${openFaq === i ? theme.primary + "60" : theme.border}`, borderRadius: 16, marginBottom: 10, cursor: "pointer", overflow: "hidden" }}>
+              style={{ background: "#f8fafc", border: `1px solid ${openFaq === i ? "#2563EB" : "#e2e8f0"}`, borderRadius: 16, marginBottom: 10, cursor: "pointer", overflow: "hidden" }}>
               <div style={{ padding: "20px 24px", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-                <span style={{ fontWeight: 700, paddingRight: 16 }}>{q}</span>
-                <span style={{ color: theme.primary, fontSize: 22, flexShrink: 0 }}>{openFaq === i ? "−" : "+"}</span>
+                <span style={{ fontWeight: 700, paddingRight: 16, color:"#0f172a" }}>{q}</span>
+                <span style={{ color: "#2563EB", fontSize: 22, flexShrink: 0 }}>{openFaq === i ? "−" : "+"}</span>
               </div>
-              {openFaq === i && <div style={{ padding: "0 24px 20px", color: theme.muted, lineHeight: 1.8, fontSize: 15 }}>{a}</div>}
+              {openFaq === i && <div style={{ padding: "0 24px 20px", color: "#64748b", lineHeight: 1.8, fontSize: 15 }}>{a}</div>}
             </div>
           ))}
         </div>
       </section>
 
-      <footer style={{ borderTop: `1px solid ${theme.border}`, padding: "48px 24px", textAlign: "center" }}>
-        <div style={{ fontFamily: theme.fontDisplay, fontSize: 28, letterSpacing: 4, marginBottom: 8 }}>THE OWNER</div>
-        <p style={{ color: theme.muted, fontSize: 14, marginBottom: 24 }}>i am because we are</p>
-        <p style={{ color: theme.muted, fontSize: 13 }}>© 2025 The Owner. All rights reserved.</p>
+      <footer style={{ borderTop: "1px solid #e2e8f0", padding: "48px 24px", textAlign: "center", background:"#f1f5f9" }}>
+        <div style={{ fontFamily: theme.fontDisplay, fontSize: 28, letterSpacing: 4, marginBottom: 8, color:"#0f172a" }}>THE OWNER</div>
+        <p style={{ color: "#64748b", fontSize: 14, marginBottom: 24 }}>i am because we are</p>
+        <p style={{ color: "#64748b", fontSize: 13 }}>© 2025 The Owner. All rights reserved.</p>
       </footer>
     </>
   );
