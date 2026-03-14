@@ -111,13 +111,13 @@ const MOCK_MEMBERS = [
 ];
 
 const DEFAULT_THEME = {
-  primary: "#00C9A7",    // teal accent (ai-autoprofit style)
-  accent: "#00E5C4",     // bright teal
-  teal: "#00C9A7",
-  tealDark: "#00997D",
-  bg: "#0B0F14",         // deep dark
-  card: "#141A22",       // dark card
-  surface: "#1A2232",    // slightly lighter surface
+  primary: "#2563EB",    // teal accent (ai-autoprofit style)
+  accent: "#3B82F6",     // bright teal
+  teal: "#2563EB",
+  tealDark: "#1E40AF",
+  bg: "#0D1B2E",         // deep dark
+  card: "#112240",       // dark card
+  surface: "#1A3A5C",    // slightly lighter surface
   text: "#F0F4F8",
   muted: "rgba(240,244,248,0.55)",
   border: "rgba(255,255,255,0.07)",
@@ -237,7 +237,7 @@ function GlobalStyles({ theme }) {
       *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
       html,body,#root{scroll-behavior:smooth;width:100%;max-width:100%;overflow-x:hidden}
       body{background:${theme.bg};color:${theme.text};font-family:${theme.fontBody};font-size:${theme.fontSize}px;line-height:1.6}
-      .navbar-collapse{background:rgba(7,9,26,0.97);padding:8px 16px 16px}
+      .navbar-collapse{background:rgba(13,27,46,0.97);padding:8px 16px 16px}
       @media(min-width:992px){.navbar-collapse{background:transparent;padding:0}}
       .navbar-toggler:focus{box-shadow:none}
       .nav-link:hover{color:${theme.text}!important;background:rgba(255,255,255,0.06)!important}
@@ -263,7 +263,7 @@ function GlobalStyles({ theme }) {
       /* Responsive */
       /* ── Mobile Responsive ── */
       @media(max-width:991px){
-        .navbar-collapse{background:rgba(7,9,26,0.98)!important;padding:12px 16px 20px!important;border-top:1px solid rgba(255,255,255,0.08)}
+        .navbar-collapse{background:rgba(13,27,46,0.98)!important;padding:12px 16px 20px!important;border-top:1px solid rgba(255,255,255,0.08)}
       }
       @media(max-width:768px){
         aside{width:100%!important;height:auto!important;position:fixed!important;bottom:0!important;top:auto!important;flex-direction:row!important;overflow-x:auto!important;z-index:100!important;padding:6px 8px!important}
@@ -288,7 +288,7 @@ function GlobalStyles({ theme }) {
       .table-scroll table{min-width:600px}
       /* ── Modern inputs ── */
       .modern-input{width:100%;background:rgba(255,255,255,0.04);border:1.5px solid rgba(255,255,255,0.1);border-radius:12px;padding:13px 16px;color:#F0F4F8;font-size:15px;outline:none;transition:all 0.2s;font-family:inherit;box-sizing:border-box}
-      .modern-input:focus{border-color:#00C9A7;box-shadow:0 0 0 3px rgba(0,201,167,0.1);background:rgba(0,201,167,0.03)}
+      .modern-input:focus{border-color:#2563EB;box-shadow:0 0 0 3px rgba(37,99,235,0.1);background:rgba(37,99,235,0.03)}
       .modern-input::placeholder{color:rgba(240,244,248,0.3)}
       /* ── Step progress ── */
       /* ── Step dots — light style matching a1-a5 ── */
@@ -303,17 +303,17 @@ function GlobalStyles({ theme }) {
       .split-left{background:linear-gradient(160deg,#1E40AF 0%,#2563EB 55%,#3B82F6 100%);display:flex;flex-direction:column;align-items:center;justify-content:center;padding:48px 44px;position:relative;overflow:hidden}
       .split-right{background:#f8fafc;display:flex;align-items:center;justify-content:center;padding:48px 44px}
       /* ── Section pill ── */
-      .section-pill{display:inline-block;background:rgba(0,201,167,0.1);border:1px solid rgba(0,201,167,0.25);border-radius:20px;padding:5px 16px;font-size:12px;color:#00C9A7;font-weight:700;letter-spacing:0.5px;margin-bottom:14px;text-transform:uppercase}
+      .section-pill{display:inline-block;background:rgba(37,99,235,0.1);border:1px solid rgba(37,99,235,0.25);border-radius:20px;padding:5px 16px;font-size:12px;color:#2563EB;font-weight:700;letter-spacing:0.5px;margin-bottom:14px;text-transform:uppercase}
       /* ── Upload zone ── */
       .upload-zone{border:2px dashed #d1d5db;border-radius:16px;padding:28px 20px;text-align:center;cursor:pointer;transition:all 0.25s;position:relative;background:#fff}
-      .upload-zone:hover,.upload-zone.has-file{border-color:#00C9A7;background:rgba(0,201,167,0.04)}
+      .upload-zone:hover,.upload-zone.has-file{border-color:#2563EB;background:rgba(37,99,235,0.04)}
       /* ── Info boxes ── */
       .ibox-warn{background:rgba(245,158,11,0.08);border:1px solid rgba(245,158,11,0.2);color:#FCD34D;border-radius:12px;padding:12px 16px;font-size:13px;display:flex;align-items:flex-start;gap:10px;margin-bottom:18px}
-      .ibox-info{background:rgba(0,201,167,0.06);border:1px solid rgba(0,201,167,0.18);color:#5eead4;border-radius:12px;padding:12px 16px;font-size:13px;display:flex;align-items:flex-start;gap:10px;margin-bottom:18px}
+      .ibox-info{background:rgba(37,99,235,0.06);border:1px solid rgba(37,99,235,0.18);color:#5eead4;border-radius:12px;padding:12px 16px;font-size:13px;display:flex;align-items:flex-start;gap:10px;margin-bottom:18px}
       .ibox-err{background:rgba(239,68,68,0.08);border:1px solid rgba(239,68,68,0.2);color:#FCA5A5;border-radius:12px;padding:12px 16px;font-size:13px;display:flex;align-items:flex-start;gap:10px;margin-bottom:18px}
       /* ── Portal tabs ── */
       .ptab{padding:9px 18px;border-radius:10px;border:none;cursor:pointer;font-weight:700;font-size:14px;transition:all 0.2s;font-family:inherit}
-      .ptab.on{background:linear-gradient(135deg,#00C9A7,#009980);color:#000;box-shadow:0 4px 16px rgba(0,201,167,0.35)}
+      .ptab.on{background:linear-gradient(135deg,#1E40AF,#2563EB);color:#fff;box-shadow:0 4px 16px rgba(37,99,235,0.35)}
       .ptab.off{background:rgba(255,255,255,0.06);color:rgba(240,244,248,0.55)}
       .ptab:hover:not(.on){background:rgba(255,255,255,0.1);color:#F0F4F8}
       /* ── Package card ── */
@@ -323,27 +323,27 @@ function GlobalStyles({ theme }) {
       .field-label{font-size:12px;font-weight:700;color:rgba(240,244,248,0.55);display:block;margin-bottom:8px;letter-spacing:0.6px;text-transform:uppercase}
       /* ── Stat cards ── */
       .stat-card{background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.07);border-radius:16px;padding:20px;transition:all 0.25s}
-      .stat-card:hover{border-color:rgba(0,201,167,0.25);background:rgba(0,201,167,0.04)}
+      .stat-card:hover{border-color:rgba(37,99,235,0.25);background:rgba(37,99,235,0.04)}
       /* ── Course card hover ── */
       .course-card{transition:all 0.3s ease;cursor:pointer}
-      .course-card:hover{transform:translateY(-6px);box-shadow:0 20px 60px rgba(0,201,167,0.18)!important}
+      .course-card:hover{transform:translateY(-6px);box-shadow:0 20px 60px rgba(37,99,235,0.18)!important}
       .course-card:hover .course-img{transform:scale(1.04)}
       .course-img{transition:transform 0.4s ease;width:100%;display:block}
       /* ── Teal glow button ── */
-      .btn-teal{background:linear-gradient(135deg,#00C9A7,#00A88A)!important;color:#000!important;font-weight:800!important}
-      .btn-teal:hover{background:linear-gradient(135deg,#00DFB8,#00C9A7)!important;box-shadow:0 8px 32px rgba(0,201,167,0.45)!important;transform:translateY(-2px) scale(1.02)!important}
+      .btn-teal{background:linear-gradient(135deg,#1E40AF,#2563EB)!important;color:#fff!important;font-weight:800!important}
+      .btn-teal:hover{background:linear-gradient(135deg,#2563EB,#3B82F6)!important;box-shadow:0 8px 32px rgba(37,99,235,0.45)!important;transform:translateY(-2px) scale(1.02)!important}
       /* ── Teal header band ── */
-      .teal-band{background:linear-gradient(135deg,#00C9A7 0%,#009980 100%)}
+      .teal-band{background:linear-gradient(135deg,#1E40AF 0%,#3B82F6 100%)}
       /* ── Search input ── */
-      .search-input{background:#1A2232;border:1.5px solid rgba(0,201,167,0.2);border-radius:12px;color:#F0F4F8;padding:14px 18px;font-size:15px;width:100%;outline:none;transition:border-color 0.2s}
-      .search-input:focus{border-color:#00C9A7;box-shadow:0 0 0 3px rgba(0,201,167,0.12)}
+      .search-input{background:#1A3A5C;border:1.5px solid rgba(37,99,235,0.2);border-radius:12px;color:#F0F4F8;padding:14px 18px;font-size:15px;width:100%;outline:none;transition:border-color 0.2s}
+      .search-input:focus{border-color:#2563EB;box-shadow:0 0 0 3px rgba(37,99,235,0.12)}
       .search-input::placeholder{color:rgba(240,244,248,0.4)}
       /* ── Filter dropdown ── */
-      .filter-select{background:#1A2232!important;border:1.5px solid rgba(255,255,255,0.1)!important;border-radius:10px!important;color:#F0F4F8!important;padding:10px 16px!important;font-size:14px!important;cursor:pointer}
+      .filter-select{background:#1A3A5C!important;border:1.5px solid rgba(255,255,255,0.1)!important;border-radius:10px!important;color:#F0F4F8!important;padding:10px 16px!important;font-size:14px!important;cursor:pointer}
       /* ── Skeleton shimmer ── */
-      .skeleton{background:linear-gradient(90deg,#1A2232 25%,#243040 50%,#1A2232 75%);background-size:200% 100%;animation:shimmer 1.5s infinite}
+      .skeleton{background:linear-gradient(90deg,#1A3A5C 25%,#243040 50%,#1A3A5C 75%);background-size:200% 100%;animation:shimmer 1.5s infinite}
       /* ── Package card ── */
-      .pkg-popular{position:relative;border:2px solid #00C9A7!important;box-shadow:0 0 40px rgba(0,201,167,0.15)}
+      .pkg-popular{position:relative;border:2px solid #2563EB!important;box-shadow:0 0 40px rgba(37,99,235,0.15)}
       /* ── Scroll reveal ── */
       @keyframes revealUp{from{opacity:0;transform:translateY(30px)}to{opacity:1;transform:translateY(0)}}
       .reveal{animation:revealUp 0.6s ease forwards}
@@ -352,10 +352,10 @@ function GlobalStyles({ theme }) {
       .reveal-3{animation-delay:0.3s;opacity:0}
       .reveal-4{animation-delay:0.4s;opacity:0}
       /* ── Tag pill ── */
-      .tag-free{background:rgba(0,201,167,0.15);color:#00C9A7;border:1px solid rgba(0,201,167,0.3);border-radius:20px;padding:3px 12px;font-size:12px;font-weight:700}
+      .tag-free{background:rgba(37,99,235,0.15);color:#2563EB;border:1px solid rgba(37,99,235,0.3);border-radius:20px;padding:3px 12px;font-size:12px;font-weight:700}
       .tag-paid{background:rgba(251,191,36,0.12);color:#FCD34D;border:1px solid rgba(251,191,36,0.3);border-radius:20px;padding:3px 12px;font-size:12px;font-weight:700}
       /* ── Divider ── */
-      .teal-divider{height:3px;background:linear-gradient(90deg,#00C9A7,transparent);border:none;margin:20px 0}
+      .teal-divider{height:3px;background:linear-gradient(90deg,#1E40AF,#2563EB,transparent);border:none;margin:20px 0}
     `}</style>
     </>
   );
@@ -365,11 +365,11 @@ function Btn({ children, onClick, variant = "primary", size = "md", fullWidth, s
   const theme = window.__theme || DEFAULT_THEME;
   const sizes = { sm: { padding: "8px 16px", fontSize: 13 }, md: { padding: "12px 24px", fontSize: 15 }, lg: { padding: "16px 36px", fontSize: 17 } };
   const variants = {
-    primary: { background: "linear-gradient(135deg,#00C9A7,#00A88A)", color: "#000", borderBottom: "3px solid #008870" },
-    accent:  { background: "linear-gradient(135deg,#00E5C4,#00C9A7)", color: "#000", borderBottom: "3px solid #00A88A" },
+    primary: { background: "linear-gradient(135deg,#1E40AF,#2563EB)", color: "#fff", borderBottom: "3px solid #1E3A8A" },
+    accent:  { background: "linear-gradient(135deg,#2563EB,#3B82F6)", color: "#fff", borderBottom: "3px solid #1E40AF" },
     ghost:   { background: "rgba(255,255,255,0.07)", color: theme.text, borderBottom: "3px solid rgba(255,255,255,0.05)" },
     danger:  { background: "#EF4444", color: "#fff", borderBottom: "3px solid #b91c1c" },
-    success: { background: "#10B981", color: "#000", borderBottom: "3px solid #065f46" },
+    success: { background: "#10B981", color: "#fff", borderBottom: "3px solid #065f46" },
     outline: { background: "transparent", color: theme.primary, border: `2px solid ${theme.primary}`, borderBottom: `4px solid ${theme.primary}` }
   };
 
@@ -502,7 +502,7 @@ function CheckinList({ scheduleId, theme, gasUrl }) {
 // ─── MEMBER STATUS CARD ─────────────────────────
 function MemberStatusCard({ member, theme }) {
   const pkg = member.package || member.pkg;
-  const pkgColor = pkg === "trial" ? "#F59E0B" : "#00C9A7";
+  const pkgColor = pkg === "trial" ? "#F59E0B" : "#2563EB";
   const exp = member.expiresAt ? new Date(member.expiresAt) : null;
   const daysLeft = exp ? Math.max(0, Math.ceil((exp - new Date()) / 86400000)) : 0;
   const isExpired = exp && exp < new Date();
@@ -531,7 +531,7 @@ function MemberStatusCard({ member, theme }) {
           </div>
         </div>
         <div style={{ marginTop:14, display:"flex", gap:8, flexWrap:"wrap" }}>
-          <span style={{ fontSize:12, padding:"4px 14px", borderRadius:20, fontWeight:700, background: isExpired ? "rgba(239,68,68,0.12)" : "rgba(0,201,167,0.1)", color: isExpired ? "#EF4444" : "#00C9A7", border:`1px solid ${isExpired ? "rgba(239,68,68,0.3)" : "rgba(0,201,167,0.25)"}` }}>
+          <span style={{ fontSize:12, padding:"4px 14px", borderRadius:20, fontWeight:700, background: isExpired ? "rgba(239,68,68,0.12)" : "rgba(37,99,235,0.1)", color: isExpired ? "#EF4444" : "#2563EB", border:`1px solid ${isExpired ? "rgba(239,68,68,0.3)" : "rgba(37,99,235,0.25)"}` }}>
             {isExpired ? "❌ หมดอายุแล้ว" : isSoon ? `⚠️ เหลือ ${daysLeft} วัน` : `✅ ใช้งานได้อีก ${daysLeft} วัน`}
           </span>
         </div>
@@ -1002,11 +1002,11 @@ function LandingPage({ theme, onAdmin, autoCheckinId, autoCheckinType }) {
 
   return (
     <>
-      <nav style={{ position:"fixed", top:0, left:0, right:0, zIndex:1000, background:"rgba(11,15,20,0.96)", backdropFilter:"blur(20px)", borderBottom:"1px solid rgba(0,201,167,0.12)", padding:0 }}>
+      <nav style={{ position:"fixed", top:0, left:0, right:0, zIndex:1000, background:"rgba(13,27,46,0.96)", backdropFilter:"blur(20px)", borderBottom:"1px solid rgba(37,99,235,0.12)", padding:0 }}>
         <div style={{ maxWidth:1280, margin:"0 auto", padding:"0 20px", height:64, display:"flex", alignItems:"center", justifyContent:"space-between" }}>
           {/* Logo */}
           <button onClick={() => scrollTo("home")} style={{ background:"none", border:"none", cursor:"pointer", display:"flex", alignItems:"center", gap:10 }}>
-            <div style={{ width:40, height:40, borderRadius:10, overflow:"hidden", flexShrink:0, background:"linear-gradient(135deg,#00C9A7,#0B8F76)", display:"flex", alignItems:"center", justifyContent:"center" }}>
+            <div style={{ width:40, height:40, borderRadius:10, overflow:"hidden", flexShrink:0, background:"linear-gradient(135deg,#1E40AF,#2563EB)", display:"flex", alignItems:"center", justifyContent:"center" }}>
               <img src="/the_owner_logo.png" style={{ width:"100%", height:"100%", objectFit:"cover" }} onError={e=>{e.target.style.display="none";}} />
             </div>
             <div style={{ textAlign:"left" }}>
@@ -1018,7 +1018,7 @@ function LandingPage({ theme, onAdmin, autoCheckinId, autoCheckinType }) {
           {/* Desktop Nav */}
           <div className="mobile-hide" style={{ display:"flex", alignItems:"center", gap:4 }}>
             {navItems.map(([id, label]) => (
-              <button key={id} onClick={() => scrollTo(id)} style={{ background:"none", border:"none", cursor:"pointer", color: section===id ? "#00C9A7" : "rgba(240,244,248,0.6)", fontWeight: section===id ? 700 : 500, fontSize:14, fontFamily:theme.fontBody, padding:"8px 14px", borderRadius:8, transition:"all 0.2s", borderBottom: section===id ? "2px solid #00C9A7" : "2px solid transparent" }}>
+              <button key={id} onClick={() => scrollTo(id)} style={{ background:"none", border:"none", cursor:"pointer", color: section===id ? "#2563EB" : "rgba(240,244,248,0.6)", fontWeight: section===id ? 700 : 500, fontSize:14, fontFamily:theme.fontBody, padding:"8px 14px", borderRadius:8, transition:"all 0.2s", borderBottom: section===id ? "2px solid #2563EB" : "2px solid transparent" }}>
                 {label}
               </button>
             ))}
@@ -1027,7 +1027,7 @@ function LandingPage({ theme, onAdmin, autoCheckinId, autoCheckinType }) {
           {/* Right side */}
           <div style={{ display:"flex", alignItems:"center", gap:10 }}>
             {memberInfo && (
-              <div className="mobile-hide" style={{ background:"rgba(0,201,167,0.12)", border:"1px solid rgba(0,201,167,0.3)", borderRadius:20, padding:"4px 12px", fontSize:12, color:theme.primary, fontWeight:700 }}>
+              <div className="mobile-hide" style={{ background:"rgba(37,99,235,0.12)", border:"1px solid rgba(37,99,235,0.3)", borderRadius:20, padding:"4px 12px", fontSize:12, color:theme.primary, fontWeight:700 }}>
                 {memberInfo.memberId || memberInfo["Owner Code"] || "สมาชิก"}
               </div>
             )}
@@ -1046,7 +1046,7 @@ function LandingPage({ theme, onAdmin, autoCheckinId, autoCheckinType }) {
           </div>
         </div>
         {/* Mobile menu */}
-        <div className="collapse" id="mainNavMobile" style={{ background:"rgba(11,15,20,0.99)", borderTop:"1px solid rgba(0,201,167,0.1)", padding:"12px 20px 20px" }}>
+        <div className="collapse" id="mainNavMobile" style={{ background:"rgba(13,27,46,0.99)", borderTop:"1px solid rgba(37,99,235,0.1)", padding:"12px 20px 20px" }}>
           {navItems.map(([id, label]) => (
             <button key={id} onClick={() => { scrollTo(id); const el=document.getElementById("mainNavMobile"); el.classList.remove("show"); }}
               style={{ display:"block", width:"100%", background:"none", border:"none", textAlign:"left", color: section===id ? theme.primary : theme.text, fontWeight:600, fontSize:15, fontFamily:theme.fontBody, padding:"12px 0", borderBottom:"1px solid rgba(255,255,255,0.05)", cursor:"pointer" }}>
@@ -1063,25 +1063,25 @@ function LandingPage({ theme, onAdmin, autoCheckinId, autoCheckinType }) {
       {/* HERO */}
       <section id="home" style={{ minHeight:"100vh", display:"flex", alignItems:"center", justifyContent:"center", padding:"clamp(80px,12vw,120px) clamp(16px,4vw,24px) 60px", position:"relative", overflow:"hidden" }}>
         {/* Background layers */}
-        <div style={{ position:"absolute", inset:0, background:"radial-gradient(ellipse 80% 60% at 50% 0%,rgba(0,201,167,0.12) 0%,transparent 70%)", pointerEvents:"none" }} />
-        <div style={{ position:"absolute", top:"20%", right:"5%", width:400, height:400, background:"radial-gradient(circle,rgba(0,201,167,0.06) 0%,transparent 70%)", pointerEvents:"none", borderRadius:"50%" }} />
-        <div style={{ position:"absolute", inset:0, backgroundImage:"radial-gradient(rgba(0,201,167,0.04) 1px,transparent 1px)", backgroundSize:"40px 40px", pointerEvents:"none" }} />
+        <div style={{ position:"absolute", inset:0, background:"radial-gradient(ellipse 80% 60% at 50% 0%,rgba(37,99,235,0.12) 0%,transparent 70%)", pointerEvents:"none" }} />
+        <div style={{ position:"absolute", top:"20%", right:"5%", width:400, height:400, background:"radial-gradient(circle,rgba(37,99,235,0.06) 0%,transparent 70%)", pointerEvents:"none", borderRadius:"50%" }} />
+        <div style={{ position:"absolute", inset:0, backgroundImage:"radial-gradient(rgba(37,99,235,0.04) 1px,transparent 1px)", backgroundSize:"40px 40px", pointerEvents:"none" }} />
 
         <div style={{ textAlign:"center", maxWidth:900, position:"relative", margin:"0 auto", padding:"0 16px" }}>
           {/* Live badge */}
-          <div className="reveal reveal-1" style={{ display:"inline-flex", alignItems:"center", gap:8, background:"rgba(0,201,167,0.1)", border:"1px solid rgba(0,201,167,0.3)", borderRadius:30, padding:"8px 20px", fontSize:13, color:theme.primary, fontWeight:700, marginBottom:36, letterSpacing:0.5 }}>
-            <span style={{ width:8, height:8, borderRadius:"50%", background:theme.primary, display:"inline-block", animation:"pulse 1.5s infinite", boxShadow:"0 0 8px #00C9A7" }} />
+          <div className="reveal reveal-1" style={{ display:"inline-flex", alignItems:"center", gap:8, background:"rgba(37,99,235,0.1)", border:"1px solid rgba(37,99,235,0.3)", borderRadius:30, padding:"8px 20px", fontSize:13, color:theme.primary, fontWeight:700, marginBottom:36, letterSpacing:0.5 }}>
+            <span style={{ width:8, height:8, borderRadius:"50%", background:theme.primary, display:"inline-block", animation:"pulse 1.5s infinite", boxShadow:"0 0 8px #3B82F6" }} />
             เปิดรับสมาชิกใหม่แล้ววันนี้
           </div>
 
           {/* Logo circle */}
-          <div className="reveal reveal-2" style={{ width:110, height:110, borderRadius:"50%", overflow:"hidden", margin:"0 auto 36px", boxShadow:"0 0 60px rgba(0,201,167,0.35), 0 0 120px rgba(0,201,167,0.12)", border:"2px solid rgba(0,201,167,0.3)", background:"linear-gradient(135deg,#00C9A7,#0B8F76)" }}>
+          <div className="reveal reveal-2" style={{ width:110, height:110, borderRadius:"50%", overflow:"hidden", margin:"0 auto 36px", boxShadow:"0 0 60px rgba(37,99,235,0.35), 0 0 120px rgba(37,99,235,0.12)", border:"2px solid rgba(37,99,235,0.3)", background:"linear-gradient(135deg,#1E40AF,#2563EB)" }}>
             <img src="/the_owner_logo.png" style={{ width:"100%", height:"100%", objectFit:"cover" }} onError={e=>{e.target.style.display="none";}} />
           </div>
 
           {/* Heading */}
           <h1 className="reveal reveal-2" style={{ fontFamily:theme.fontDisplay, fontSize:"clamp(80px,15vw,160px)", lineHeight:0.88, letterSpacing:4, marginBottom:20 }}>
-            THE<br /><span style={{ color:theme.primary, textShadow:"0 0 60px rgba(0,201,167,0.5)" }}>OWNER</span>
+            THE<br /><span style={{ color:theme.primary, textShadow:"0 0 60px rgba(37,99,235,0.5)" }}>OWNER</span>
           </h1>
 
           {/* Subtitle */}
@@ -1099,7 +1099,7 @@ function LandingPage({ theme, onAdmin, autoCheckinId, autoCheckinType }) {
               สมัครสมาชิก →
             </button>
             <button onClick={() => scrollTo("courses")}
-              style={{ padding:"14px 36px", borderRadius:12, border:"1.5px solid rgba(0,201,167,0.35)", background:"rgba(0,201,167,0.05)", color:theme.text, cursor:"pointer", fontFamily:"'Noto Sans Thai', 'Sarabun', sans-serif", fontSize:16, fontWeight:700, transition:"all 0.2s", backdropFilter:"blur(8px)" }}>
+              style={{ padding:"14px 36px", borderRadius:12, border:"1.5px solid rgba(37,99,235,0.35)", background:"rgba(37,99,235,0.05)", color:theme.text, cursor:"pointer", fontFamily:"'Noto Sans Thai', 'Sarabun', sans-serif", fontSize:16, fontWeight:700, transition:"all 0.2s", backdropFilter:"blur(8px)" }}>
               ดูคอร์สทั้งหมด
             </button>
           </div>
@@ -1120,10 +1120,10 @@ function LandingPage({ theme, onAdmin, autoCheckinId, autoCheckinType }) {
       <section id="courses" style={{ padding:"0 0 80px" }}>
         {/* Teal header band - เหมือน ai-autoprofit */}
         <div className="teal-band" style={{ padding:"40px 24px", textAlign:"center", marginBottom:0 }}>
-          <h2 style={{ fontFamily:"'Noto Sans Thai','Sarabun',sans-serif", fontSize:"clamp(26px,5vw,36px)", fontWeight:900, color:"#0B0F14", marginBottom:8, letterSpacing:0.5 }}>
+          <h2 style={{ fontFamily:"'Noto Sans Thai','Sarabun',sans-serif", fontSize:"clamp(26px,5vw,36px)", fontWeight:900, color:"#0D1B2E", marginBottom:8, letterSpacing:0.5 }}>
             คอร์สทั้งหมด
           </h2>
-          <p style={{ color:"rgba(11,15,20,0.7)", fontSize:15, fontWeight:600 }}>เลือกคอร์สที่คุณสนใจเพื่อเริ่มต้นการเรียนรู้</p>
+          <p style={{ color:"rgba(13,27,46,0.7)", fontSize:15, fontWeight:600 }}>เลือกคอร์สที่คุณสนใจเพื่อเริ่มต้นการเรียนรู้</p>
         </div>
 
         <div style={{ maxWidth:1100, margin:"0 auto", padding:"32px 20px 0" }}>
@@ -1132,10 +1132,10 @@ function LandingPage({ theme, onAdmin, autoCheckinId, autoCheckinType }) {
             <input className="search-input" placeholder="🔍  ค้นหาคอร์สเรียน..." style={{ marginBottom:12 }} readOnly
               onClick={() => scrollTo("register")} />
             <div style={{ display:"flex", gap:10 }}>
-              <div style={{ flex:1, background:"#1A2232", border:"1.5px solid rgba(255,255,255,0.1)", borderRadius:10, padding:"10px 14px", fontSize:14, color:theme.muted, display:"flex", alignItems:"center", gap:8, cursor:"pointer" }}>
+              <div style={{ flex:1, background:"#1A3A5C", border:"1.5px solid rgba(255,255,255,0.1)", borderRadius:10, padding:"10px 14px", fontSize:14, color:theme.muted, display:"flex", alignItems:"center", gap:8, cursor:"pointer" }}>
                 <span>⚡</span><span style={{ color:theme.text, fontWeight:600 }}>ทั้งหมด</span><span style={{ marginLeft:"auto" }}>▾</span>
               </div>
-              <div style={{ flex:1, background:"#1A2232", border:"1.5px solid rgba(255,255,255,0.1)", borderRadius:10, padding:"10px 14px", fontSize:14, color:theme.muted, display:"flex", alignItems:"center", gap:8, cursor:"pointer" }}>
+              <div style={{ flex:1, background:"#1A3A5C", border:"1.5px solid rgba(255,255,255,0.1)", borderRadius:10, padding:"10px 14px", fontSize:14, color:theme.muted, display:"flex", alignItems:"center", gap:8, cursor:"pointer" }}>
                 <span style={{ color:theme.text, fontWeight:600 }}>ใหม่ล่าสุด</span><span style={{ marginLeft:"auto" }}>▾</span>
               </div>
             </div>
@@ -1243,7 +1243,7 @@ function LandingPage({ theme, onAdmin, autoCheckinId, autoCheckinType }) {
       <section id="packages" style={{ padding:"80px 20px", maxWidth:960, margin:"0 auto" }}>
         {/* Section header */}
         <div style={{ textAlign:"center", marginBottom:52 }}>
-          <div style={{ display:"inline-block", background:"rgba(0,201,167,0.1)", border:"1px solid rgba(0,201,167,0.2)", borderRadius:20, padding:"6px 18px", fontSize:13, color:theme.primary, fontWeight:700, marginBottom:16, letterSpacing:0.5 }}>
+          <div style={{ display:"inline-block", background:"rgba(37,99,235,0.1)", border:"1px solid rgba(37,99,235,0.2)", borderRadius:20, padding:"6px 18px", fontSize:13, color:theme.primary, fontWeight:700, marginBottom:16, letterSpacing:0.5 }}>
             💎 เลือกแพ็กเกจ
           </div>
           <h2 style={{ fontFamily:theme.fontDisplay, fontSize:"clamp(36px,6vw,60px)", letterSpacing:2, marginBottom:12 }}>
@@ -1256,14 +1256,14 @@ function LandingPage({ theme, onAdmin, autoCheckinId, autoCheckinType }) {
           {PACKAGES.map(pkg => (
             <div key={pkg.id}
               className={pkg.id === "quarter" ? "pkg-popular" : ""}
-              style={{ background:theme.card, borderRadius:24, padding:"36px 32px", position:"relative", overflow:"hidden", border:`1px solid ${pkg.id === "quarter" ? "rgba(0,201,167,0.35)" : "rgba(255,255,255,0.07)"}`, transition:"all 0.3s ease" }}>
+              style={{ background:theme.card, borderRadius:24, padding:"36px 32px", position:"relative", overflow:"hidden", border:`1px solid ${pkg.id === "quarter" ? "rgba(37,99,235,0.35)" : "rgba(255,255,255,0.07)"}`, transition:"all 0.3s ease" }}>
               {/* Top accent line */}
-              <div style={{ position:"absolute", top:0, left:0, right:0, height:3, background: pkg.id==="quarter" ? "linear-gradient(90deg,#00C9A7,#00E5C4)" : `linear-gradient(90deg,${pkg.color},transparent)` }} />
+              <div style={{ position:"absolute", top:0, left:0, right:0, height:3, background: pkg.id==="quarter" ? "linear-gradient(90deg,#2563EB,#3B82F6)" : `linear-gradient(90deg,${pkg.color},transparent)` }} />
               {/* Glow bg for popular */}
-              {pkg.id === "quarter" && <div style={{ position:"absolute", top:-60, right:-60, width:200, height:200, background:"radial-gradient(circle,rgba(0,201,167,0.08),transparent)", borderRadius:"50%", pointerEvents:"none" }} />}
+              {pkg.id === "quarter" && <div style={{ position:"absolute", top:-60, right:-60, width:200, height:200, background:"radial-gradient(circle,rgba(37,99,235,0.08),transparent)", borderRadius:"50%", pointerEvents:"none" }} />}
 
               {pkg.badge && (
-                <div style={{ position:"absolute", top:18, right:18, background:"linear-gradient(135deg,#00C9A7,#00A88A)", color:"#000", padding:"5px 14px", borderRadius:20, fontSize:11, fontWeight:900, letterSpacing:0.5 }}>
+                <div style={{ position:"absolute", top:18, right:18, background:"linear-gradient(135deg,#2563EB,#1E40AF)", color:"#fff", padding:"5px 14px", borderRadius:20, fontSize:11, fontWeight:900, letterSpacing:0.5 }}>
                   ⭐ {pkg.badge}
                 </div>
               )}
@@ -1297,7 +1297,7 @@ function LandingPage({ theme, onAdmin, autoCheckinId, autoCheckinType }) {
 
               <button className={`btn-3d ${pkg.id==="quarter"?"btn-teal":""}`}
                 onClick={() => scrollTo("register")}
-                style={{ width:"100%", padding:"14px", borderRadius:12, border: pkg.id==="quarter"?"none":`1.5px solid rgba(255,255,255,0.15)`, cursor:"pointer", fontFamily:"'Noto Sans Thai','Sarabun',sans-serif", fontSize:15, fontWeight:800, background: pkg.id==="quarter"?"linear-gradient(135deg,#00C9A7,#00A88A)":"rgba(255,255,255,0.05)", color: pkg.id==="quarter"?"#000":theme.text, letterSpacing:0.5, display:"flex", alignItems:"center", justifyContent:"center", gap:8 }}>
+                style={{ width:"100%", padding:"14px", borderRadius:12, border: pkg.id==="quarter"?"none":`1.5px solid rgba(255,255,255,0.15)`, cursor:"pointer", fontFamily:"'Noto Sans Thai','Sarabun',sans-serif", fontSize:15, fontWeight:800, background: pkg.id==="quarter"?"linear-gradient(135deg,#1E40AF,#2563EB)":"rgba(255,255,255,0.05)", color: pkg.id==="quarter"?"#fff":theme.text, letterSpacing:0.5, display:"flex", alignItems:"center", justifyContent:"center", gap:8 }}>
                 {pkg.id==="quarter"?"⭐":""} เลือกแพ็กเกจนี้
               </button>
             </div>
@@ -1306,15 +1306,15 @@ function LandingPage({ theme, onAdmin, autoCheckinId, autoCheckinType }) {
       </section>
 
       {/* HOW TO */}
-      <section id="how" style={{ padding:"80px 20px", background:"rgba(0,201,167,0.02)", borderTop:"1px solid rgba(0,201,167,0.08)", borderBottom:"1px solid rgba(0,201,167,0.08)" }}>
+      <section id="how" style={{ padding:"80px 20px", background:"rgba(37,99,235,0.02)", borderTop:"1px solid rgba(37,99,235,0.08)", borderBottom:"1px solid rgba(37,99,235,0.08)" }}>
         <div style={{ maxWidth:1000, margin:"0 auto" }}>
           <div style={{ textAlign:"center", marginBottom:52 }}>
-            <div style={{ display:"inline-block", background:"rgba(0,201,167,0.1)", border:"1px solid rgba(0,201,167,0.2)", borderRadius:20, padding:"6px 18px", fontSize:13, color:theme.primary, fontWeight:700, marginBottom:16 }}>📋 วิธีสมัคร</div>
+            <div style={{ display:"inline-block", background:"rgba(37,99,235,0.1)", border:"1px solid rgba(37,99,235,0.2)", borderRadius:20, padding:"6px 18px", fontSize:13, color:theme.primary, fontWeight:700, marginBottom:16 }}>📋 วิธีสมัคร</div>
             <h2 style={{ fontFamily:theme.fontDisplay, fontSize:"clamp(36px,6vw,60px)", letterSpacing:2, marginBottom:12 }}>สมัครง่าย <span style={{ color:theme.primary }}>4 ขั้นตอน</span></h2>
           </div>
           <div style={{ display:"grid", gridTemplateColumns:"repeat(auto-fit,minmax(220px,1fr))", gap:20 }}>
             {[
-              { step:"01", title:"เลือกแพ็กเกจ", desc:"Trial 150฿ หรือ Quarter 600฿ ที่เหมาะกับคุณ", icon:"🎯", color:"#00C9A7" },
+              { step:"01", title:"เลือกแพ็กเกจ", desc:"Trial 150฿ หรือ Quarter 600฿ ที่เหมาะกับคุณ", icon:"🎯", color:"#2563EB" },
               { step:"02", title:"โอนเงิน PromptPay", desc:"โอนเงินและบันทึกภาพสลิปไว้", icon:"💳", color:"#3B82F6" },
               { step:"03", title:"กรอกฟอร์ม", desc:"กรอกข้อมูลและแนบสลิปใน 1 นาที", icon:"✍️", color:"#8B5CF6" },
               { step:"04", title:"รอ Approve", desc:"Admin ยืนยัน และส่ง Member ID ให้ทาง LINE", icon:"✅", color:"#F59E0B" },
@@ -1355,7 +1355,7 @@ function LandingPage({ theme, onAdmin, autoCheckinId, autoCheckinType }) {
       </section>
 
       {/* REGISTER */}
-      <section id="register" style={{ padding:"80px 20px 100px", background:"linear-gradient(135deg,#1E40AF 0%,#2563EB 35%,#3B82F6 70%,#00C9A7 100%)" }}>
+      <section id="register" style={{ padding:"80px 20px 100px", background:"linear-gradient(135deg,#1E40AF 0%,#2563EB 35%,#3B82F6 70%,#2563EB 100%)" }}>
         {/* Top band for visual */}
         <div style={{ maxWidth:760, margin:"0 auto" }}>
         {/* Title on gradient bg */}
@@ -1545,7 +1545,7 @@ function LandingPage({ theme, onAdmin, autoCheckinId, autoCheckinType }) {
       <section id="faq" style={{ padding:"80px 20px", background:"rgba(0,0,0,0.2)", borderTop:"1px solid rgba(255,255,255,0.05)" }}>
         <div style={{ maxWidth:740, margin:"0 auto" }}>
           <div style={{ textAlign:"center", marginBottom:48 }}>
-            <div style={{ display:"inline-block", background:"rgba(0,201,167,0.1)", border:"1px solid rgba(0,201,167,0.2)", borderRadius:20, padding:"6px 18px", fontSize:13, color:theme.primary, fontWeight:700, marginBottom:16 }}>❓ FAQ</div>
+            <div style={{ display:"inline-block", background:"rgba(37,99,235,0.1)", border:"1px solid rgba(37,99,235,0.2)", borderRadius:20, padding:"6px 18px", fontSize:13, color:theme.primary, fontWeight:700, marginBottom:16 }}>❓ FAQ</div>
             <h2 style={{ fontFamily: theme.fontDisplay, fontSize: "clamp(40px,6vw,64px)", letterSpacing: 2, marginBottom: 12 }}>FAQ <span style={{ color: theme.primary }}>คำถาม</span>ที่พบบ่อย</h2>
           </div>
           {faqs.map(([q, a], i) => (
@@ -2205,14 +2205,14 @@ function AdminDashboard({ user, theme, setTheme, onLogout, onLanding }) {
         <nav style={{ flex: 1, padding: 12 }}>
           {navItems.map(n => (
             <button key={n.id} onClick={() => setPage(n.id)}
-              style={{ display: "flex", alignItems: "center", gap: 10, width: "100%", border: "none", cursor: "pointer", padding: "12px 14px", borderRadius: 12, marginBottom: 2, background: page === n.id ? "rgba(255,255,255,0.15)" : "transparent", color: page === n.id ? "#fff" : "rgba(255,255,255,0.5)", fontWeight: page === n.id ? 700 : 400, fontSize: 13, fontFamily: theme.fontBody, textAlign: "left", borderLeft: page === n.id ? "3px solid #00C9A7" : "3px solid transparent" }}>
+              style={{ display: "flex", alignItems: "center", gap: 10, width: "100%", border: "none", cursor: "pointer", padding: "12px 14px", borderRadius: 12, marginBottom: 2, background: page === n.id ? "rgba(255,255,255,0.15)" : "transparent", color: page === n.id ? "#fff" : "rgba(255,255,255,0.5)", fontWeight: page === n.id ? 700 : 400, fontSize: 13, fontFamily: theme.fontBody, textAlign: "left", borderLeft: page === n.id ? "3px solid #2563EB" : "3px solid transparent" }}>
               <Ic d={n.icon} size={17} /> {n.label}
             </button>
           ))}
         </nav>
         <div style={{ padding: 12, borderTop: `1px solid rgba(255,255,255,0.08)` }}>
           <div style={{ fontSize: 12, color: "rgba(255,255,255,0.45)", padding: "8px 14px", marginBottom: 4 }}>
-            {user.name} · <span style={{ color: user.role === "super_admin" ? "#00C9A7" : "#F59E0B" }}>{user.role === "super_admin" ? "Super Admin" : "Helper"}</span>
+            {user.name} · <span style={{ color: user.role === "super_admin" ? "#2563EB" : "#F59E0B" }}>{user.role === "super_admin" ? "Super Admin" : "Helper"}</span>
           </div>
           <button onClick={onLanding} style={{ display: "flex", alignItems: "center", gap: 10, width: "100%", border: "none", cursor: "pointer", padding: "10px 14px", borderRadius: 10, background: "transparent", color: "rgba(255,255,255,0.45)", fontSize: 13, fontFamily: theme.fontBody, marginBottom: 4 }}>
             <Ic d={ICONS.link} size={15} /> Landing Page
