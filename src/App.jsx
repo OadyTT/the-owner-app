@@ -2557,7 +2557,7 @@ function AdminDashboard({ user, theme, setTheme, onLogout, onLanding }) {
                         </div>
                         {editSched.zoomId && (
                           <div style={{ marginTop: 10, fontSize: 12, color: "#10B981" }}>
-                            🔗 Zoom Link: https://zoom.us/j/{editSched.zoomId.replace(/-/g,"")}?pwd={editSched.zoomPw}
+                            {`🔗 Zoom Link: https://zoom.us/j/${editSched.zoomId.replace(/-/g,"")}?pwd=${editSched.zoomPw}`}
                           </div>
                         )}
                         <button onClick={() => handleSendZoom(editSched)} disabled={!editSched.zoomId || savingZoom === editSched.id}
