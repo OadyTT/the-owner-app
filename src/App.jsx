@@ -1,4 +1,3 @@
-javascript import html2canvas from 'html2canvas';  
 import { useState, useEffect } from "react";
 
 const LIFF_ID = "2009199519-UViGDRf7";
@@ -112,16 +111,16 @@ const MOCK_MEMBERS = [
 ];
 
 const DEFAULT_THEME = {
-  primary: "#2563EB",    // teal accent (ai-autoprofit style)
-  accent: "#3B82F6",     // bright teal
+  primary: "#2563EB",
+  accent: "#3B82F6",
   teal: "#2563EB",
   tealDark: "#1E40AF",
-  bg: "#0D1B2E",         // deep dark
-  card: "#112240",       // dark card
-  surface: "#1A3A5C",    // slightly lighter surface
+  bg: "#0D1B2E",
+  card: "#112240",
+  surface: "#1A3A5C",
   text: "#F0F4F8",
   muted: "rgba(240,244,248,0.55)",
-  border: "rgba(255,255,255,0.07)",
+  border: "rgba(255,255,255,0.1)",
   fontSize: 15,
   fontBody: "'Sarabun', sans-serif",
   fontDisplay: "'Bebas Neue', cursive",
