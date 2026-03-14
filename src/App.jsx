@@ -1,3 +1,4 @@
+javascript import html2canvas from 'html2canvas';
 import { useState, useEffect } from "react";
 
 const LIFF_ID = "2009199519-UViGDRf7";
